@@ -293,6 +293,9 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
 
 \textbf{例1：}绘制 $G(s) = \frac{10}{s(1+0.1s)}$ 的伯德图
 
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=例1求解过程与伯德图]
+
+\begin{minipage}[t]{0.47\textwidth}
 \textbf{解：}
 \begin{enumerate}
     \item 标准形式：$G(s) = \frac{10}{s(1+0.1s)}$，$K = 10$
@@ -302,83 +305,95 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
         \item 惯性环节：$\frac{1}{1+0.1s}$，$T=0.1$
     \end{itemize}
     \item 转折频率：$\omega_c = \frac{1}{T} = 10$ rad/s
-    \item 绘制幅频特性：
+    \item 幅频特性：
     \begin{itemize}
-        \item 选 $\omega = 1$ rad/s 为起点
-        \item $L(1) = 20\lg 10 - 20\lg 1 = 20$ dB
-        \item $\omega < 10$：斜率 $-20$ dB/十倍频
-        \item $\omega > 10$：斜率 $-20-20 = -40$ dB/十倍频
-        \item 在 $\omega = 10$ 处修正 $-3$ dB
+        \item 起点：$L(1) = 20$ dB
+        \item $\omega < 10$：$-20$ dB/十倍频
+        \item $\omega > 10$：$-40$ dB/十倍频
+        \item 修正：$-3$ dB @ $\omega=10$
     \end{itemize}
-    \item 绘制相频特性：
+    \item 相频特性：
     \begin{itemize}
-        \item 积分环节贡献：$-90°$
-        \item 惯性环节贡献：$-\arctan(0.1\omega)$
-        \item 总相位：$\phi(\omega) = -90° - \arctan(0.1\omega)$
-        \item $\omega = 10$：$\phi = -90° - 45° = -135°$
+        \item $\phi(\omega) = -90° - \arctan(0.1\omega)$
+        \item @ $\omega = 10$：$\phi = -135°$
     \end{itemize}
 \end{enumerate}
-
-\textbf{伯德图：}
-\begin{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}
 % G(s) = 10/(s(1+0.1s)) -> num=10, den=0.1 s^2 + 1 s + 0
 \BodeTF{num/{10},den/{0.1,1,0}}{0.1}{1000}
-\end{center}
+\end{minipage}
+
+\end{tcolorbox}
 
 \textbf{例2：}绘制 $G(s) = \frac{100(s+1)}{s(s+10)}$ 的伯德图
 
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=例2求解过程与伯德图]
+
+\begin{minipage}[t]{0.47\textwidth}
 \textbf{解：}
 \begin{enumerate}
     \item 标准形式：$G(s) = \frac{10(1+s)}{s(1+0.1s)}$，$K = 10$
     \item 环节识别：
     \begin{itemize}
         \item 积分环节：$\frac{1}{s}$
-        \item 一阶零点：$(1+s)$，$\omega_{c1} = 1$ rad/s
-        \item 一阶极点：$\frac{1}{1+0.1s}$，$\omega_{c2} = 10$ rad/s
+        \item 一阶零点：$(1+s)$
+        \item $\omega_{c1} = 1$ rad/s
+        \item 一阶极点：$\frac{1}{1+0.1s}$
+        \item $\omega_{c2} = 10$ rad/s
     \end{itemize}
-    \item 转折频率：$\omega_{c1} = 1$ rad/s，$\omega_{c2} = 10$ rad/s
-    \item 绘制幅频特性：
+    \item 转折频率：$1$ rad/s（零点），$10$ rad/s（极点）
+    \item 幅频特性：
     \begin{itemize}
-        \item 低频段（$\omega < 1$）：斜率 $-20$ dB/十倍频
-        \item 中频段（$1 < \omega < 10$）：斜率 $-20+20 = 0$ dB/十倍频
-        \item 高频段（$\omega > 10$）：斜率 $0-20 = -20$ dB/十倍频
+        \item 低频 $\omega<1$：$-20$ dB/十倍频
+        \item 中频 $1<\omega<10$：$0$ dB/十倍频
+        \item 高频 $\omega>10$：$-20$ dB/十倍频
     \end{itemize}
-    \item 相位特性：
+    \item 相频特性：
     \begin{itemize}
-        \item $\phi(\omega) = -90° + \arctan(\omega) - \arctan(0.1\omega)$
+        \item $\phi(\omega) = -90° + \arctan(\omega)$ 
+        \item $\quad - \arctan(0.1\omega)$
     \end{itemize}
 \end{enumerate}
-
-\textbf{伯德图：}
-\begin{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}
 % G(s) = 100(s+1)/(s(s+10)) -> num=100 s + 100, den = s^2 + 10 s + 0
 \BodeTF{num/{100,100},den/{1,10,0}}{0.1}{1000}
-\end{center}
+\end{minipage}
+
+\end{tcolorbox}
 
 \textbf{例3：}二阶系统 $G(s) = \frac{100}{s^2 + 2s + 100}$
 
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=例3求解过程与伯德图]
+
+\begin{minipage}[t]{0.47\textwidth}
 \textbf{解：}
 \begin{enumerate}
-    \item 标准形式：$G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$
+    \item 标准形式：
+    $$G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$$
+    
     \item 参数识别：
     \begin{itemize}
-        \item $\omega_n^2 = 100 \Rightarrow \omega_n = 10$ rad/s
-        \item $2\zeta\omega_n = 2 \Rightarrow \zeta = 0.1$
-        \item 复数极点：$s = -1 \pm j\sqrt{99} \approx -1 \pm 9.95j$
+        \item $\omega_n = 10$ rad/s
+        \item $\zeta = 0.1$
+        \item 极点：$-1 \pm 9.95j$
     \end{itemize}
+    
     \item 特性分析：
     \begin{itemize}
-        \item 转折频率：$\omega_c = \omega_n = 10$ rad/s
-        \item 由于 $\zeta = 0.1 < 0.707$，有谐振峰值
-        \item 谐振频率：$\omega_r = \omega_n\sqrt{1-2\zeta^2} \approx 9.9$ rad/s
-        \item 谐振峰值：$M_r = \frac{1}{2\zeta\sqrt{1-\zeta^2}} \approx 5.03$（约14 dB）
+        \item 转折频率：$10$ rad/s
+        \item $\zeta < 0.707$，有谐振
+        \item 谐振频率：$\approx 9.9$ rad/s
+        \item 谐振峰值：$\approx 5.03$（14 dB）
     \end{itemize}
 \end{enumerate}
-
-\textbf{伯德图：}（使用传递函数系数形式）
-\begin{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}
 \BodeTF{num/{100},den/{1,2,100}}{0.1}{1000}
-\end{center}
+\end{minipage}
+
+\end{tcolorbox}
 
 \subsection{伯德图的应用}
 

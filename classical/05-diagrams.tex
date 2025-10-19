@@ -91,18 +91,18 @@ $$ G(s) = \frac{5}{s^2 + 2s + 4} $$
 \begin{minipage}[t]{0.47\textwidth}
 \centering
 \adjustbox{max width=\linewidth}{
-\begin{tikzpicture}[auto, node distance=2.5cm, >=Latex]
+\begin{tikzpicture}[auto, node distance=3cm, >=Latex]
     \node [input, name=input] {};
     \node [sum, right=of input] (sum) {};
-    \node [block, right=of sum] (controller) {$5$};
-    \node [block, right=of controller, node distance=2.5cm] (plant) {$\frac{1}{s^2 + 2s + 4}$};
-    \coordinate [right=of plant, node distance=2.5cm] (output) {};
+    \node [block, right=of sum, node distance=2.8cm] (controller) {$5$};
+    \node [block, right=of controller, node distance=3.5cm] (plant) {$\frac{1}{s^2 + 2s + 4}$};
+    \coordinate [right=of plant, node distance=3.5cm] (output) {};
     
-    \draw [->] (input) -- node[pos=0.9] {$R(s)$} node[pos=0.9, above] {$+$} (sum);
+    \draw [->] (input) -- node[pos=0.5, above=0.1cm] {$R(s)$} (sum);
     \draw [->] (sum) -- (controller);
     \draw [->] (controller) -- (plant);
     \draw [->] (plant) -- node [name=y, near end] {$Y(s)$} (output);
-    \draw [->] (y) |- ++(0,-1.2cm) -| node[pos=0.9, right] {$-$} (sum);
+    \draw [->] (y) |- ++(0,-1.5cm) -| node[pos=0.8, right=0.1cm] {$-$} (sum);
 \end{tikzpicture}
 }
 \end{minipage}
@@ -118,16 +118,16 @@ $$ G(s) = \frac{5}{s^2 + 2s + 4} \quad H(s)=1 $$
 \begin{minipage}[t]{0.47\textwidth}
 \centering
 \adjustbox{max width=\linewidth}{
-\begin{tikzpicture}[auto, node distance=2.5cm, >=Latex]
+\begin{tikzpicture}[auto, node distance=3cm, >=Latex]
     \node[node] (r) {$R(s)$};
     \node[node, right=of r] (e) {};
     \node[node, right=of e] (y) {$Y(s)$};
     \node[output, right=of y] (end) {};
 
     \draw[->] (r) -- node[above,midway] {1} (e);
-    \draw[->] (e) -- node[above,midway] {$\frac{5}{s^2 + 2s + 4}$} (y);
+    \draw[->] (e) -- node[below=0.1cm,midway] {$\frac{5}{s^2 + 2s + 4}$} (y);
     \draw[->] (y) -- (end);
-    \draw[->] (y) to[bend right=45] node[below,midway] {$-1$} (e);
+    \draw[->] (y) to[bend right=45] node[above=0.2cm,midway] {$-1$} (e);
 \end{tikzpicture}
 }
 \end{minipage}

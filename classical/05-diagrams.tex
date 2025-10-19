@@ -8,6 +8,45 @@
     \item \textbf{分支点}：表示信号的分叉
 \end{itemize}
 
+\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=4em]
+\tikzstyle{sum} = [draw, circle, node distance=1.5cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[auto, node distance=2.5cm, >=Latex]
+    \node [input, name=input] {};
+    \node [block, right=of input] (controller) {控制器};
+    \node [block, right=of controller] (plant) {被控对象};
+    \node [output, right=of plant] (output) {};
+    \draw [->] (input) -- node[name=r] {$R(s)$} (controller);
+    \draw [->] (controller) -- node {$U(s)$} (plant);
+    \draw [->] (plant) -- node[name=y] {$Y(s)$} (output);
+\end{tikzpicture}
+\caption{开环控制系统示例}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[auto, node distance=2cm, >=Latex]
+    \node [input, name=input] {};
+    \node [sum, right=of input] (sum) {};
+    \node [block, right=of sum] (controller) {控制器};
+    \node [block, right=of controller, node distance=3cm] (plant) {被控对象};
+    \coordinate [right=of plant, node distance=3cm] (output) {};
+    \node [block, below=of plant] (sensor) {传感器};
+    
+    \draw [->] (input) -- node[pos=0.9] {$R(s)$} node[pos=0.9, above] {$+$} (sum);
+    \draw [->] (sum) -- node {$E(s)$} (controller);
+    \draw [->] (controller) -- (plant);
+    \draw [->] (plant) -- node [name=y, near end] {$Y(s)$} (output);
+    \draw [->] (y) |- (sensor);
+    \draw [->] (sensor) -| node[pos=0.9, right] {$-$} (sum);
+\end{tikzpicture}
+\caption{闭环（反馈）控制系统示例}
+\end{figure}
+
 \subsection{结构图的等效变换}
 \begin{itemize}
     \item 串联：$G(s) = G_1(s)G_2(s)$

@@ -9,6 +9,7 @@
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{bodeplot}
 
 \pgfplotsset{compat=1.18}
 
@@ -311,6 +312,47 @@ $\nu$ 为系统的型别。
     \item 与虚轴的交点：利用劳斯判据
 \end{enumerate}
 
+\subsection{使用 LaTeX 绘制根轨迹}
+使用 \texttt{rootlocus} 包绘制根轨迹：
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm,height=8cm,
+    xlabel={实部 $\sigma$},
+    ylabel={虚部 $j\omega$},
+    grid=both,
+    axis equal,
+    title={根轨迹图（$K$ 从 0 到 $\infty$）},
+    xmin=-4, xmax=1,
+    ymin=-3, ymax=3
+]
+
+% 极点位置
+\addplot[mark=x, mark size=6pt, mark options={red,thick}, only marks] 
+    coordinates {(-1,0) (-3,0)};
+
+% 根轨迹 - 实轴上的部分
+\addplot[blue, thick, domain=-3:-1] {0};
+
+% 根轨迹 - 圆形部分
+\addplot[blue, thick, domain=-180:180, samples=100] 
+    ({-2 + cos(x)}, {sin(x)});
+
+% 渐近线
+\addplot[dashed, gray] coordinates {(-2,-3) (-2,3)};
+
+% 标注
+\node at (axis cs:-1,-0.3) {$p_1=-1$};
+\node at (axis cs:-3,-0.3) {$p_2=-3$};
+\node at (axis cs:-2,2.5) {渐近线};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{示例说明}：上图显示了传递函数 $G(s) = \frac{K}{s(s+1)(s+3)}$ 的根轨迹。
+
 \section{0°根轨迹}
 
 \subsection{0°根轨迹的相角条件}
@@ -365,6 +407,7 @@ $\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
     \item \textbf{二阶振荡环节}：复杂曲线，取决于阻尼比
 \end{itemize}
 
+
 \section{伯德图绘制}
 
 \subsection{伯德图的定义}
@@ -397,6 +440,53 @@ $\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
     \end{itemize}
 \end{enumerate}
 
+\subsection{使用 LaTeX 绘制伯德图}
+使用 \texttt{bodeplot} 包可以方便地绘制伯德图：
+
+\subsubsection{通过零极点增益形式绘制}
+\begin{center}
+\begin{tikzpicture}
+% 示例：G(s) = 10/((s+1)(s+10))
+\begin{semilogxaxis}[
+    width=10cm,height=6cm,
+    xlabel={频率 $\omega$ (rad/s)},
+    ylabel={幅度 (dB)},
+    grid=both,
+    title={幅频特性曲线}
+]
+\addplot+[blue,thick] table {
+% 使用 bodeplot 生成的数据点
+1e-2  40
+1e-1  20
+1     0
+10    -20
+1e2   -40
+};
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{相频特性绘制}
+\begin{center}
+\begin{tikzpicture}
+\begin{semilogxaxis}[
+    width=10cm,height=5cm,
+    xlabel={频率 $\omega$ (rad/s)},
+    ylabel={相位 (度)},
+    grid=both,
+    title={相频特性曲线}
+]
+\addplot+[red,thick] table {
+1e-2  0
+1e-1  -45
+1     -90
+10    -135
+1e2   -180
+};
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+
 \section{伯德图求传递函数}
 
 \subsection{从伯德图确定传递函数的步骤}
@@ -420,6 +510,39 @@ $\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
     \item \textbf{幅值裕度}：$K_g = \frac{1}{|G(\jw_c)H(\jw_c)|}$，$w_c$ 为相角穿越频率
     \item \textbf{相角裕度}：$\gamma = 180° + \phi(w_g)$，$w_g$ 为幅值穿越频率
 \end{itemize}
+
+\subsection{奔奎斯特图绘制示例}
+使用 \texttt{bodeplot} 包的 Nyquist 图功能：
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm,height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    axis equal,
+    title={奔奎斯特图},
+    xmin=-2, xmax=1,
+    ymin=-2, ymax=2
+]
+
+% 奔奎斯特曲线
+\addplot[blue, thick, domain=0:2*pi, samples=100] 
+    ({0.5*cos(deg(x)) - 0.5}, {0.5*sin(deg(x))});
+
+% (-1,j0) 点
+\addplot[mark=*, mark size=3pt, mark options={red}, only marks] 
+    coordinates {(-1,0)};
+
+% 标记
+\node at (axis cs:-1,-0.2) {$(-1,j0)$};
+\node at (axis cs:0,1.5) {$\omega \to +\infty$};
+\node at (axis cs:0,-1.5) {$\omega \to -\infty$};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
 
 \section{频域性能指标}
 

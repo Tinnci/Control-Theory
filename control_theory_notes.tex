@@ -322,7 +322,7 @@ $\nu$ 为系统的型别。
     xlabel={实部 $\sigma$},
     ylabel={虚部 $j\omega$},
     grid=both,
-    axis equal,
+    unit vector ratio=1 1 1,
     title={根轨迹图（$K$ 从 0 到 $\infty$）},
     xmin=-4, xmax=1,
     ymin=-3, ymax=3
@@ -401,11 +401,86 @@ $\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
 
 \subsection{典型环节的奈奎斯特图}
 \begin{itemize}
-    \item \textbf{比例环节}：$G(\jw) = K$ - 实轴上一点
-    \item \textbf{积分环节}：$G(\jw) = \frac{1}{\jw}$ - 负虚轴
-    \item \textbf{一阶惯性环节}：$G(\jw) = \frac{1}{1+T\jw}$ - 半圆
-    \item \textbf{二阶振荡环节}：复杂曲线，取决于阻尼比
+    \item \textbf{比例环节}: $G(\jw) = K$。奈奎斯特图是实轴上的一个点 $(K, 0)$。
+    \item \textbf{二阶振荡环节}: 曲线形状取决于阻尼比 $\zeta$。
 \end{itemize}
+
+\subsubsection{积分环节}
+积分环节的传递函数为 $G(s) = \frac{1}{s}$，其频率特性为 $G(\jw) = \frac{1}{\jw} = -\frac{j}{\omega}$。
+当 $\omega$ 从 $0^+$ 变化到 $+\infty$ 时，奈奎斯特图是沿着负虚轴从 $-\infty$ 到原点的一条直线。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={积分环节奈奎斯特图},
+    xmin=-1.5, xmax=1.5,
+    ymin=-2, ymax=1,
+    axis lines=middle,
+    xtick={-1,0,1},
+    ytick={-2,-1,0,1},
+]
+% Nyquist plot for 1/s
+\addplot[blue, thick, ->] coordinates {(0, -0.1) (0, -2)};
+\node at (axis cs:0.5, -1) {$\omega: 0^+ \to +\infty$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{惯性环节}
+惯性环节的传递函数为 $G(s) = \frac{1}{Ts+1}$，其频率特性为 $G(\jw) = \frac{1}{1+j\omega T}$。
+奈奎斯特图是一个起点为 $(1,0)$ ($\omega=0$)，终点为原点 ($\omega=\infty$) 的半圆。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=6cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={惯性环节奈奎斯特图},
+    xmin=-0.2, xmax=1.2,
+    ymin=-0.7, ymax=0.7,
+    axis lines=middle,
+]
+% Nyquist plot for 1/(Ts+1)
+\addplot[blue, thick, domain=0:10, samples=100, ->] 
+    ({1/(1+x^2)}, {-x/(1+x^2)});
+\node at (axis cs:0.5, -0.4) {$\omega: 0 \to \infty$};
+\node at (axis cs:1, 0.1) {$\omega=0$};
+\node at (axis cs:0, 0.1) {$\omega=\infty$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{微分环节}
+微分环节的传递函数为 $G(s) = s$，其频率特性为 $G(\jw) = j\omega$。
+奈奎斯特图是沿着正虚轴从原点到 $+\infty$ 的一条直线。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={微分环节奈奎斯特图},
+    xmin=-1.5, xmax=1.5,
+    ymin=-1, ymax=2,
+    axis lines=middle,
+]
+% Nyquist plot for s
+\addplot[blue, thick, ->] coordinates {(0, 0) (0, 2)};
+\node at (axis cs:0.5, 1) {$\omega: 0 \to +\infty$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
 
 
 \section{伯德图绘制}
@@ -511,7 +586,7 @@ $\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
     \item \textbf{相角裕度}：$\gamma = 180° + \phi(w_g)$，$w_g$ 为幅值穿越频率
 \end{itemize}
 
-\subsection{奔奎斯特图绘制示例}
+\subsection{奈奎斯特图绘制示例}
 使用 \texttt{bodeplot} 包的 Nyquist 图功能：
 
 \begin{center}
@@ -521,7 +596,7 @@ $\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
     xlabel={实部 Re},
     ylabel={虚部 Im},
     grid=both,
-    axis equal,
+    unit vector ratio=1 1 1,
     title={奔奎斯特图},
     xmin=-2, xmax=1,
     ymin=-2, ymax=2

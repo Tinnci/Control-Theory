@@ -26,3 +26,62 @@ $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ \\
     \item 第一列出现零元素：用小正数 $\varepsilon$ 代替
     \item 某一行全为零：用前一行的辅助方程的导数代替
 \end{itemize}
+
+\subsubsection{情况一：第一列出现零元素}
+当劳斯表第一列的某个元素为零，但该行其他元素不全为零时，用一个很小的正数 $\varepsilon$ 代替该零元素，然后继续计算。最后根据 $\varepsilon \to 0^+$ 的趋势来判断符号。
+
+\textbf{示例}：系统的特征方程为 $s^4 + s^3 + 2s^2 + 2s + 3 = 0$。
+
+劳斯表：
+\begin{center}
+\begin{tabular}{c|ccc}
+$s^4$ & 1 & 2 & 3 \\
+$s^3$ & 1 & 2 & \\
+$s^2$ & $0 \to \varepsilon$ & 3 & \\
+$s^1$ & $\frac{2\varepsilon - 3}{\varepsilon}$ & & \\
+$s^0$ & 3 & &
+\end{tabular}
+\end{center}
+
+当 $\varepsilon \to 0^+$ 时，第一列的元素为 $1, 1, \varepsilon, \frac{2\varepsilon - 3}{\varepsilon} (\approx -\infty), 3$。
+
+由于第一列出现了两次符号变化（从 $\varepsilon$ 到负无穷，再从负无穷到 3），因此系统不稳定，且在右半 $s$ 平面有两个根。
+
+\subsubsection{情况二：某一行全为零}
+当劳斯表中出现某一行所有元素都为零时，表明系统存在关于原点对称的根（如纯虚根、大小相等符号相反的实根等）。
+
+处理方法是：
+\begin{enumerate}
+    \item 利用全零行的上一行构造辅助多项式 $A(s)$。
+    \item 对辅助多项式求导，$\frac{dA(s)}{ds}$。
+    \item 用求导后多项式的系数替换全零行，继续计算。
+\end{enumerate}
+
+\textbf{示例}：系统的特征方程为 $s^3 + s^2 + s + 1 = 0$。
+
+劳斯表：
+\begin{center}
+\begin{tabular}{c|cc}
+$s^3$ & 1 & 1 \\
+$s^2$ & 1 & 1 \\
+$s^1$ & 0 & 0
+\end{tabular}
+\end{center}
+
+$s^1$ 行为全零行。利用其上一行（$s^2$ 行）构造辅助多项式：
+\[A(s) = 1 \cdot s^2 + 1 \cdot s^0 = s^2 + 1\]
+
+求导：
+\[\frac{dA(s)}{ds} = 2s\]
+
+用导数的系数 [2, 0] 替换 $s^1$ 行，得到新的劳斯表：
+\begin{center}
+\begin{tabular}{c|cc}
+$s^3$ & 1 & 1 \\
+$s^2$ & 1 & 1 \\
+$s^1$ & 2 & 0 \\
+$s^0$ & 1 & 
+\end{tabular}
+\end{center}
+
+第一列元素 $[1, 1, 2, 1]$ 全部为正，说明在劳斯表剩下的部分没有符号变化，系统没有位于右半平面的根。全零行的出现说明系统存在关于原点对称的根，这些根由辅助方程 $A(s) = s^2 + 1 = 0$ 给出，即 $s = \pm j$。因此，系统是临界稳定的。

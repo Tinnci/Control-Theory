@@ -1,5 +1,7 @@
 # Control Theory Notes
 
+[中文版](README.zh-CN.md)
+
 This repository contains notes on Control Theory, covering both classical and modern control theory.
 
 ## Table of Contents
@@ -123,3 +125,7 @@ This repository contains notes on Control Theory, covering both classical and mo
     *   Full-Dimensional State Observer
     *   Observer Design
     *   Separation Principle
+
+## License
+
+This work is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).

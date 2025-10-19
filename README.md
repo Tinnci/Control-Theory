@@ -2,7 +2,7 @@
 
 [中文版](README.zh-CN.md)
 
-This repository contains notes on Control Theory, covering both classical and modern control theory.
+This repository contains notes on Control Theory, covering both classical and modern control theory. Please note that the main content of the notes in the `.tex` file is in Chinese.
 
 ## Table of Contents
 

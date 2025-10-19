@@ -12,6 +12,7 @@
 \tikzstyle{sum} = [draw, circle, node distance=1.5cm]
 \tikzstyle{input} = [coordinate]
 \tikzstyle{output} = [coordinate]
+\tikzstyle{node} = [circle,draw,inner sep=2pt]
 
 \begin{figure}[h!]
 \centering
@@ -56,3 +57,78 @@
 
 \subsection{信号流图}
 信号流图是用有向线段和节点组成的图形，用来表示系统各变量之间的关系。
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[auto, node distance=2.5cm, >=Latex]
+    \node[input] (start) {};
+    \node[node, right=of start] (r) {$R(s)$};
+    \node[node, right=of r] (e) {};
+    \node[node, right=of e] (u) {};
+    \node[node, right=of u] (y) {$Y(s)$};
+    \node[output, right=of y] (end) {};
+
+    \draw[->] (start) -- node[above, very near start] {输入} (r);
+    \draw[->] (r) -- node[above,midway] {1} (e);
+    \draw[->] (e) -- node[above,midway] {$G_c(s)$} (u);
+    \draw[->] (u) -- node[above,midway] {$G_p(s)$} (y);
+    \draw[->] (y) -- node[above, very near end] {输出} (end);
+    \draw[->] (y) to[bend right=60] node[below,midway] {$-H(s)$} (e);
+\end{tikzpicture}
+\caption{包含控制器和传感器的信号流图示例}
+\end{figure}
+
+\subsection{具体示例}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=具体示例]
+\textbf{结构图示例}
+
+\begin{minipage}[t]{0.47\textwidth}
+系统开环传递函数为：
+$$ G(s) = \frac{5}{s^2 + 2s + 4} $$
+反馈为单位负反馈 $H(s)=1$。
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}
+\centering
+\adjustbox{max width=\linewidth}{
+\begin{tikzpicture}[auto, node distance=2.5cm, >=Latex]
+    \node [input, name=input] {};
+    \node [sum, right=of input] (sum) {};
+    \node [block, right=of sum] (controller) {$5$};
+    \node [block, right=of controller, node distance=2.5cm] (plant) {$\frac{1}{s^2 + 2s + 4}$};
+    \coordinate [right=of plant, node distance=2.5cm] (output) {};
+    
+    \draw [->] (input) -- node[pos=0.9] {$R(s)$} node[pos=0.9, above] {$+$} (sum);
+    \draw [->] (sum) -- (controller);
+    \draw [->] (controller) -- (plant);
+    \draw [->] (plant) -- node [name=y, near end] {$Y(s)$} (output);
+    \draw [->] (y) |- ++(0,-1.2cm) -| node[pos=0.9, right] {$-$} (sum);
+\end{tikzpicture}
+}
+\end{minipage}
+
+\tcblower
+
+\textbf{信号流图示例}
+
+\begin{minipage}[t]{0.47\textwidth}
+与上方系统等效的信号流图。前向通路增益为 $G(s)$，反馈回路增益为 $-H(s)$。
+$$ G(s) = \frac{5}{s^2 + 2s + 4} \quad H(s)=1 $$
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\textwidth}
+\centering
+\adjustbox{max width=\linewidth}{
+\begin{tikzpicture}[auto, node distance=2.5cm, >=Latex]
+    \node[node] (r) {$R(s)$};
+    \node[node, right=of r] (e) {};
+    \node[node, right=of e] (y) {$Y(s)$};
+    \node[output, right=of y] (end) {};
+
+    \draw[->] (r) -- node[above,midway] {1} (e);
+    \draw[->] (e) -- node[above,midway] {$\frac{5}{s^2 + 2s + 4}$} (y);
+    \draw[->] (y) -- (end);
+    \draw[->] (y) to[bend right=45] node[below,midway] {$-1$} (e);
+\end{tikzpicture}
+}
+\end{minipage}
+\end{tcolorbox}

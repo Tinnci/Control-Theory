@@ -1,0 +1,27 @@
+\section{线性控制系统状态空间表达式的求解}
+
+\subsection{齐次状态方程的解}
+齐次状态方程 $\dot{x} = Ax$ 的解为：
+\[x(t) = e^{At}x(0)\]
+
+其中 $e^{At}$ 称为状态转移矩阵，记为 $\Phi(t)$。
+
+\subsection{状态转移矩阵的性质}
+\begin{enumerate}
+    \item $\Phi(0) = I$
+    \item $\Phi(t_1 + t_2) = \Phi(t_1)\Phi(t_2)$
+    \item $\Phi^{-1}(t) = \Phi(-t)$
+    \item $\frac{d\Phi(t)}{dt} = A\Phi(t) = \Phi(t)A$
+\end{enumerate}
+
+\subsection{状态转移矩阵的计算方法}
+\begin{enumerate}
+    \item 级数展开法：$e^{At} = I + At + \frac{A^2t^2}{2!} + \cdots$
+    \item 拉普拉斯变换法：$e^{At} = \mathcal{L}^{-1}[(sI-A)^{-1}]$
+    \item 对角化方法：当 $A$ 可对角化时
+    \item 约当标准形方法：当 $A$ 不可对角化时
+\end{enumerate}
+
+\subsection{非齐次状态方程的解}
+非齐次状态方程的完全解：
+\[x(t) = e^{At}x(0) + \int_0^t e^{A(t-\tau)}Bu(\tau)d\tau\]

@@ -1,0 +1,27 @@
+\section{线性变换}
+
+\subsection{线性变换的定义}
+设 $x$ 和 $z$ 是两组状态变量，如果存在非奇异矩阵 $P$，使得：
+\[x = Pz\]
+则称此变换为线性变换或坐标变换。
+
+\subsection{变换后的状态方程}
+原系统：
+\begin{align}
+\dot{x} &= Ax + Bu \\
+y &= Cx + Du
+\end{align}
+
+变换后的系统：
+\begin{align}
+\dot{z} &= \bar{A}z + \bar{B}u \\
+y &= \bar{C}z + Du
+\end{align}
+
+其中：
+\begin{align}
+\bar{A} &= P^{-1}AP \\
+\bar{B} &= P^{-1}B \\
+\bar{C} &= CP
+\end{align}
+

@@ -1,0 +1,16 @@
+\section{梅森公式求传递函数}
+
+\subsection{梅森增益公式}
+\[G(s) = \frac{1}{\Delta} \sum_{k=1}^{N} P_k \Delta_k\]
+
+其中：
+\begin{itemize}
+    \item $P_k$：第 $k$ 条前向通路的增益
+    \item $\Delta$：信号流图的特征式
+    \item $\Delta_k$：在信号流图中划去第 $k$ 条前向通路后的特征式
+\end{itemize}
+
+\subsection{特征式的计算}
+\[\Delta = 1 - \sum L_i + \sum L_i L_j - \sum L_i L_j L_k + \cdots\]
+
+其中 $L_i$ 为各个回路的增益，相互接触的回路不能同时出现在同一项中。

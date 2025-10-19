@@ -1,0 +1,928 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{ctex}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{bodeplot}
+
+\pgfplotsset{compat=1.18}
+
+% 页面设置
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headheight=15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\lhead{控制理论笔记}
+
+% 标题设置
+\title{\textbf{控制理论笔记}\\[0.5em]\large 经典控制理论与现代控制理论}
+\author{学习笔记}
+\date{\today}
+
+% 定义一些常用命令
+\newcommand{\laplace}{\mathcal{L}}
+\newcommand{\fourier}{\mathcal{F}}
+\newcommand{\jw}{\mathrm{j}\omega}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\part{经典控制理论}
+
+\section{自动控制系统的一般概念}
+
+\subsection{控制系统的基本组成}
+控制系统一般由以下几个基本组成部分构成：
+\begin{itemize}
+    \item \textbf{被控对象（控制对象）}：需要被控制的系统或装置
+    \item \textbf{控制器}：对输入信号进行处理，产生控制信号
+    \item \textbf{传感器}：检测被控量的实际值
+    \item \textbf{执行器}：接收控制信号，对被控对象施加控制作用
+\end{itemize}
+
+\subsection{控制系统的基本要求}
+\begin{enumerate}
+    \item \textbf{稳定性}：系统在扰动作用下能够恢复到平衡状态
+    \item \textbf{准确性}：系统的稳态误差要小
+    \item \textbf{快速性}：系统的动态响应要快
+\end{enumerate}
+
+\section{自动控制系统的分类}
+
+\subsection{按输入信号分类}
+\begin{itemize}
+    \item \textbf{恒值控制系统}：输入信号为常值
+    \item \textbf{随动控制系统}：输入信号为时变信号
+    \item \textbf{程序控制系统}：输入信号按预定程序变化
+\end{itemize}
+
+\subsection{按系统结构分类}
+\begin{itemize}
+    \item \textbf{开环控制系统}：控制装置与被控对象之间没有反馈回路
+    \item \textbf{闭环控制系统}：控制装置与被控对象之间存在反馈回路
+\end{itemize}
+
+\subsection{按系统特性分类}
+\begin{itemize}
+    \item \textbf{线性系统与非线性系统}
+    \item \textbf{定常系统与时变系统}
+    \item \textbf{连续系统与离散系统}
+    \item \textbf{单变量系统与多变量系统}
+\end{itemize}
+
+\section{拉普拉斯变换及其性质}
+
+\subsection{拉普拉斯变换定义}
+函数 $f(t)$ 的拉普拉斯变换定义为：
+\[F(s) = \laplace[f(t)] = \int_0^{\infty} f(t)e^{-st} dt\]
+
+其中 $s = \sigma + j\omega$ 为复变量。
+
+\subsection{基本函数的拉普拉斯变换}
+\begin{align}
+\laplace[\delta(t)] &= 1 \\
+\laplace[1(t)] &= \frac{1}{s} \\
+\laplace[t] &= \frac{1}{s^2} \\
+\laplace[e^{-at}] &= \frac{1}{s+a} \\
+\laplace[\sin(\omega t)] &= \frac{\omega}{s^2+\omega^2} \\
+\laplace[\cos(\omega t)] &= \frac{s}{s^2+\omega^2}
+\end{align}
+
+\subsection{拉普拉斯变换的性质}
+\begin{itemize}
+    \item \textbf{线性性质}：$\laplace[af_1(t) + bf_2(t)] = aF_1(s) + bF_2(s)$
+    \item \textbf{时移性质}：$\laplace[f(t-\tau)] = e^{-s\tau}F(s)$
+    \item \textbf{频移性质}：$\laplace[e^{-at}f(t)] = F(s+a)$
+    \item \textbf{微分性质}：$\laplace[f'(t)] = sF(s) - f(0^-)$
+    \item \textbf{积分性质}：$\laplace[\int_0^t f(\tau)d\tau] = \frac{F(s)}{s}$
+    \item \textbf{初值定理}：$f(0^+) = \lim_{s \to \infty} sF(s)$
+    \item \textbf{终值定理}：$f(\infty) = \lim_{s \to 0} sF(s)$（当极限存在时）
+\end{itemize}
+
+\section{微分方程和传递函数}
+
+\subsection{传递函数定义}
+在零初始条件下，线性定常系统输出量的拉普拉斯变换与输入量的拉普拉斯变换之比称为传递函数：
+\[G(s) = \frac{Y(s)}{X(s)} = \frac{b_m s^m + b_{m-1}s^{m-1} + \cdots + b_1 s + b_0}{a_n s^n + a_{n-1}s^{n-1} + \cdots + a_1 s + a_0}\]
+
+\subsection{传递函数的性质}
+\begin{itemize}
+    \item 传递函数是复变量 $s$ 的有理真分式
+    \item 传递函数的系数完全由系统的结构和参数决定
+    \item 传递函数与输入信号无关
+    \item 传递函数可以表征系统的动态特性
+\end{itemize}
+
+\section{结构图与信号流图}
+
+\subsection{结构图的基本元件}
+\begin{itemize}
+    \item \textbf{方块}：表示系统或环节的传递函数
+    \item \textbf{信号线}：表示信号的传输方向
+    \item \textbf{相加点}：表示信号的相加或相减
+    \item \textbf{分支点}：表示信号的分叉
+\end{itemize}
+
+\subsection{结构图的等效变换}
+\begin{itemize}
+    \item 串联：$G(s) = G_1(s)G_2(s)$
+    \item 并联：$G(s) = G_1(s) + G_2(s)$
+    \item 反馈：$G(s) = \frac{G_1(s)}{1 \pm G_1(s)H(s)}$
+\end{itemize}
+
+\subsection{信号流图}
+信号流图是用有向线段和节点组成的图形，用来表示系统各变量之间的关系。
+
+\section{梅森公式求传递函数}
+
+\subsection{梅森增益公式}
+\[G(s) = \frac{1}{\Delta} \sum_{k=1}^{N} P_k \Delta_k\]
+
+其中：
+\begin{itemize}
+    \item $P_k$：第 $k$ 条前向通路的增益
+    \item $\Delta$：信号流图的特征式
+    \item $\Delta_k$：在信号流图中划去第 $k$ 条前向通路后的特征式
+\end{itemize}
+
+\subsection{特征式的计算}
+\[\Delta = 1 - \sum L_i + \sum L_i L_j - \sum L_i L_j L_k + \cdots\]
+
+其中 $L_i$ 为各个回路的增益，相互接触的回路不能同时出现在同一项中。
+
+\section{时域性能指标}
+
+\subsection{典型输入信号}
+\begin{itemize}
+    \item \textbf{阶跃输入}：$r(t) = A \cdot 1(t)$
+    \item \textbf{斜坡输入}：$r(t) = At$
+    \item \textbf{抛物线输入}：$r(t) = \frac{1}{2}At^2$
+    \item \textbf{脉冲输入}：$r(t) = A\delta(t)$
+\end{itemize}
+
+\subsection{时域性能指标}
+对于单位阶跃响应，主要性能指标包括：
+\begin{itemize}
+    \item \textbf{上升时间} $t_r$：响应从终值的10\%上升到90\%所需的时间
+    \item \textbf{峰值时间} $t_p$：响应达到第一个峰值的时间
+    \item \textbf{调节时间} $t_s$：响应进入并保持在终值±2\%（或±5\%）范围内所需的时间
+    \item \textbf{超调量} $\sigma\%$：$\sigma\% = \frac{h(t_p) - h(\infty)}{h(\infty)} \times 100\%$
+\end{itemize}
+
+\section{一阶系统时域分析}
+
+\subsection{一阶系统的传递函数}
+\[G(s) = \frac{K}{Ts + 1}\]
+
+其中 $K$ 为增益，$T$ 为时间常数。
+
+\subsection{一阶系统的单位阶跃响应}
+\[h(t) = K(1 - e^{-t/T})\]
+
+\subsection{一阶系统的性能指标}
+\begin{itemize}
+    \item 调节时间：$t_s = 3T$（2\%误差带）或 $t_s = 4T$（5\%误差带）
+    \item 无超调
+    \item 上升时间：$t_r = 2.2T$
+\end{itemize}
+
+\section{二阶系统时域分析}
+
+\subsection{二阶系统的标准形式}
+\[G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}\]
+
+其中：
+\begin{itemize}
+    \item $\omega_n$：无阻尼自然频率
+    \item $\zeta$：阻尼比
+\end{itemize}
+
+\subsection{二阶系统的特征根}
+特征方程：$s^2 + 2\zeta\omega_n s + \omega_n^2 = 0$
+
+特征根：$s_{1,2} = -\zeta\omega_n \pm \omega_n\sqrt{\zeta^2 - 1}$
+
+\subsection{二阶系统的分类}
+\begin{itemize}
+    \item $\zeta > 1$：过阻尼系统
+    \item $\zeta = 1$：临界阻尼系统
+    \item $0 < \zeta < 1$：欠阻尼系统
+    \item $\zeta = 0$：无阻尼系统
+    \item $\zeta < 0$：负阻尼系统（不稳定）
+\end{itemize}
+
+\subsection{欠阻尼二阶系统的性能指标}
+\begin{align}
+t_p &= \frac{\pi}{\omega_n\sqrt{1-\zeta^2}} \\
+\sigma\% &= e^{-\frac{\pi\zeta}{\sqrt{1-\zeta^2}}} \times 100\% \\
+t_s &= \frac{3}{\zeta\omega_n} \text{（2\%误差带）}
+\end{align}
+
+\section{稳定性分析及劳斯稳定判据}
+
+\subsection{系统稳定性的定义}
+线性系统稳定的充分必要条件是：系统特征方程的所有根都具有负实部，即所有特征根都位于 $s$ 平面的左半部分。
+
+\subsection{劳斯稳定判据}
+对于特征方程：
+\[a_n s^n + a_{n-1}s^{n-1} + \cdots + a_1 s + a_0 = 0\]
+
+构造劳斯表：
+\begin{center}
+\begin{tabular}{c|cccc}
+$s^n$ & $a_n$ & $a_{n-2}$ & $a_{n-4}$ & $\cdots$ \\
+$s^{n-1}$ & $a_{n-1}$ & $a_{n-3}$ & $a_{n-5}$ & $\cdots$ \\
+$s^{n-2}$ & $b_1$ & $b_2$ & $b_3$ & $\cdots$ \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ \\
+\end{tabular}
+\end{center}
+
+其中：$b_1 = \frac{a_{n-1}a_{n-2} - a_n a_{n-3}}{a_{n-1}}$
+
+\textbf{劳斯稳定判据}：系统稳定的充分必要条件是劳斯表第一列的元素全部为正。
+
+\subsection{特殊情况的处理}
+\begin{itemize}
+    \item 第一列出现零元素：用小正数 $\varepsilon$ 代替
+    \item 某一行全为零：用前一行的辅助方程的导数代替
+\end{itemize}
+
+\section{线性定常系统的稳态误差计算}
+
+\subsection{误差信号和误差传递函数}
+误差信号：$E(s) = R(s) - H(s)Y(s)$
+
+误差传递函数：$\Phi_e(s) = \frac{E(s)}{R(s)} = \frac{1}{1 + G(s)H(s)}$
+
+\subsection{系统类型}
+根据开环传递函数 $G(s)H(s)$ 在原点处的极点个数确定系统类型：
+\[G(s)H(s) = \frac{K \prod_{i=1}^{m}(s - z_i)}{s^\nu \prod_{j=1}^{n}(s - p_j)}\]
+
+$\nu$ 为系统的型别。
+
+\subsection{稳态误差系数}
+\begin{itemize}
+    \item \textbf{位置误差系数}：$K_p = \lim_{s \to 0} G(s)H(s)$
+    \item \textbf{速度误差系数}：$K_v = \lim_{s \to 0} s \cdot G(s)H(s)$
+    \item \textbf{加速度误差系数}：$K_a = \lim_{s \to 0} s^2 \cdot G(s)H(s)$
+\end{itemize}
+
+\subsection{稳态误差}
+\begin{itemize}
+    \item 单位阶跃输入：$e_{ss} = \frac{1}{1 + K_p}$
+    \item 单位斜坡输入：$e_{ss} = \frac{1}{K_v}$
+    \item 单位抛物线输入：$e_{ss} = \frac{1}{K_a}$
+\end{itemize}
+
+\section{根轨迹基本概念及其绘制（180°）}
+
+\subsection{根轨迹的定义}
+当系统中某一参数从零变化到无穷大时，闭环系统特征方程的根在 $s$ 平面上的运动轨迹称为根轨迹。
+
+\subsection{根轨迹方程}
+闭环特征方程：$1 + KG(s)H(s) = 0$
+
+根轨迹方程的两个条件：
+\begin{itemize}
+    \item \textbf{幅值条件}：$|G(s)H(s)| = \frac{1}{K}$
+    \item \textbf{相角条件}：$\angle G(s)H(s) = \pm 180°(2k+1)$，$k = 0, 1, 2, \cdots$
+\end{itemize}
+
+\subsection{绘制根轨迹的基本法则}
+\begin{enumerate}
+    \item 根轨迹的分支数等于开环极点数 $n$ 和开环零点数 $m$ 中的较大者
+    \item 根轨迹起始于开环极点，终止于开环零点（有限零点或无限远零点）
+    \item 根轨迹关于实轴对称
+    \item 实轴上的根轨迹：实轴上某点右侧开环实零点和实极点总数为奇数
+    \item 根轨迹的渐近线：
+    \begin{align}
+    \sigma_a &= \frac{\sum_{i=1}^n p_i - \sum_{j=1}^m z_j}{n-m} \\
+    \phi_a &= \frac{(2k+1)180°}{n-m}, \quad k = 0, 1, \cdots, n-m-1
+    \end{align}
+    \item 分离点的计算：$\frac{d}{ds}[G(s)H(s)] = 0$
+    \item 与虚轴的交点：利用劳斯判据
+\end{enumerate}
+
+\subsection{使用 LaTeX 绘制根轨迹}
+使用 \texttt{rootlocus} 包绘制根轨迹：
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm,height=8cm,
+    xlabel={实部 $\sigma$},
+    ylabel={虚部 $j\omega$},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={根轨迹图（$K$ 从 0 到 $\infty$）},
+    xmin=-4, xmax=1,
+    ymin=-3, ymax=3
+]
+
+% 极点位置
+\addplot[mark=x, mark size=6pt, mark options={red,thick}, only marks] 
+    coordinates {(-1,0) (-3,0)};
+
+% 根轨迹 - 实轴上的部分
+\addplot[blue, thick, domain=-3:-1] {0};
+
+% 根轨迹 - 圆形部分
+\addplot[blue, thick, domain=-180:180, samples=100] 
+    ({-2 + cos(x)}, {sin(x)});
+
+% 渐近线
+\addplot[dashed, gray] coordinates {(-2,-3) (-2,3)};
+
+% 标注
+\node at (axis cs:-1,-0.3) {$p_1=-1$};
+\node at (axis cs:-3,-0.3) {$p_2=-3$};
+\node at (axis cs:-2,2.5) {渐近线};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{示例说明}：上图显示了传递函数 $G(s) = \frac{K}{s(s+1)(s+3)}$ 的根轨迹。
+
+\section{0°根轨迹}
+
+\subsection{0°根轨迹的相角条件}
+$\angle G(s)H(s) = \pm 360°k$，$k = 0, 1, 2, \cdots$
+
+\subsection{0°根轨迹与180°根轨迹的区别}
+\begin{itemize}
+    \item 实轴上的根轨迹：实轴上某点右侧开环实零点和实极点总数为偶数
+    \item 渐近线角度：$\phi_a = \frac{360°k}{n-m}$
+\end{itemize}
+
+\section{参数根轨迹}
+
+\subsection{参数根轨迹的定义}
+当系统中某一参数变化时，系统特征方程根的变化轨迹。
+
+\subsection{参数根轨迹的绘制方法}
+\begin{enumerate}
+    \item 将特征方程整理成 $1 + K_h H(s) = 0$ 的形式
+    \item 将参数 $K_h$ 视为可变增益
+    \item 按照常规根轨迹绘制方法进行
+\end{enumerate}
+
+\section{频率特性基本概念}
+
+\subsection{频率特性的定义}
+线性定常系统的频率特性是指当输入为正弦信号时，系统稳态输出与输入的复数比：
+\[G(\jw) = G(s)|_{s=\jw} = |G(\jw)|e^{j\phi(\omega)}\]
+
+其中：
+\begin{itemize}
+    \item $|G(\jw)|$：幅频特性
+    \item $\phi(\omega) = \angle G(\jw)$：相频特性
+\end{itemize}
+
+\subsection{频率特性的物理意义}
+\begin{itemize}
+    \item 幅频特性表示不同频率正弦输入信号通过系统后幅值的变化
+    \item 相频特性表示不同频率正弦输入信号通过系统后相位的变化
+\end{itemize}
+
+\section{奈奎斯特图绘制}
+
+\subsection{奈奎斯特图的定义}
+奈奎斯特图是以 $G(\jw)$ 的实部为横坐标，虚部为纵坐标，$\omega$ 从 $-\infty$ 到 $+\infty$ 变化时 $G(\jw)$ 在复平面上的轨迹。
+
+\subsection{典型环节的奈奎斯特图}
+\begin{itemize}
+    \item \textbf{比例环节}: $G(\jw) = K$。奈奎斯特图是实轴上的一个点 $(K, 0)$。
+    \item \textbf{二阶振荡环节}: 曲线形状取决于阻尼比 $\zeta$。
+\end{itemize}
+
+\subsubsection{积分环节}
+积分环节的传递函数为 $G(s) = \frac{1}{s}$，其频率特性为 $G(\jw) = \frac{1}{\jw} = -\frac{j}{\omega}$。
+当 $\omega$ 从 $0^+$ 变化到 $+\infty$ 时，奈奎斯特图是沿着负虚轴从 $-\infty$ 到原点的一条直线。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={积分环节奈奎斯特图},
+    xmin=-1.5, xmax=1.5,
+    ymin=-2, ymax=1,
+    axis lines=middle,
+    xtick={-1,0,1},
+    ytick={-2,-1,0,1},
+]
+% Nyquist plot for 1/s
+\addplot[blue, thick, ->] coordinates {(0, -0.1) (0, -2)};
+\node at (axis cs:0.5, -1) {$\omega: 0^+ \to +\infty$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{惯性环节}
+惯性环节的传递函数为 $G(s) = \frac{1}{Ts+1}$，其频率特性为 $G(\jw) = \frac{1}{1+j\omega T}$。
+奈奎斯特图是一个起点为 $(1,0)$ ($\omega=0$)，终点为原点 ($\omega=\infty$) 的半圆。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=6cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={惯性环节奈奎斯特图},
+    xmin=-0.2, xmax=1.2,
+    ymin=-0.7, ymax=0.7,
+    axis lines=middle,
+]
+% Nyquist plot for 1/(Ts+1)
+\addplot[blue, thick, domain=0:10, samples=100, ->] 
+    ({1/(1+x^2)}, {-x/(1+x^2)});
+\node at (axis cs:0.5, -0.4) {$\omega: 0 \to \infty$};
+\node at (axis cs:1, 0.1) {$\omega=0$};
+\node at (axis cs:0, 0.1) {$\omega=\infty$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{微分环节}
+微分环节的传递函数为 $G(s) = s$，其频率特性为 $G(\jw) = j\omega$。
+奈奎斯特图是沿着正虚轴从原点到 $+\infty$ 的一条直线。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={微分环节奈奎斯特图},
+    xmin=-1.5, xmax=1.5,
+    ymin=-1, ymax=2,
+    axis lines=middle,
+]
+% Nyquist plot for s
+\addplot[blue, thick, ->] coordinates {(0, 0) (0, 2)};
+\node at (axis cs:0.5, 1) {$\omega: 0 \to +\infty$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+
+\section{伯德图绘制}
+
+\subsection{伯德图的定义}
+伯德图由两个图组成：
+\begin{itemize}
+    \item 幅频特性图：$L(\omega) = 20\lg|G(\jw)|$ dB vs $\lg\omega$
+    \item 相频特性图：$\phi(\omega)$ vs $\lg\omega$
+\end{itemize}
+
+\subsection{典型环节的伯德图}
+\begin{enumerate}
+    \item \textbf{比例环节} $K$：
+    \begin{itemize}
+        \item $L(\omega) = 20\lg K$ dB（水平线）
+        \item $\phi(\omega) = 0°$
+    \end{itemize}
+    
+    \item \textbf{积分环节} $\frac{1}{s}$：
+    \begin{itemize}
+        \item $L(\omega) = -20\lg\omega$ dB（斜率-20dB/十倍频）
+        \item $\phi(\omega) = -90°$
+    \end{itemize}
+    
+    \item \textbf{一阶惯性环节} $\frac{1}{1+Ts}$：
+    \begin{itemize}
+        \item 转折频率：$\omega_c = \frac{1}{T}$
+        \item $\omega < \omega_c$：$L(\omega) \approx 0$ dB
+        \item $\omega > \omega_c$：$L(\omega) \approx -20\lg(\omega T)$ dB
+        \item $\phi(\omega_c) = -45°$
+    \end{itemize}
+\end{enumerate}
+
+\subsection{使用 LaTeX 绘制伯德图}
+使用 \texttt{bodeplot} 包可以方便地绘制伯德图：
+
+\subsubsection{通过零极点增益形式绘制}
+\begin{center}
+\begin{tikzpicture}
+% 示例：G(s) = 10/((s+1)(s+10))
+\begin{semilogxaxis}[
+    width=10cm,height=6cm,
+    xlabel={频率 $\omega$ (rad/s)},
+    ylabel={幅度 (dB)},
+    grid=both,
+    title={幅频特性曲线}
+]
+\addplot+[blue,thick] table {
+% 使用 bodeplot 生成的数据点
+1e-2  40
+1e-1  20
+1     0
+10    -20
+1e2   -40
+};
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{相频特性绘制}
+\begin{center}
+\begin{tikzpicture}
+\begin{semilogxaxis}[
+    width=10cm,height=5cm,
+    xlabel={频率 $\omega$ (rad/s)},
+    ylabel={相位 (度)},
+    grid=both,
+    title={相频特性曲线}
+]
+\addplot+[red,thick] table {
+1e-2  0
+1e-1  -45
+1     -90
+10    -135
+1e2   -180
+};
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+
+\section{伯德图求传递函数}
+
+\subsection{从伯德图确定传递函数的步骤}
+\begin{enumerate}
+    \item 根据低频段的斜率确定积分环节个数
+    \item 根据转折频率确定各环节的时间常数
+    \item 根据低频段的幅值确定开环增益
+    \item 验证相频特性
+\end{enumerate}
+
+\section{频域稳定判据}
+
+\subsection{奈奎斯特稳定判据}
+设开环传递函数 $G(s)H(s)$ 在右半 $s$ 平面有 $P$ 个极点，当 $\omega$ 从 $-\infty$ 到 $+\infty$ 变化时，$G(\jw)H(\jw)$ 轨迹逆时针包围 $(-1, j0)$ 点 $N$ 圈，则闭环系统在右半 $s$ 平面的极点数为：
+\[Z = P - N\]
+
+系统稳定的条件：$Z = 0$，即 $N = P$。
+
+\subsection{相对稳定性}
+\begin{itemize}
+    \item \textbf{幅值裕度}：$K_g = \frac{1}{|G(\jw_c)H(\jw_c)|}$，$w_c$ 为相角穿越频率
+    \item \textbf{相角裕度}：$\gamma = 180° + \phi(w_g)$，$w_g$ 为幅值穿越频率
+\end{itemize}
+
+\subsection{奈奎斯特图绘制示例}
+使用 \texttt{bodeplot} 包的 Nyquist 图功能：
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm,height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={奔奎斯特图},
+    xmin=-2, xmax=1,
+    ymin=-2, ymax=2
+]
+
+% 奔奎斯特曲线
+\addplot[blue, thick, domain=0:2*pi, samples=100] 
+    ({0.5*cos(deg(x)) - 0.5}, {0.5*sin(deg(x))});
+
+% (-1,j0) 点
+\addplot[mark=*, mark size=3pt, mark options={red}, only marks] 
+    coordinates {(-1,0)};
+
+% 标记
+\node at (axis cs:-1,-0.2) {$(-1,j0)$};
+\node at (axis cs:0,1.5) {$\omega \to +\infty$};
+\node at (axis cs:0,-1.5) {$\omega \to -\infty$};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\section{频域性能指标}
+
+\subsection{频域指标与时域指标的关系}
+\begin{itemize}
+    \item 剪切频率 $\omega_c$ 越大，系统响应越快
+    \item 相角裕度 $\gamma$ 越大，系统超调量越小
+    \item 幅值裕度 $K_g$ 反映系统的稳定程度
+\end{itemize}
+
+\section{超前、滞后校正}
+
+\subsection{超前校正}
+超前校正器的传递函数：
+\[G_c(s) = K_c \frac{1 + aTs}{1 + Ts}, \quad a > 1\]
+
+特点：
+\begin{itemize}
+    \item 提供正相角，改善系统的快速性
+    \item 增大系统带宽
+    \item 最大超前角：$\phi_m = \arcsin\frac{a-1}{a+1}$
+\end{itemize}
+
+\subsection{滞后校正}
+滞后校正器的传递函数：
+\[G_c(s) = K_c \frac{1 + aTs}{1 + Ts}, \quad 0 < a < 1\]
+
+特点：
+\begin{itemize}
+    \item 提供负相角，但主要利用其幅频特性
+    \item 在低频段提供较大增益，改善稳态精度
+    \item 减小系统带宽
+\end{itemize}
+
+\newpage
+\part{现代控制理论}
+
+\section{状态空间表达式及其建立}
+
+\subsection{状态空间的基本概念}
+\begin{itemize}
+    \item \textbf{状态}：系统在某一时刻的状态是指确定系统该时刻以后行为所必需的最少信息
+    \item \textbf{状态变量}：描述系统状态的一组变量
+    \item \textbf{状态向量}：由状态变量组成的向量
+    \item \textbf{状态空间}：以状态变量为坐标的n维空间
+\end{itemize}
+
+\subsection{状态空间表达式}
+线性定常系统的状态空间表达式：
+\begin{align}
+\dot{x}(t) &= Ax(t) + Bu(t) \\
+y(t) &= Cx(t) + Du(t)
+\end{align}
+
+其中：
+\begin{itemize}
+    \item $x(t) \in \mathbb{R}^n$：状态向量
+    \item $u(t) \in \mathbb{R}^p$：输入向量
+    \item $y(t) \in \mathbb{R}^q$：输出向量
+    \item $A \in \mathbb{R}^{n \times n}$：系统矩阵
+    \item $B \in \mathbb{R}^{n \times p}$：输入矩阵
+    \item $C \in \mathbb{R}^{q \times n}$：输出矩阵
+    \item $D \in \mathbb{R}^{q \times p}$：前馈矩阵
+\end{itemize}
+
+\subsection{状态空间表达式的建立方法}
+\begin{enumerate}
+    \item 根据物理规律建立微分方程组
+    \item 选择状态变量（通常选择能量存储元件的变量）
+    \item 将高阶微分方程化为一阶微分方程组
+    \item 写出输出方程
+\end{enumerate}
+
+\section{状态空间表达式求传递函数}
+
+\subsection{传递函数矩阵}
+从状态空间表达式求传递函数矩阵：
+\[G(s) = C(sI - A)^{-1}B + D\]
+
+\subsection{单输入单输出系统}
+对于单输入单输出系统：
+\[G(s) = C(sI - A)^{-1}B + D\]
+
+其中 $(sI - A)^{-1}$ 称为系统的解析矩阵。
+
+\section{线性变换}
+
+\subsection{线性变换的定义}
+设 $x$ 和 $z$ 是两组状态变量，如果存在非奇异矩阵 $P$，使得：
+\[x = Pz\]
+则称此变换为线性变换或坐标变换。
+
+\subsection{变换后的状态方程}
+原系统：
+\begin{align}
+\dot{x} &= Ax + Bu \\
+y &= Cx + Du
+\end{align}
+
+变换后的系统：
+\begin{align}
+\dot{z} &= \bar{A}z + \bar{B}u \\
+y &= \bar{C}z + Du
+\end{align}
+
+其中：
+\begin{align}
+\bar{A} &= P^{-1}AP \\
+\bar{B} &= P^{-1}B \\
+\bar{C} &= CP
+\end{align}
+
+\section{线性控制系统状态空间表达式的求解}
+
+\subsection{齐次状态方程的解}
+齐次状态方程 $\dot{x} = Ax$ 的解为：
+\[x(t) = e^{At}x(0)\]
+
+其中 $e^{At}$ 称为状态转移矩阵，记为 $\Phi(t)$。
+
+\subsection{状态转移矩阵的性质}
+\begin{enumerate}
+    \item $\Phi(0) = I$
+    \item $\Phi(t_1 + t_2) = \Phi(t_1)\Phi(t_2)$
+    \item $\Phi^{-1}(t) = \Phi(-t)$
+    \item $\frac{d\Phi(t)}{dt} = A\Phi(t) = \Phi(t)A$
+\end{enumerate}
+
+\subsection{状态转移矩阵的计算方法}
+\begin{enumerate}
+    \item 级数展开法：$e^{At} = I + At + \frac{A^2t^2}{2!} + \cdots$
+    \item 拉普拉斯变换法：$e^{At} = \mathcal{L}^{-1}[(sI-A)^{-1}]$
+    \item 对角化方法：当 $A$ 可对角化时
+    \item 约当标准形方法：当 $A$ 不可对角化时
+\end{enumerate}
+
+\subsection{非齐次状态方程的解}
+非齐次状态方程的完全解：
+\[x(t) = e^{At}x(0) + \int_0^t e^{A(t-\tau)}Bu(\tau)d\tau\]
+
+\section{线性控制系统的能控性和能观测性}
+
+\subsection{能控性定义}
+系统 $(A, B)$ 在时刻 $t_0$ 是状态能控的，如果存在有限时间 $t_1 > t_0$ 和控制输入 $u(t)$，使得系统能从任意初态 $x(t_0)$ 转移到任意终态 $x(t_1)$。
+
+\subsection{能控性判据}
+系统 $(A, B)$ 完全能控的充要条件是能控性矩阵：
+\[W_c = [B \quad AB \quad A^2B \quad \cdots \quad A^{n-1}B]\]
+满足 $\text{rank}(W_c) = n$。
+
+\subsection{能观测性定义}
+系统 $(A, C)$ 在时刻 $t_0$ 是状态能观测的，如果能够根据有限时间区间 $[t_0, t_1]$ 内的输出 $y(t)$ 和输入 $u(t)$ 唯一地确定初始状态 $x(t_0)$。
+
+\subsection{能观测性判据}
+系统 $(A, C)$ 完全能观测的充要条件是能观测性矩阵：
+\[W_o = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix}\]
+满足 $\text{rank}(W_o) = n$。
+
+\section{能控、能观标准型及其实现}
+
+\subsection{能控标准型}
+对于单输入系统，能控标准型为：
+\[\bar{A} = \begin{bmatrix}
+0 & 1 & 0 & \cdots & 0 \\
+0 & 0 & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & 1 \\
+-a_0 & -a_1 & -a_2 & \cdots & -a_{n-1}
+\end{bmatrix}, \quad \bar{B} = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}\]
+
+\subsection{能观测标准型}
+对于单输出系统，能观测标准型为：
+\[\bar{A} = \begin{bmatrix}
+0 & 0 & \cdots & 0 & -a_0 \\
+1 & 0 & \cdots & 0 & -a_1 \\
+0 & 1 & \cdots & 0 & -a_2 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & 1 & -a_{n-1}
+\end{bmatrix}, \quad \bar{C} = \begin{bmatrix} 0 & 0 & \cdots & 0 & 1 \end{bmatrix}\]
+
+\section{系统的结构分解——能控、能观性分解}
+
+\subsection{系统的结构分解}
+一般线性系统可分解为四个子系统：
+\begin{itemize}
+    \item 能控且能观测部分
+    \item 能控但不能观测部分
+    \item 不能控但能观测部分
+    \item 不能控且不能观测部分
+\end{itemize}
+
+\subsection{卡尔曼分解}
+通过适当的线性变换，可将系统分解为：
+\[\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \\ \dot{x}_3 \\ \dot{x}_4 \end{bmatrix} = 
+\begin{bmatrix}
+A_{11} & 0 & A_{13} & 0 \\
+A_{21} & A_{22} & A_{23} & A_{24} \\
+0 & 0 & A_{33} & 0 \\
+0 & 0 & A_{43} & A_{44}
+\end{bmatrix}
+\begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix} +
+\begin{bmatrix} B_1 \\ B_2 \\ 0 \\ 0 \end{bmatrix} u\]
+
+\[y = \begin{bmatrix} C_1 & C_2 & 0 & 0 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}\]
+
+\section{约当型实现}
+
+\subsection{约当标准型}
+当系统矩阵 $A$ 的特征值不同时，可化为对角形：
+\[J = P^{-1}AP = \text{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n)\]
+
+当有重根时，化为约当标准型：
+\[J = P^{-1}AP = \text{diag}(J_1, J_2, \ldots, J_k)\]
+
+其中 $J_i$ 为约当块：
+\[J_i = \begin{bmatrix}
+\lambda_i & 1 & 0 & \cdots & 0 \\
+0 & \lambda_i & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & \lambda_i
+\end{bmatrix}\]
+
+\section{稳定性与李雅普诺夫方法}
+
+\subsection{李雅普诺夫稳定性定义}
+考虑自治系统 $\dot{x} = f(x)$，设 $x_e$ 为平衡点：
+\begin{itemize}
+    \item \textbf{稳定}：对任意 $\varepsilon > 0$，存在 $\delta > 0$，当 $\|x(0) - x_e\| < \delta$ 时，有 $\|x(t) - x_e\| < \varepsilon$，$\forall t \geq 0$
+    \item \textbf{渐近稳定}：稳定且 $\lim_{t \to \infty} x(t) = x_e$
+    \item \textbf{大范围渐近稳定}：渐近稳定且吸引域为整个状态空间
+\end{itemize}
+
+\subsection{李雅普诺夫第一方法（线性化方法）}
+对于线性系统 $\dot{x} = Ax$，系统渐近稳定的充要条件是矩阵 $A$ 的所有特征值都具有负实部。
+
+\subsection{李雅普诺夫第二方法（直接方法）}
+\textbf{李雅普诺夫定理}：如果存在标量函数 $V(x)$ 满足：
+\begin{enumerate}
+    \item $V(x)$ 连续且有连续的一阶偏导数
+    \item $V(x_e) = 0$，当 $x \neq x_e$ 时 $V(x) > 0$（正定）
+    \item $\dot{V}(x) = \frac{\partial V}{\partial x} f(x) \leq 0$（半负定）
+\end{enumerate}
+则平衡点 $x_e$ 稳定。
+
+若进一步有 $\dot{V}(x) < 0$（负定），则平衡点渐近稳定。
+
+\subsection{线性系统的李雅普诺夫方程}
+对于线性系统 $\dot{x} = Ax$，选择二次型李雅普诺夫函数：
+\[V(x) = x^T P x\]
+
+其中 $P$ 为正定矩阵。稳定的充要条件是李雅普诺夫方程：
+\[A^T P + PA = -Q\]
+对于给定的正定矩阵 $Q$，存在唯一的正定解 $P$。
+
+\section{极点配置——状态反馈}
+
+\subsection{状态反馈}
+状态反馈控制律：
+\[u = -Kx + v\]
+
+其中 $K$ 为反馈增益矩阵，$v$ 为参考输入。
+
+闭环系统：
+\[\dot{x} = (A - BK)x + Bv\]
+
+\subsection{极点配置定理}
+对于单输入系统，若 $(A, B)$ 完全能控，则对于任意给定的 $n$ 个复数 $\lambda_1, \lambda_2, \ldots, \lambda_n$（复数成对共轭出现），存在反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值恰好为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
+
+\subsection{极点配置的方法}
+\begin{enumerate}
+    \item \textbf{直接方法}：解特征方程 $\det(sI - A + BK) = 0$
+    \item \textbf{变换方法}：将系统化为能控标准型后配置极点
+    \item \textbf{阿克曼公式}：$K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)$
+\end{enumerate}
+
+其中 $\alpha_c(s)$ 为期望的特征多项式，$W_c$ 为能控性矩阵。
+
+\section{状态观测器}
+
+\subsection{状态观测器的概念}
+当系统的状态不能直接测量时，需要根据系统的输入输出信息来估计状态变量，这种估计装置称为状态观测器。
+
+\subsection{全维状态观测器}
+全维状态观测器的方程：
+\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})\]
+
+其中 $\hat{x}$ 为状态估计值，$L$ 为观测器增益矩阵。
+
+\subsection{观测器的设计}
+观测误差：$e = x - \hat{x}$
+
+观测误差动态方程：
+\[\dot{e} = (A - LC)e\]
+
+观测器设计就是选择 $L$，使得 $A - LC$ 的特征值位于左半平面。
+
+\textbf{观测器设计定理}：若 $(A, C)$ 完全能观测，则可任意配置观测器的极点。
+
+\subsection{分离定理}
+状态反馈与状态观测器可以分别独立设计，即：
+\begin{itemize}
+    \item 先设计状态反馈增益 $K$，配置闭环系统的极点
+    \item 再设计观测器增益 $L$，配置观测器的极点
+\end{itemize}
+
+基于观测器的状态反馈系统的特征多项式等于控制器特征多项式与观测器特征多项式的乘积。
+
+\end{document}

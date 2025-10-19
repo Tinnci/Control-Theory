@@ -1,0 +1,19 @@
+\section{结构图与信号流图}
+
+\subsection{结构图的基本元件}
+\begin{itemize}
+    \item \textbf{方块}：表示系统或环节的传递函数
+    \item \textbf{信号线}：表示信号的传输方向
+    \item \textbf{相加点}：表示信号的相加或相减
+    \item \textbf{分支点}：表示信号的分叉
+\end{itemize}
+
+\subsection{结构图的等效变换}
+\begin{itemize}
+    \item 串联：$G(s) = G_1(s)G_2(s)$
+    \item 并联：$G(s) = G_1(s) + G_2(s)$
+    \item 反馈：$G(s) = \frac{G_1(s)}{1 \pm G_1(s)H(s)}$
+\end{itemize}
+
+\subsection{信号流图}
+信号流图是用有向线段和节点组成的图形，用来表示系统各变量之间的关系。

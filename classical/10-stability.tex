@@ -1,0 +1,28 @@
+\section{稳定性分析及劳斯稳定判据}
+
+\subsection{系统稳定性的定义}
+线性系统稳定的充分必要条件是：系统特征方程的所有根都具有负实部，即所有特征根都位于 $s$ 平面的左半部分。
+
+\subsection{劳斯稳定判据}
+对于特征方程：
+\[a_n s^n + a_{n-1}s^{n-1} + \cdots + a_1 s + a_0 = 0\]
+
+构造劳斯表：
+\begin{center}
+\begin{tabular}{c|cccc}
+$s^n$ & $a_n$ & $a_{n-2}$ & $a_{n-4}$ & $\cdots$ \\
+$s^{n-1}$ & $a_{n-1}$ & $a_{n-3}$ & $a_{n-5}$ & $\cdots$ \\
+$s^{n-2}$ & $b_1$ & $b_2$ & $b_3$ & $\cdots$ \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ \\
+\end{tabular}
+\end{center}
+
+其中：$b_1 = \frac{a_{n-1}a_{n-2} - a_n a_{n-3}}{a_{n-1}}$
+
+\textbf{劳斯稳定判据}：系统稳定的充分必要条件是劳斯表第一列的元素全部为正。
+
+\subsection{特殊情况的处理}
+\begin{itemize}
+    \item 第一列出现零元素：用小正数 $\varepsilon$ 代替
+    \item 某一行全为零：用前一行的辅助方程的导数代替
+\end{itemize}

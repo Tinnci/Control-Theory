@@ -1,0 +1,31 @@
+\section{二阶系统时域分析}
+
+\subsection{二阶系统的标准形式}
+\[G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}\]
+
+其中：
+\begin{itemize}
+    \item $\omega_n$：无阻尼自然频率
+    \item $\zeta$：阻尼比
+\end{itemize}
+
+\subsection{二阶系统的特征根}
+特征方程：$s^2 + 2\zeta\omega_n s + \omega_n^2 = 0$
+
+特征根：$s_{1,2} = -\zeta\omega_n \pm \omega_n\sqrt{\zeta^2 - 1}$
+
+\subsection{二阶系统的分类}
+\begin{itemize}
+    \item $\zeta > 1$：过阻尼系统
+    \item $\zeta = 1$：临界阻尼系统
+    \item $0 < \zeta < 1$：欠阻尼系统
+    \item $\zeta = 0$：无阻尼系统
+    \item $\zeta < 0$：负阻尼系统（不稳定）
+\end{itemize}
+
+\subsection{欠阻尼二阶系统的性能指标}
+\begin{align}
+t_p &= \frac{\pi}{\omega_n\sqrt{1-\zeta^2}} \\
+\sigma_{\%} &= e^{-\frac{\pi\zeta}{\sqrt{1-\zeta^2}}} \times 100\% \\
+t_s &= \frac{3}{\zeta\omega_n} \text{（2\%误差带）}
+\end{align}

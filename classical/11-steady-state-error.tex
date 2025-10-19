@@ -1,0 +1,26 @@
+\section{线性定常系统的稳态误差计算}
+
+\subsection{误差信号和误差传递函数}
+误差信号：$E(s) = R(s) - H(s)Y(s)$
+
+误差传递函数：$\Phi_e(s) = \frac{E(s)}{R(s)} = \frac{1}{1 + G(s)H(s)}$
+
+\subsection{系统类型}
+根据开环传递函数 $G(s)H(s)$ 在原点处的极点个数确定系统类型：
+\[G(s)H(s) = \frac{K \prod_{i=1}^{m}(s - z_i)}{s^\nu \prod_{j=1}^{n}(s - p_j)}\]
+
+$\nu$ 为系统的型别。
+
+\subsection{稳态误差系数}
+\begin{itemize}
+    \item \textbf{位置误差系数}：$K_p = \lim_{s \to 0} G(s)H(s)$
+    \item \textbf{速度误差系数}：$K_v = \lim_{s \to 0} s \cdot G(s)H(s)$
+    \item \textbf{加速度误差系数}：$K_a = \lim_{s \to 0} s^2 \cdot G(s)H(s)$
+\end{itemize}
+
+\subsection{稳态误差}
+\begin{itemize}
+    \item 单位阶跃输入：$e_{ss} = \frac{1}{1 + K_p}$
+    \item 单位斜坡输入：$e_{ss} = \frac{1}{K_v}$
+    \item 单位抛物线输入：$e_{ss} = \frac{1}{K_a}$
+\end{itemize}

@@ -1,0 +1,16 @@
+\section{约当型实现}
+
+\subsection{约当标准型}
+当系统矩阵 $A$ 的特征值不同时，可化为对角形：
+\[J = P^{-1}AP = \text{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n)\]
+
+当有重根时，化为约当标准型：
+\[J = P^{-1}AP = \text{diag}(J_1, J_2, \ldots, J_k)\]
+
+其中 $J_i$ 为约当块：
+\[J_i = \begin{bmatrix}
+\lambda_i & 1 & 0 & \cdots & 0 \\
+0 & \lambda_i & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & \lambda_i
+\end{bmatrix}\]

@@ -1,0 +1,31 @@
+\section{稳定性与李雅普诺夫方法}
+
+\subsection{李雅普诺夫稳定性定义}
+考虑自治系统 $\dot{x} = f(x)$，设 $x_e$ 为平衡点：
+\begin{itemize}
+    \item \textbf{稳定}：对任意 $\varepsilon > 0$，存在 $\delta > 0$，当 $\|x(0) - x_e\| < \delta$ 时，有 $\|x(t) - x_e\| < \varepsilon$，$\forall t \geq 0$
+    \item \textbf{渐近稳定}：稳定且 $\lim_{t \to \infty} x(t) = x_e$
+    \item \textbf{大范围渐近稳定}：渐近稳定且吸引域为整个状态空间
+\end{itemize}
+
+\subsection{李雅普诺夫第一方法（线性化方法）}
+对于线性系统 $\dot{x} = Ax$，系统渐近稳定的充要条件是矩阵 $A$ 的所有特征值都具有负实部。
+
+\subsection{李雅普诺夫第二方法（直接方法）}
+\textbf{李雅普诺夫定理}：如果存在标量函数 $V(x)$ 满足：
+\begin{enumerate}
+    \item $V(x)$ 连续且有连续的一阶偏导数
+    \item $V(x_e) = 0$，当 $x \neq x_e$ 时 $V(x) > 0$（正定）
+    \item $\dot{V}(x) = \frac{\partial V}{\partial x} f(x) \leq 0$（半负定）
+\end{enumerate}
+则平衡点 $x_e$ 稳定。
+
+若进一步有 $\dot{V}(x) < 0$（负定），则平衡点渐近稳定。
+
+\subsection{线性系统的李雅普诺夫方程}
+对于线性系统 $\dot{x} = Ax$，选择二次型李雅普诺夫函数：
+\[V(x) = x^T P x\]
+
+其中 $P$ 为正定矩阵。稳定的充要条件是李雅普诺夫方程：
+\[A^T P + PA = -Q\]
+对于给定的正定矩阵 $Q$，存在唯一的正定解 $P$。

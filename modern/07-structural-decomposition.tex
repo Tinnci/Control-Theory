@@ -1,0 +1,24 @@
+\section{系统的结构分解——能控、能观性分解}
+
+\subsection{系统的结构分解}
+一般线性系统可分解为四个子系统：
+\begin{itemize}
+    \item 能控且能观测部分
+    \item 能控但不能观测部分
+    \item 不能控但能观测部分
+    \item 不能控且不能观测部分
+\end{itemize}
+
+\subsection{卡尔曼分解}
+通过适当的线性变换，可将系统分解为：
+\[\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \\ \dot{x}_3 \\ \dot{x}_4 \end{bmatrix} = 
+\begin{bmatrix}
+A_{11} & 0 & A_{13} & 0 \\
+A_{21} & A_{22} & A_{23} & A_{24} \\
+0 & 0 & A_{33} & 0 \\
+0 & 0 & A_{43} & A_{44}
+\end{bmatrix}
+\begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix} +
+\begin{bmatrix} B_1 \\ B_2 \\ 0 \\ 0 \end{bmatrix} u\]
+
+\[y = \begin{bmatrix} C_1 & C_2 & 0 & 0 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}\]

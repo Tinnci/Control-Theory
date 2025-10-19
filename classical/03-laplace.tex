@@ -1,0 +1,28 @@
+\section{拉普拉斯变换及其性质}
+
+\subsection{拉普拉斯变换定义}
+函数 $f(t)$ 的拉普拉斯变换定义为：
+\[F(s) = \laplace[f(t)] = \int_0^{\infty} f(t)e^{-st} dt\]
+
+其中 $s = \sigma + j\omega$ 为复变量。
+
+\subsection{基本函数的拉普拉斯变换}
+\begin{align}
+\laplace[\delta(t)] &= 1 \\
+\laplace[1(t)] &= \frac{1}{s} \\
+\laplace[t] &= \frac{1}{s^2} \\
+\laplace[e^{-at}] &= \frac{1}{s+a} \\
+\laplace[\sin(\omega t)] &= \frac{\omega}{s^2+\omega^2} \\
+\laplace[\cos(\omega t)] &= \frac{s}{s^2+\omega^2}
+\end{align}
+
+\subsection{拉普拉斯变换的性质}
+\begin{itemize}
+    \item \textbf{线性性质}：$\laplace[af_1(t) + bf_2(t)] = aF_1(s) + bF_2(s)$
+    \item \textbf{时移性质}：$\laplace[f(t-\tau)] = e^{-s\tau}F(s)$
+    \item \textbf{频移性质}：$\laplace[e^{-at}f(t)] = F(s+a)$
+    \item \textbf{微分性质}：$\laplace[f'(t)] = sF(s) - f(0^-)$
+    \item \textbf{积分性质}：$\laplace[\int_0^t f(\tau)d\tau] = \frac{F(s)}{s}$
+    \item \textbf{初值定理}：$f(0^+) = \lim_{s \to \infty} sF(s)$
+    \item \textbf{终值定理}：$f(\infty) = \lim_{s \to 0} sF(s)$（当极限存在时）
+\end{itemize}

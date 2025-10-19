@@ -1,0 +1,22 @@
+\section{极点配置——状态反馈}
+
+\subsection{状态反馈}
+状态反馈控制律：
+\[u = -Kx + v\]
+
+其中 $K$ 为反馈增益矩阵，$v$ 为参考输入。
+
+闭环系统：
+\[\dot{x} = (A - BK)x + Bv\]
+
+\subsection{极点配置定理}
+对于单输入系统，若 $(A, B)$ 完全能控，则对于任意给定的 $n$ 个复数 $\lambda_1, \lambda_2, \ldots, \lambda_n$（复数成对共轭出现），存在反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值恰好为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
+
+\subsection{极点配置的方法}
+\begin{enumerate}
+    \item \textbf{直接方法}：解特征方程 $\det(sI - A + BK) = 0$
+    \item \textbf{变换方法}：将系统化为能控标准型后配置极点
+    \item \textbf{阿克曼公式}：$K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)$
+\end{enumerate}
+
+其中 $\alpha_c(s)$ 为期望的特征多项式，$W_c$ 为能控性矩阵。

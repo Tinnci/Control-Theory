@@ -1,0 +1,69 @@
+\section{根轨迹基本概念及其绘制（180°）}
+
+\subsection{根轨迹的定义}
+当系统中某一参数从零变化到无穷大时，闭环系统特征方程的根在 $s$ 平面上的运动轨迹称为根轨迹。
+
+\subsection{根轨迹方程}
+闭环特征方程：$1 + KG(s)H(s) = 0$
+
+根轨迹方程的两个条件：
+\begin{itemize}
+    \item \textbf{幅值条件}：$|G(s)H(s)| = \frac{1}{K}$
+    \item \textbf{相角条件}：$\angle G(s)H(s) = \pm 180°(2k+1)$，$k = 0, 1, 2, \cdots$
+\end{itemize}
+
+\subsection{绘制根轨迹的基本法则}
+\begin{enumerate}
+    \item 根轨迹的分支数等于开环极点数 $n$ 和开环零点数 $m$ 中的较大者
+    \item 根轨迹起始于开环极点，终止于开环零点（有限零点或无限远零点）
+    \item 根轨迹关于实轴对称
+    \item 实轴上的根轨迹：实轴上某点右侧开环实零点和实极点总数为奇数
+    \item 根轨迹的渐近线：
+    \begin{align}
+    \sigma_a &= \frac{\sum_{i=1}^n p_i - \sum_{j=1}^m z_j}{n-m} \\
+    \phi_a &= \frac{(2k+1)180°}{n-m}, \quad k = 0, 1, \cdots, n-m-1
+    \end{align}
+    \item 分离点的计算：$\frac{d}{ds}[G(s)H(s)] = 0$
+    \item 与虚轴的交点：利用劳斯判据
+\end{enumerate}
+
+\subsection{使用 LaTeX 绘制根轨迹}
+使用 \texttt{rootlocus} 包绘制根轨迹：
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm,height=8cm,
+    xlabel={实部 $\sigma$},
+    ylabel={虚部 $j\omega$},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={根轨迹图（$K$ 从 0 到 $\infty$）},
+    xmin=-4, xmax=1,
+    ymin=-3, ymax=3
+]
+
+% 极点位置
+\addplot[mark=x, mark size=6pt, mark options={red,thick}, only marks] 
+    coordinates {(-1,0) (-3,0)};
+
+% 根轨迹 - 实轴上的部分
+\addplot[blue, thick, domain=-3:-1] {0};
+
+% 根轨迹 - 圆形部分
+\addplot[blue, thick, domain=-180:180, samples=100] 
+    ({-2 + cos(x)}, {sin(x)});
+
+% 渐近线
+\addplot[dashed, gray] coordinates {(-2,-3) (-2,3)};
+
+% 标注
+\node at (axis cs:-1,-0.3) {$p_1=-1$};
+\node at (axis cs:-3,-0.3) {$p_2=-3$};
+\node at (axis cs:-2,2.5) {渐近线};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{示例说明}：上图显示了传递函数 $G(s) = \frac{K}{s(s+1)(s+3)}$ 的根轨迹。

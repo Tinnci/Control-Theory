@@ -28,8 +28,9 @@
     xtick={-1,0,1},
     ytick={-2,-1,0,1},
 ]
-% Nyquist plot for 1/s
-\addplot[blue, thick, ->] coordinates {(0, -0.1) (0, -2)};
+% Nyquist plot for 1/s: G(jω) = -j/ω
+\addplot[blue, thick, domain=0.1:20, samples=200, ->] 
+    ({0}, {-1/x});
 \node at (axis cs:0.5, -1) {$\omega: 0^+ \to +\infty$};
 \end{axis}
 \end{tikzpicture}
@@ -47,17 +48,17 @@
     ylabel={虚部 Im},
     grid=both,
     unit vector ratio=1 1 1,
-    title={惯性环节奈奎斯特图},
+    title={惯性环节奈奎斯特图 ($T=1$)},
     xmin=-0.2, xmax=1.2,
-    ymin=-0.7, ymax=0.7,
+    ymin=-0.7, ymax=0.2,
     axis lines=middle,
 ]
-% Nyquist plot for 1/(Ts+1)
-\addplot[blue, thick, domain=0:10, samples=100, ->] 
+% Nyquist plot for 1/(1+jωT): Re = 1/(1+ω²T²), Im = -ωT/(1+ω²T²)
+\addplot[blue, thick, domain=0:15, samples=200, ->] 
     ({1/(1+x^2)}, {-x/(1+x^2)});
 \node at (axis cs:0.5, -0.4) {$\omega: 0 \to \infty$};
-\node at (axis cs:1, 0.1) {$\omega=0$};
-\node at (axis cs:0, 0.1) {$\omega=\infty$};
+\node at (axis cs:1, 0.1) {$(1,0)$};
+\node at (axis cs:0.05, 0.1) {$(0,0)$};
 \end{axis}
 \end{tikzpicture}
 \end{center}
@@ -76,12 +77,124 @@
     unit vector ratio=1 1 1,
     title={微分环节奈奎斯特图},
     xmin=-1.5, xmax=1.5,
-    ymin=-1, ymax=2,
+    ymin=-0.5, ymax=2.5,
     axis lines=middle,
 ]
-% Nyquist plot for s
-\addplot[blue, thick, ->] coordinates {(0, 0) (0, 2)};
+% Nyquist plot for jω
+\addplot[blue, thick, domain=0:20, samples=200, ->] 
+    ({0}, {x});
 \node at (axis cs:0.5, 1) {$\omega: 0 \to +\infty$};
 \end{axis}
 \end{tikzpicture}
 \end{center}
+
+\subsubsection{比例环节}
+比例环节的传递函数为 $G(s) = K$（$K > 0$），其频率特性为 $G(\jw) = K$。
+奈奎斯特图是实轴上从原点到 $K$ 的一个点。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=8cm, height=6cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    unit vector ratio=1 1 1,
+    title={比例环节奈奎斯特图 ($K=2$)},
+    xmin=-0.5, xmax=2.5,
+    ymin=-1, ymax=1,
+    axis lines=middle,
+]
+\addplot[blue, thick, only marks, mark=*] coordinates {(2, 0)};
+\node at (axis cs:2, 0.3) {$(K, 0)$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{二阶振荡环节}
+二阶振荡环节的传递函数为 $G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$，其频率特性为：
+$$G(\jw) = \frac{\omega_n^2}{\omega_n^2 - \omega^2 + 2\jw\zeta\omega_n\omega}$$
+
+奈奎斯特图为一条圆弧或更复杂的曲线，形状随阻尼比 $\zeta$ 变化。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm, height=8cm,
+    xlabel={实部 Re},
+    ylabel={虚部 Im},
+    grid=both,
+    title={二阶振荡环节奈奎斯特图 ($\omega_n=10$ rad/s)},
+    xmin=-0.5, xmax=1.5,
+    ymin=-1.5, ymax=1.5,
+    axis lines=middle,
+]
+% ζ = 0.1 (欠阻尼，有谐振)
+\addplot[blue, thick, domain=0:25, samples=300] 
+    ({(100-x^2)/((100-x^2)^2 + (2*0.1*10*x)^2)}, 
+     {-(2*0.1*10*x)/((100-x^2)^2 + (2*0.1*10*x)^2)});
+\addlegendentry{$\zeta=0.1$}
+
+% ζ = 0.5 (欠阻尼)
+\addplot[red, thick, domain=0:25, samples=300] 
+    ({(100-x^2)/((100-x^2)^2 + (2*0.5*10*x)^2)}, 
+     {-(2*0.5*10*x)/((100-x^2)^2 + (2*0.5*10*x)^2)});
+\addlegendentry{$\zeta=0.5$}
+
+% ζ = 1.0 (临界阻尼)
+\addplot[green!60!black, thick, domain=0:25, samples=300] 
+    ({(100-x^2)/((100-x^2)^2 + (2*1.0*10*x)^2)}, 
+     {-(2*1.0*10*x)/((100-x^2)^2 + (2*1.0*10*x)^2)});
+\addlegendentry{$\zeta=1.0$}
+
+\node at (axis cs:1, 0.1) {$\omega=0$};
+\node at (axis cs:-0.2, -1.2) {$\omega=\omega_n$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsection{奈奎斯特稳定性判据}
+
+\subsubsection{基本概念}
+对于开环传递函数 $G(s)H(s)$，其中 $H(s)$ 通常为反馈传感器传递函数：
+\begin{itemize}
+    \item \textbf{临界点}：奈奎斯特图中的点 $(-1, 0)$
+    \item \textbf{包围}：奈奎斯特曲线绕临界点的圈数
+\end{itemize}
+
+\subsubsection{奈奎斯特稳定性判据}
+对于闭环系统，设开环传递函数为 $G(s)H(s)$，其：
+\begin{itemize}
+    \item 右半平面极点数为 $P$
+    \item 奈奎斯特曲线逆时针绕 $(-1, 0)$ 点的圈数为 $N$
+\end{itemize}
+
+则闭环系统右半平面极点数为：
+$$Z = P + N$$
+
+\textbf{稳定条件}：系统稳定 $\Leftrightarrow$ $Z = 0$，即 $N = -P$
+
+特别地，当开环系统稳定（$P = 0$）时：
+\begin{itemize}
+    \item 稳定条件：$N = 0$，即奈奎斯特曲线不包围 $(-1, 0)$ 点
+    \item 边界稳定：曲线经过 $(-1, 0)$ 点
+    \item 不稳定：曲线包围 $(-1, 0)$ 点
+\end{itemize}
+
+\subsubsection{稳定裕度}
+
+\textbf{增益裕度（Gain Margin, GM）}
+从 $(-1, 0)$ 点到奈奎斯特曲线与负实轴的交点距离的倒数。
+若交点坐标为 $(-a, 0)$，则 $\text{GM} = \frac{1}{a}$ 或 $\text{GM}(\text{dB}) = 20\lg\frac{1}{a}$
+
+\textbf{相位裕度（Phase Margin, PM）}
+奈奎斯特曲线与单位圆的交点对应的相位角与 $-180°$ 的夹角。
+
+\subsubsection{绘制方法}
+\begin{enumerate}
+    \item 建立 $G(\jw)$ 的实部和虚部表达式
+    \item 选择足够多的频率点 $\omega$（从 $0$ 到 $+\infty$）
+    \item 计算每个频率点对应的 $\text{Re}[G(\jw)]$ 和 $\text{Im}[G(\jw)]$
+    \item 在复平面上绘制这些点形成的轨迹
+    \item 检查轨迹是否包围 $(-1, 0)$ 点
+\end{enumerate}

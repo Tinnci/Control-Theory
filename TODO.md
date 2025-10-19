@@ -53,5 +53,5 @@ The entire document, including all sections from both "Classical Control Theory"
 ## 6. TODO
 
 - [x] **Continue Migration:** Migrate the remaining sections of "Modern Control Theory" from `control_theory_notes.original.tex` into the `modern/` directory, following the one-section-at-a-time methodology.
-- [ ] **Git Commit:** Commit the new file structure to your git repository to save the stable state.
+- [X] **Git Commit:** Commit the new file structure to your git repository to save the stable state.
 - [ ] **(Optional) Re-evaluate `bodeplot`:** If the features of the `bodeplot` package are desired, it can be re-introduced. If conflicts reappear, the solution would be to use the commands provided by `bodeplot` to generate the plots, rather than drawing them manually with `tikz`.

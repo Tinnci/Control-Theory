@@ -1,77 +1,434 @@
 \section{伯德图绘制}
 
 \subsection{伯德图的定义}
-伯德图由两个图组成：
+伯德图（Bode Plot）是由亨德里克·韦德·伯德（Hendrik Wade Bode）提出的频率响应图示方法，由两个图组成：
+
 \begin{itemize}
-    \item 幅频特性图：$L(\omega) = 20\lg|G(\jw)|$ dB vs $\lg\omega$
-    \item 相频特性图：$\phi(\omega)$ vs $\lg\omega$
+    \item \textbf{幅频特性图（Magnitude Plot）}：$L(\omega) = 20\lg|G(\jw)|$ dB vs $\lg\omega$
+    \begin{itemize}
+        \item 纵轴：对数幅值（dB）
+        \item 横轴：对数频率（$\lg\omega$）
+    \end{itemize}
+    \item \textbf{相频特性图（Phase Plot）}：$\phi(\omega) = \angle G(\jw)$ vs $\lg\omega$
+    \begin{itemize}
+        \item 纵轴：相位角（度或弧度）
+        \item 横轴：对数频率（$\lg\omega$）
+    \end{itemize}
 \end{itemize}
 
-\subsection{典型环节的伯德图}
+\textbf{伯德图的优点：}
 \begin{enumerate}
-    \item \textbf{比例环节} $K$：
+    \item 频率范围广，可表示从极低频到极高频的特性
+    \item 不同环节的伯德图可以直接相加（叠加原理）
+    \item 可用渐近线逼近，绘制简便
+    \item 便于分析系统的稳定性和性能指标
+\end{enumerate}
+
+\subsection{典型环节的伯德图}
+
+\subsubsection{1. 比例环节 \texorpdfstring{$K$}{K}}
+传递函数：$G(s) = K$
+
+频率响应：$G(\jw) = K$
+
+\textbf{幅频特性：}
+\begin{align*}
+L(\omega) &= 20\lg K \text{ dB（水平线）}
+\end{align*}
+
+\textbf{相频特性：}
+\begin{align*}
+\phi(\omega) &= \begin{cases}
+0° & K > 0 \\
+180° & K < 0
+\end{cases}
+\end{align*}
+
+\subsubsection{2. 积分环节 $\frac{1}{s}$}
+传递函数：$G(s) = \frac{1}{s}$
+
+频率响应：$G(\jw) = \frac{1}{\jw}$
+
+\textbf{幅频特性：}
+\begin{align*}
+L(\omega) &= 20\lg\frac{1}{\omega} = -20\lg\omega \text{ dB}
+\end{align*}
+\begin{itemize}
+    \item 斜率：$-20$ dB/十倍频（decade）
+    \item 当 $\omega = 1$ rad/s 时，$L(\omega) = 0$ dB
+    \item 当 $\omega$ 增大10倍时，$L(\omega)$ 下降20 dB
+\end{itemize}
+
+\textbf{相频特性：}
+\begin{align*}
+\phi(\omega) &= -90°\text{（恒定）}
+\end{align*}
+
+\subsubsection{3. 微分环节 $s$}
+与积分环节对称：
+\begin{itemize}
+    \item $L(\omega) = 20\lg\omega$ dB（斜率 $+20$ dB/十倍频）
+    \item $\phi(\omega) = 90°$
+\end{itemize}
+
+\subsubsection{4. 惯性环节 \texorpdfstring{$\frac{1}{1+Ts}$}{1/(1+Ts)}}
+传递函数：$G(s) = \frac{1}{1+Ts}$
+
+频率响应：$G(\jw) = \frac{1}{1+\jw T}$
+
+\textbf{转折频率（Corner Frequency）：}$\omega_c = \frac{1}{T}$ rad/s
+
+\textbf{幅频特性：}
+\begin{align*}
+L(\omega) &= 20\lg|G(\jw)| = -20\lg\sqrt{1 + \omega^2T^2}
+\end{align*}
+
+渐近线：
+\begin{itemize}
+    \item 当 $\omega \ll \omega_c$：$L(\omega) \approx 0$ dB
+    \item 当 $\omega \gg \omega_c$：$L(\omega) \approx -20\lg(\omega T)$ dB（斜率 $-20$ dB/十倍频）
+    \item 转折点 $\omega = \omega_c$：精确值 $L(\omega_c) = -3$ dB
+\end{itemize}
+
+\textbf{相频特性：}
+\begin{align*}
+\phi(\omega) &= -\arctan(\omega T)
+\end{align*}
+\begin{itemize}
+    \item $\omega = 0.1\omega_c$：$\phi \approx -6°$
+    \item $\omega = \omega_c$：$\phi = -45°$
+    \item $\omega = 10\omega_c$：$\phi \approx -84°$
+    \item $\omega \to \infty$：$\phi \to -90°$
+\end{itemize}
+
+\textbf{示例伯德图：}$G(s) = \frac{1}{1+0.1s}$ ($\omega_c = 10$ rad/s)
+\begin{center}
+% Bode plot for G(s) = 1/(1+0.1 s), corner freq ω_c = 10 rad/s
+\BodeTF{num/{1},den/{0.1,1}}{0.1}{1000}
+\end{center}
+
+\subsubsection{5. 一阶微分环节 $1+Ts$}
+与惯性环节对称：
+\begin{itemize}
+    \item 幅频特性：低频0 dB，高频斜率 $+20$ dB/十倍频
+    \item 相频特性：$\phi(\omega) = \arctan(\omega T)$，$\phi(\omega_c) = 45°$
+\end{itemize}
+
+\subsubsection{6. 振荡环节 $\frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$}
+传递函数标准形式：
+\begin{align*}
+G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}
+\end{align*}
+
+其中：
+\begin{itemize}
+    \item $\omega_n$：无阻尼自然频率
+    \item $\zeta$：阻尼比（$0 < \zeta < 1$）
+\end{itemize}
+
+频率响应：
+\begin{align*}
+G(\jw) = \frac{\omega_n^2}{\omega_n^2 - \omega^2 + 2\jw\zeta\omega_n}
+\end{align*}
+
+\textbf{幅频特性：}
+\begin{align*}
+L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omega_n\omega)^2}}
+\end{align*}
+
+渐近线：
+\begin{itemize}
+    \item 当 $\omega \ll \omega_n$：$L(\omega) \approx 0$ dB
+    \item 当 $\omega \gg \omega_n$：$L(\omega) \approx -40\lg(\omega/\omega_n)$ dB（斜率 $-40$ dB/十倍频）
+    \item 转折频率：$\omega_c = \omega_n$
+\end{itemize}
+
+\textbf{谐振峰值（仅当 $\zeta < 0.707$ 时）：}
+\begin{itemize}
+    \item 谐振频率：$\omega_r = \omega_n\sqrt{1-2\zeta^2}$
+    \item 谐振峰值：$M_r = \frac{1}{2\zeta\sqrt{1-\zeta^2}}$
+    \item 当 $\zeta$ 很小时，谐振峰值很大
+\end{itemize}
+
+\textbf{转折频率处的精确值：}
+\begin{itemize}
+    \item $L(\omega_n) = -20\lg(2\zeta)$ dB
+    \item 当 $\zeta = 0.707$ 时，$L(\omega_n) = -3$ dB（无谐振）
+    \item 当 $\zeta < 0.707$ 时，$L(\omega_n) > -3$ dB（有谐振）
+    \item 当 $\zeta > 0.707$ 时，$L(\omega_n) < -3$ dB（过阻尼）
+\end{itemize}
+
+\textbf{相频特性：}
+\begin{align*}
+\phi(\omega) &= -\arctan\frac{2\zeta\omega_n\omega}{\omega_n^2-\omega^2}
+\end{align*}
+\begin{itemize}
+    \item $\omega = \omega_n$：$\phi = -90°$（与 $\zeta$ 无关）
+    \item $\omega \to 0$：$\phi \to 0°$
+    \item $\omega \to \infty$：$\phi \to -180°$
+    \item $\zeta$ 越小，相位变化越快
+\end{itemize}
+
+\textbf{不同阻尼比的伯德图对比：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=1 by 2, vertical sep=0.5cm},
+    width=12cm, height=4cm,
+    xmode=log,
+    grid=both,
+    xlabel={频率 $\omega$ (rad/s)},
+    xmin=0.1, xmax=1000
+]
+\nextgroupplot[ylabel={幅度 (dB)}, legend pos=south west]
+\addplot[blue, thick, samples=200, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.1*10*x)^2))};
+\addlegendentry{$\zeta=0.1$}
+\addplot[red, thick, samples=200, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.5*10*x)^2))};
+\addlegendentry{$\zeta=0.5$}
+\addplot[green!60!black, thick, samples=200, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*1.0*10*x)^2))};
+\addlegendentry{$\zeta=1.0$}
+
+\nextgroupplot[ylabel={相位 (度)}, legend pos=south west]
+\addplot[blue, thick, samples=200, domain=0.1:1000] {deg(-atan2(2*0.1*10*x, 100-x^2))};
+\addlegendentry{$\zeta=0.1$}
+\addplot[red, thick, samples=200, domain=0.1:1000] {deg(-atan2(2*0.5*10*x, 100-x^2))};
+\addlegendentry{$\zeta=0.5$}
+\addplot[green!60!black, thick, samples=200, domain=0.1:1000] {deg(-atan2(2*1.0*10*x, 100-x^2))};
+\addlegendentry{$\zeta=1.0$}
+\end{groupplot}
+\end{tikzpicture}
+\end{center}
+
+图中所有曲线对应 $\omega_n = 10$ rad/s，不同阻尼比 $\zeta$。
+
+\subsection{伯德图的绘制方法}
+
+\subsubsection{基本步骤}
+\begin{enumerate}
+    \item \textbf{将传递函数化为标准形式}
+    \begin{align*}
+    G(s) = \frac{K\prod(1+T_i s)\prod(\frac{s^2}{\omega_{ni}^2}+\frac{2\zeta_i}{\omega_{ni}}s+1)}{s^v\prod(1+T_j s)\prod(\frac{s^2}{\omega_{nj}^2}+\frac{2\zeta_j}{\omega_{nj}}s+1)}
+    \end{align*}
+    
+    \item \textbf{识别各个典型环节}
     \begin{itemize}
-        \item $L(\omega) = 20\lg K$ dB（水平线）
-        \item $\phi(\omega) = 0°$
+        \item 比例环节 $K$
+        \item 积分/微分环节 $s^{\pm v}$
+        \item 一阶环节 $(1+Ts)^{\pm 1}$
+        \item 二阶环节 $(\frac{s^2}{\omega_n^2}+\frac{2\zeta s}{\omega_n}+1)^{\pm 1}$
     \end{itemize}
     
-    \item \textbf{积分环节} $\frac{1}{s}$：
+    \item \textbf{确定转折频率}
     \begin{itemize}
-        \item $L(\omega) = -20\lg\omega$ dB（斜率-20dB/十倍频）
-        \item $\phi(\omega) = -90°$
+        \item 一阶环节：$\omega_c = \frac{1}{T}$
+        \item 二阶环节：$\omega_c = \omega_n$
+        \item 按从小到大排列所有转折频率
     \end{itemize}
     
-    \item \textbf{一阶惯性环节} $\frac{1}{1+Ts}$：
+    \item \textbf{绘制低频渐近线}
     \begin{itemize}
-        \item 转折频率：$\omega_c = \frac{1}{T}$
-        \item $\omega < \omega_c$：$L(\omega) \approx 0$ dB
-        \item $\omega > \omega_c$：$L(\omega) \approx -20\lg(\omega T)$ dB
-        \item $\phi(\omega_c) = -45°$
+        \item 起始点：选择 $\omega = 1$ rad/s 或最小转折频率的 $\frac{1}{10}$
+        \item 起始斜率：由积分环节数 $v$ 决定（$-20v$ dB/十倍频）
+        \item 起始幅值：$L(\omega_0) = 20\lg K - 20v\lg\omega_0$
+    \end{itemize}
+    
+    \item \textbf{绘制各段渐近线}
+    \begin{itemize}
+        \item 每经过一个转折频率，斜率改变
+        \item 零点（分子）：斜率增加
+        \begin{itemize}
+            \item 一阶零点：$+20$ dB/十倍频
+            \item 二阶零点：$+40$ dB/十倍频
+        \end{itemize}
+        \item 极点（分母）：斜率减少
+        \begin{itemize}
+            \item 一阶极点：$-20$ dB/十倍频
+            \item 二阶极点：$-40$ dB/十倍频
+        \end{itemize}
+    \end{itemize}
+    
+    \item \textbf{修正转折频率附近的误差}
+    \begin{itemize}
+        \item 一阶环节在 $\omega = \omega_c$ 处：$-3$ dB（极点）或 $+3$ dB（零点）
+        \item 二阶环节：根据阻尼比 $\zeta$ 修正
+    \end{itemize}
+    
+    \item \textbf{绘制相频特性}
+    \begin{itemize}
+        \item 每个环节的相位直接相加
+        \item 注意各环节的相位贡献
     \end{itemize}
 \end{enumerate}
 
-\subsection{使用 LaTeX 绘制伯德图}
-使用 \texttt{bodeplot} 包可以方便地绘制伯德图：
+\subsubsection{转折频率处的修正值}
 
-\subsubsection{通过零极点增益形式绘制}
+\textbf{一阶环节 $\frac{1}{1+Ts}$ 的修正：}
+
 \begin{center}
-\begin{tikzpicture}
-% 示例：G(s) = 10/((s+1)(s+10))
-\begin{semilogxaxis}[
-    width=10cm,height=6cm,
-    xlabel={频率 $\omega$ (rad/s)},
-    ylabel={幅度 (dB)},
-    grid=both,
-    title={幅频特性曲线}
-]
-\addplot+[blue,thick] coordinates {
-    (1e-2, 40)
-    (1e-1, 20)
-    (1, 0)
-    (10, -20)
-    (1e2, -40)
-};
-\end{semilogxaxis}
-\end{tikzpicture}
+\begin{tabular}{c|c|c}
+\hline
+频率 & 渐近线误差 & 精确值修正 \\
+\hline
+$0.5\omega_c$ & $0$ dB & $-1$ dB \\
+$\omega_c$ & $0$ dB & $-3$ dB \\
+$2\omega_c$ & $0$ dB & $-1$ dB \\
+\hline
+\end{tabular}
 \end{center}
 
-\subsubsection{相频特性绘制}
+\textbf{二阶环节的修正：}
+
+取决于阻尼比 $\zeta$，在 $\omega = \omega_n$ 处：
+\begin{itemize}
+    \item $\zeta = 0.1$：谐振峰值约 $+14$ dB
+    \item $\zeta = 0.2$：谐振峰值约 $+7$ dB
+    \item $\zeta = 0.3$：谐振峰值约 $+3$ dB
+    \item $\zeta = 0.5$：误差约 $-1$ dB
+    \item $\zeta = 0.707$：误差 $-3$ dB（临界阻尼）
+    \item $\zeta = 1.0$：误差 $-6$ dB（过阻尼）
+\end{itemize}
+
+\subsubsection{绘图示例}
+
+\textbf{例1：}绘制 $G(s) = \frac{10}{s(1+0.1s)}$ 的伯德图
+
+\textbf{解：}
+\begin{enumerate}
+    \item 标准形式：$G(s) = \frac{10}{s(1+0.1s)}$，$K = 10$
+    \item 环节识别：
+    \begin{itemize}
+        \item 积分环节：$\frac{1}{s}$（$v=1$）
+        \item 惯性环节：$\frac{1}{1+0.1s}$，$T=0.1$
+    \end{itemize}
+    \item 转折频率：$\omega_c = \frac{1}{T} = 10$ rad/s
+    \item 绘制幅频特性：
+    \begin{itemize}
+        \item 选 $\omega = 1$ rad/s 为起点
+        \item $L(1) = 20\lg 10 - 20\lg 1 = 20$ dB
+        \item $\omega < 10$：斜率 $-20$ dB/十倍频
+        \item $\omega > 10$：斜率 $-20-20 = -40$ dB/十倍频
+        \item 在 $\omega = 10$ 处修正 $-3$ dB
+    \end{itemize}
+    \item 绘制相频特性：
+    \begin{itemize}
+        \item 积分环节贡献：$-90°$
+        \item 惯性环节贡献：$-\arctan(0.1\omega)$
+        \item 总相位：$\phi(\omega) = -90° - \arctan(0.1\omega)$
+        \item $\omega = 10$：$\phi = -90° - 45° = -135°$
+    \end{itemize}
+\end{enumerate}
+
+\textbf{伯德图：}
 \begin{center}
-\begin{tikzpicture}
-\begin{semilogxaxis}[
-    width=10cm,height=5cm,
-    xlabel={频率 $\omega$ (rad/s)},
-    ylabel={相位 (度)},
-    grid=both,
-    title={相频特性曲线}
-]
-\addplot+[red,thick] coordinates {
-    (1e-2, 0)
-    (1e-1, -45)
-    (1, -90)
-    (10, -135)
-    (1e2, -180)
-};
-\end{semilogxaxis}
-\end{tikzpicture}
+% G(s) = 10/(s(1+0.1s)) -> num=10, den=0.1 s^2 + 1 s + 0
+\BodeTF{num/{10},den/{0.1,1,0}}{0.1}{1000}
 \end{center}
+
+\textbf{例2：}绘制 $G(s) = \frac{100(s+1)}{s(s+10)}$ 的伯德图
+
+\textbf{解：}
+\begin{enumerate}
+    \item 标准形式：$G(s) = \frac{10(1+s)}{s(1+0.1s)}$，$K = 10$
+    \item 环节识别：
+    \begin{itemize}
+        \item 积分环节：$\frac{1}{s}$
+        \item 一阶零点：$(1+s)$，$\omega_{c1} = 1$ rad/s
+        \item 一阶极点：$\frac{1}{1+0.1s}$，$\omega_{c2} = 10$ rad/s
+    \end{itemize}
+    \item 转折频率：$\omega_{c1} = 1$ rad/s，$\omega_{c2} = 10$ rad/s
+    \item 绘制幅频特性：
+    \begin{itemize}
+        \item 低频段（$\omega < 1$）：斜率 $-20$ dB/十倍频
+        \item 中频段（$1 < \omega < 10$）：斜率 $-20+20 = 0$ dB/十倍频
+        \item 高频段（$\omega > 10$）：斜率 $0-20 = -20$ dB/十倍频
+    \end{itemize}
+    \item 相位特性：
+    \begin{itemize}
+        \item $\phi(\omega) = -90° + \arctan(\omega) - \arctan(0.1\omega)$
+    \end{itemize}
+\end{enumerate}
+
+\textbf{伯德图：}
+\begin{center}
+% G(s) = 100(s+1)/(s(s+10)) -> num=100 s + 100, den = s^2 + 10 s + 0
+\BodeTF{num/{100,100},den/{1,10,0}}{0.1}{1000}
+\end{center}
+
+\textbf{例3：}二阶系统 $G(s) = \frac{100}{s^2 + 2s + 100}$
+
+\textbf{解：}
+\begin{enumerate}
+    \item 标准形式：$G(s) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$
+    \item 参数识别：
+    \begin{itemize}
+        \item $\omega_n^2 = 100 \Rightarrow \omega_n = 10$ rad/s
+        \item $2\zeta\omega_n = 2 \Rightarrow \zeta = 0.1$
+        \item 复数极点：$s = -1 \pm j\sqrt{99} \approx -1 \pm 9.95j$
+    \end{itemize}
+    \item 特性分析：
+    \begin{itemize}
+        \item 转折频率：$\omega_c = \omega_n = 10$ rad/s
+        \item 由于 $\zeta = 0.1 < 0.707$，有谐振峰值
+        \item 谐振频率：$\omega_r = \omega_n\sqrt{1-2\zeta^2} \approx 9.9$ rad/s
+        \item 谐振峰值：$M_r = \frac{1}{2\zeta\sqrt{1-\zeta^2}} \approx 5.03$（约14 dB）
+    \end{itemize}
+\end{enumerate}
+
+\textbf{伯德图：}（使用传递函数系数形式）
+\begin{center}
+\BodeTF{num/{100},den/{1,2,100}}{0.1}{1000}
+\end{center}
+
+\subsection{伯德图的应用}
+
+\subsubsection{由伯德图确定传递函数}
+根据伯德图的幅频特性，可以反推传递函数：
+\begin{enumerate}
+    \item 从低频渐近线斜率确定积分环节数 $v$
+    \item 从转折频率确定各环节的时间常数
+    \item 从低频幅值确定增益 $K$
+    \item 从斜率变化确定零极点类型
+\end{enumerate}
+
+\subsubsection{稳定性分析}
+\textbf{增益裕度（Gain Margin，GM）：}
+\begin{align*}
+\text{GM} = -L(\omega_g) \text{ dB}
+\end{align*}
+其中 $\omega_g$ 为相位穿越频率（$\phi(\omega_g) = -180°$）
+
+\textbf{相位裕度（Phase Margin，PM）：}
+\begin{align*}
+\text{PM} = 180° + \phi(\omega_c)
+\end{align*}
+其中 $\omega_c$ 为幅值穿越频率（$L(\omega_c) = 0$ dB）
+
+\textbf{稳定性判据：}
+\begin{itemize}
+    \item 稳定条件：GM $> 0$ dB 且 PM $> 0°$
+    \item 一般要求：GM $\geq 6$ dB，PM $\geq 30°$
+    \item 良好性能：GM $\geq 10$ dB，PM $\geq 45°$
+\end{itemize}
+
+\subsubsection{性能指标估算}
+\begin{itemize}
+    \item \textbf{带宽频率} $\omega_b$：$L(\omega_b) = -3$ dB 对应的频率
+    \begin{itemize}
+        \item 带宽越大，系统响应越快
+    \end{itemize}
+    \item \textbf{谐振峰值} $M_r$：幅频特性的最大值
+    \begin{itemize}
+        \item $M_r$ 越大，超调量越大
+        \item 一般要求 $M_r < 1.3$（即 $< 2.3$ dB）
+    \end{itemize}
+    \item \textbf{低频增益}：反映稳态精度
+    \begin{itemize}
+        \item 型别越高，低频增益越大，稳态误差越小
+    \end{itemize}
+    \item \textbf{中频段斜率}：影响稳定性
+    \begin{itemize}
+        \item 斜率为 $-20$ dB/十倍频时系统一般稳定
+        \item 斜率为 $-40$ dB/十倍频时需检查相位裕度
+    \end{itemize}
+\end{itemize}

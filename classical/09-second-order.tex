@@ -29,3 +29,166 @@ t_p &= \frac{\pi}{\omega_n\sqrt{1-\zeta^2}} \\
 \sigma_{\%} &= e^{-\frac{\pi\zeta}{\sqrt{1-\zeta^2}}} \times 100\% \\
 t_s &= \frac{3}{\zeta\omega_n} \text{（2\%误差带）}
 \end{align}
+
+\subsection{欠阻尼二阶系统的 s 平面分析}
+
+\subsubsection{抽象参数表示}
+
+特征根为 $s_{1,2} = -\zeta\omega_n \pm j\omega_n\sqrt{1-\zeta^2}$，在 s 平面上的几何意义如下：
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=欠阻尼二阶系统的特征根分布,boxsep=3pt,left=3pt,right=3pt,top=3pt,bottom=3pt]
+
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.85\textwidth,
+    height=6cm,
+    xlabel={实部 $\sigma$},
+    ylabel={虚部 $j\omega$},
+    grid=both,
+    grid style={gray!30},
+    axis lines=middle,
+    xmin=-3, xmax=1,
+    ymin=-3.5, ymax=3.5,
+    xtick={-3,-2,-1,0},
+    ytick={-3,-2,-1,0,1,2,3},
+    ticklabel style={font=\small},
+    title={s 平面中的特征根},
+    font=\small,
+    legend pos=upper right,
+    legend style={fill=white, fill opacity=0.9, draw=none}
+]
+
+% 绘制圆（半径为 ω_n）
+\addplot[dashed, gray, thick, domain=0:360, samples=150] 
+    ({-1 + 2*cos(x)}, {2*sin(x)});
+
+% 特征根位置（示例：ζ=0.5, ω_n=2）
+\addplot[red, mark=*, mark size=7pt, only marks] 
+    coordinates {(-1, 1.732) (-1, -1.732)};
+
+% 从原点到特征根的连线（模为 ω_n）
+\addplot[black, thin, dashed] coordinates {(0, 0) (-1, 1.732)};
+\addplot[black, thin, dashed] coordinates {(0, 0) (-1, -1.732)};
+
+% 圆弧表示 ω_n（模）
+\addplot[black, thick, domain=0:60, samples=50] 
+    ({2*cos(x)}, {2*sin(x)});
+\addlegendentry{模 $|\omega_n|$}
+
+% 从虚轴垂直线到特征根
+\addplot[blue, thin, line width=1.5pt] coordinates {(-1, 0) (-1, 1.732)};
+\addplot[blue, thin, line width=1.5pt] coordinates {(-1, 0) (-1, -1.732)};
+\addlegendentry{实部 $-\zeta\omega_n$}
+
+% 虚部水平线
+\addplot[green!60!black, thin, line width=1.5pt] coordinates {(-1, 1.732) (-0.5, 1.732)};
+\addplot[green!60!black, thin, line width=1.5pt] coordinates {(-1, -1.732) (-0.5, -1.732)};
+\addlegendentry{虚部 $\pm\omega_d$}
+
+% 标注
+\node[blue, font=\small, below left] at (-1, 0) {$-\zeta\omega_n$};
+\node[green!60!black, font=\small, above right] at (-1, 1.732) {$j\omega_d$};
+\node[green!60!black, font=\small, below right] at (-1, -1.732) {$-j\omega_d$};
+\node[black, font=\small, right] at (-0.2, 0.3) {$\theta$};
+
+% 角度弧线
+\addplot[orange, thick, domain=0:60, samples=40] 
+    ({0.8*cos(x)}, {0.8*sin(x)});
+
+\end{axis}
+\end{tikzpicture}
+
+\vspace{0.3cm}
+
+\textbf{参数几何意义}：\quad
+{\large$\bullet$} \textbf{模} $|\omega_n|$ $\Rightarrow$ 原点到特征根距离 $\Rightarrow$ \textbf{自然频率大小}
+\quad {\large$\bullet$} \textbf{实部} $-\zeta\omega_n$ $\Rightarrow$ 衰减系数 $\Rightarrow$ \textbf{衰减快慢}
+\quad {\large$\bullet$} \textbf{虚部} $\pm\omega_d$ $\Rightarrow$ 震荡频率 $\Rightarrow$ \textbf{震荡速度}
+\quad {\large$\bullet$} \textbf{角度} $\theta$ $\Rightarrow$ $\cos\theta = \zeta$ $\Rightarrow$ \textbf{由阻尼比确定}
+
+\end{tcolorbox}
+
+\subsubsection{具体示例：$G(s) = \frac{25}{s^2 + 5s + 25}$}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=具体例：欠阻尼二阶系统 $G(s) = \dfrac{25}{s^2+5s+25}$,boxsep=3pt,left=3pt,right=3pt,top=3pt,bottom=3pt]
+
+\begin{minipage}[b]{0.58\textwidth}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\textwidth,
+    height=6cm,
+    xlabel={实部 $\sigma$ (rad/s)},
+    ylabel={虚部 $j\omega$ (rad/s)},
+    grid=both,
+    grid style={gray!30},
+    axis lines=middle,
+    xmin=-6, xmax=1,
+    ymin=-6, ymax=6,
+    xtick={-5,-2.5,0},
+    ytick={-5,-2.5,0,2.5,5},
+    ticklabel style={font=\small},
+    title={特征根分布},
+    font=\small
+]
+
+% 圆表示 ω_n=5
+\addplot[gray, dashed, thick, domain=0:360, samples=150] 
+    ({5*cos(x)}, {5*sin(x)});
+
+% 特征根
+\addplot[red, mark=*, mark size=7pt, only marks] 
+    coordinates {(-2.5, 4.33) (-2.5, -4.33)};
+
+% 连线
+\addplot[black, dashed, thin] coordinates {(0, 0) (-2.5, 4.33)};
+\addplot[black, dashed, thin] coordinates {(0, 0) (-2.5, -4.33)};
+
+% 实部线
+\addplot[blue, thin, line width=1.5pt] coordinates {(-2.5, 0) (-2.5, 4.33)};
+\addplot[blue, thin, line width=1.5pt] coordinates {(-2.5, 0) (-2.5, -4.33)};
+
+% 虚部线
+\addplot[green!60!black, thin, line width=1.5pt] coordinates {(-2.5, 4.33) (-1, 4.33)};
+\addplot[green!60!black, thin, line width=1.5pt] coordinates {(-2.5, -4.33) (-1, -4.33)};
+
+% 标注
+\node[blue, font=\small, below] at (-2.5, -0.7) {$-2.5$};
+\node[green!60!black, font=\small, above left] at (-2.5, 4.33) {$-2.5+j4.33$};
+\node[green!60!black, font=\small, below left] at (-2.5, -4.33) {$-2.5-j4.33$};
+
+% 角度
+\addplot[orange, thick, domain=0:60, samples=40] 
+    ({5*cos(x)}, {5*sin(x)});
+\node[orange, font=\small] at (1.5, 1.5) {$60°$};
+
+\end{axis}
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[b]{0.39\textwidth}
+\small
+
+\textbf{参数识别}：
+\begin{align*}
+\boldsymbol{\omega_n} &\mathbf{= 5 \text{ rad/s}} \quad (\text{自然频率}) \\
+\boldsymbol{\zeta} &\mathbf{= 0.5} \quad (\text{阻尼比}) \\
+\boldsymbol{\omega_d} &\mathbf{= 4.33 \text{ rad/s}} \quad (\text{震荡频率})
+\end{align*}
+
+\textbf{性能指标}：
+\begin{align*}
+\mathbf{t_p} &\mathbf{= 0.725 \text{ s}} \quad \text{(峰值时刻)} \\
+\mathbf{\sigma_\%} &\mathbf{= 16.3\%} \quad \text{(超调量)} \\
+\mathbf{t_s} &\mathbf{= 1.2 \text{ s}} \quad \text{(稳定时间)}
+\end{align*}
+
+\textbf{特征根位置}：
+$$\mathbf{s_{1,2} = -2.5 \pm j4.33}$$
+\vspace{0.2cm}
+
+{\small \textit{$-2.5$：衰减速率  \quad $4.33$：震荡速度}}
+
+\end{minipage}
+
+\end{tcolorbox}

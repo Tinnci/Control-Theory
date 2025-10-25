@@ -1,13 +1,87 @@
 \section{奈奎斯特图绘制}
 
-\subsection{奈奎斯特图的定义}
-奈奎斯特图是以 $G(\jw)$ 的实部为横坐标，虚部为纵坐标，$\omega$ 从 $-\infty$ 到 $+\infty$ 变化时 $G(\jw)$ 在复平面上的轨迹。
+\subsection{奈奎斯特图的基本概念}
+
+\subsubsection{什么是奈奎斯特图}
+奈奎斯特图（Nyquist Plot）是开环频率响应 $G(j\omega)$ 在复平面上的图形表示。
+
+\begin{itemize}
+    \item \textbf{定义}：以 $G(j\omega)$ 的实部为横坐标，虚部为纵坐标，当 $\omega$ 从 $-\infty$ 到 $+\infty$ 变化时 $G(j\omega)$ 在复平面上的轨迹
+    \item \textbf{向量形式}：$G(j\omega) = A(\omega)\angle\phi(\omega)$，其中 $A(\omega)$ 是幅值，$\phi(\omega)$ 是相角
+    \item \textbf{复数形式}：$G(j\omega) = P(\omega) + jQ(\omega)$，其中 $P(\omega)$ 是实部，$Q(\omega)$ 是虚部
+\end{itemize}
+
+\subsubsection{奈奎斯特图的对称性}
+\begin{itemize}
+    \item 当 $\omega$ 从 $0$ 变化到 $+\infty$ 时，得到的曲线为\textbf{实线部分}
+    \item 当 $\omega$ 从 $0$ 变化到 $-\infty$ 时，对应的轨迹与实线部分\textbf{关于实轴对称}
+    \item 通常只需绘制 $\omega: 0 \to +\infty$ 的部分，然后关于实轴做镜像
+\end{itemize}
+
+\subsection{奈奎斯特图的绘制步骤}
+
+\subsubsection{最小相位系统的绘制流程}
+
+最小相位系统是指开环传递函数在s平面右半部分没有零点和极点的系统。
+
+\textbf{通用绘制步骤：}
+\begin{enumerate}
+    \item 将 $G(s)$ 中的 $s$ 全部替换为 $j\omega$，得到 $G(j\omega)$
+    \item 写出幅值表达式 $A(\omega) = |G(j\omega)|$ 和相角表达式 $\phi(\omega) = \angle G(j\omega)$
+    \item 分析关键频率点：
+    \begin{itemize}
+        \item $\omega = 0$：起点幅值和相角
+        \item $\omega \to \infty$：终点幅值和相角
+    \end{itemize}
+    \item 计算坐标轴交点（可选但有助于精确绘图）：
+    \begin{itemize}
+        \item 令虚部 $\text{Im}[G(j\omega)] = 0$，求与实轴交点
+        \item 令实部 $\text{Re}[G(j\omega)] = 0$，求与虚轴交点
+        \item 或用相角法：$\phi(\omega) = k \cdot 90°$（$k$ 为整数）
+    \end{itemize}
+    \item 根据幅值和相角的变化趋势，绘制曲线
+    \item 对于I型及更高型系统，补全虚线部分（无穷大圆弧）
+    \item 最后做实轴对称，得到完整的奈奎斯特图
+\end{enumerate}
+
+\subsubsection{系统类型对起始点的影响}
+
+\begin{itemize}
+    \item \textbf{0型系统}：
+    \begin{itemize}
+        \item 起点：$(K, 0)$（正实轴）
+        \item 终点：原点 $(0, 0)$
+        \item 无渐近线
+    \end{itemize}
+    
+    \item \textbf{I型系统}：
+    \begin{itemize}
+        \item $\omega = 0$：幅值 $\infty$，相角 $0°$（仅看非积分项）
+        \item $\omega = 0^+$：幅值 $\infty$，相角 $-90°$
+        \item 有垂直的低频渐近线
+        \item 终点：原点 $(0, 0)$
+    \end{itemize}
+    
+    \item \textbf{II型系统}：
+    \begin{itemize}
+        \item 起点：负实轴无穷远处，相角 $-180°$
+        \item 终点：原点 $(0, 0)$
+        \item 有无穷大圆弧补全虚线部分
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{I型系统的渐近线计算}
+
+对于标准形式 $G(s) = K \frac{\prod(T_{zi}s+1)}{\prod(T_{pi}s+1) \cdot s}$，当 $\omega \to 0^+$ 时，对应的垂直渐近线为：
+$$x = K\left(\sum T_{zi} - \sum T_{pi}\right)$$
+
+其中：
+\begin{itemize}
+    \item $\sum T_{zi}$：分子所有一阶项的时间常数之和
+    \item $\sum T_{pi}$：分母所有一阶项的时间常数之和（不含积分项）
+\end{itemize}
 
 \subsection{典型环节的奈奎斯特图}
-\begin{itemize}
-    \item \textbf{比例环节}: $G(\jw) = K$。奈奎斯特图是实轴上的一个点 $(K, 0)$。
-    \item \textbf{二阶振荡环节}: 曲线形状取决于阻尼比 $\zeta$。
-\end{itemize}
 
 \subsubsection{积分环节}
 积分环节的传递函数为 $G(s) = \frac{1}{s}$，其频率特性为 $G(\jw) = \frac{1}{\jw} = -\frac{j}{\omega}$。
@@ -29,7 +103,7 @@
     ytick={-2,-1,0,1},
 ]
 % Nyquist plot for 1/s: G(jω) = -j/ω
-\addplot[blue, thick, domain=0.1:20, samples=200, ->] 
+\addplot[blue, thick, domain=0.1:20, samples=100, ->] 
     ({0}, {-1/x});
 \node at (axis cs:0.5, -1) {$\omega: 0^+ \to +\infty$};
 \end{axis}
@@ -54,7 +128,7 @@
     axis lines=middle,
 ]
 % Nyquist plot for 1/(1+jωT): Re = 1/(1+ω²T²), Im = -ωT/(1+ω²T²)
-\addplot[blue, thick, domain=0:15, samples=200, ->] 
+\addplot[blue, thick, domain=0:15, samples=100, ->] 
     ({1/(1+x^2)}, {-x/(1+x^2)});
 \node at (axis cs:0.5, -0.4) {$\omega: 0 \to \infty$};
 \node at (axis cs:1, 0.1) {$(1,0)$};
@@ -81,7 +155,7 @@
     axis lines=middle,
 ]
 % Nyquist plot for jω
-\addplot[blue, thick, domain=0:20, samples=200, ->] 
+\addplot[blue, thick, domain=0:20, samples=100, ->] 
     ({0}, {x});
 \node at (axis cs:0.5, 1) {$\omega: 0 \to +\infty$};
 \end{axis}
@@ -130,19 +204,19 @@ $$G(\jw) = \frac{\omega_n^2}{\omega_n^2 - \omega^2 + 2\jw\zeta\omega_n\omega}$$
     axis lines=middle,
 ]
 % ζ = 0.1 (欠阻尼，有谐振)
-\addplot[blue, thick, domain=0:25, samples=300] 
+\addplot[blue, thick, domain=0:25, samples=80] 
     ({(100-x^2)/((100-x^2)^2 + (2*0.1*10*x)^2)}, 
      {-(2*0.1*10*x)/((100-x^2)^2 + (2*0.1*10*x)^2)});
 \addlegendentry{$\zeta=0.1$}
 
 % ζ = 0.5 (欠阻尼)
-\addplot[red, thick, domain=0:25, samples=300] 
+\addplot[red, thick, domain=0:25, samples=80] 
     ({(100-x^2)/((100-x^2)^2 + (2*0.5*10*x)^2)}, 
      {-(2*0.5*10*x)/((100-x^2)^2 + (2*0.5*10*x)^2)});
 \addlegendentry{$\zeta=0.5$}
 
 % ζ = 1.0 (临界阻尼)
-\addplot[green!60!black, thick, domain=0:25, samples=300] 
+\addplot[green!60!black, thick, domain=0:25, samples=80] 
     ({(100-x^2)/((100-x^2)^2 + (2*1.0*10*x)^2)}, 
      {-(2*1.0*10*x)/((100-x^2)^2 + (2*1.0*10*x)^2)});
 \addlegendentry{$\zeta=1.0$}
@@ -152,6 +226,152 @@ $$G(\jw) = \frac{\omega_n^2}{\omega_n^2 - \omega^2 + 2\jw\zeta\omega_n\omega}$$
 \end{axis}
 \end{tikzpicture}
 \end{center}
+
+\subsection{0型系统的奈奎斯特图}
+
+\subsubsection{绘制流程}
+\begin{enumerate}
+    \item 将 $G(s)$ 中的 $s$ 换成 $j\omega$
+    \item 写出幅值 $A(\omega)$ 和相角 $\phi(\omega)$ 表达式
+    \item 分析起点（$\omega=0$）和终点（$\omega=\infty$）
+    \item 根据相角变化趋势绘制曲线
+\end{enumerate}
+
+\subsubsection{例题}
+
+\textbf{例：绘制 $G(s)H(s) = \frac{6}{s^2+3s+2}$ 的幅相特性曲线。}
+
+\textit{解：}
+\begin{enumerate}
+    \item \textbf{变换与分解}：
+    \[G(s)H(s) = \frac{6}{(s+1)(s+2)} \implies G(j\omega)H(j\omega) = \frac{6}{(1+j\omega)(2+j\omega)}\]
+    
+    \item \textbf{幅相表达式}：
+    \begin{align*}
+    A(\omega) &= \frac{6}{\sqrt{1+\omega^2}\sqrt{4+\omega^2}} \\
+    \phi(\omega) &= -\arctan(\omega) - \arctan(\frac{\omega}{2})
+    \end{align*}
+    
+    \item \textbf{起点/终点分析}：
+    \begin{align*}
+    \text{起点 } (\omega=0): \quad & A(0) = \frac{6}{1 \cdot 2} = 3, \quad \phi(0) = 0° \\
+    \text{终点 } (\omega=\infty): \quad & A(\infty) = 0, \quad \phi(\infty) = -90° - 90° = -180°
+    \end{align*}
+    
+    \item \textbf{趋势与绘制}：
+    \begin{itemize}
+        \item 起点为 $(3, 0)$，终点为原点 $(0, 0)$
+        \item 相角从 $0°$ 单调减小到 $-180°$
+        \item 曲线从起点出发，顺时针旋转，经第四象限，从负实轴方向趋近于原点
+    \end{itemize}
+\end{enumerate}
+
+\subsection{I型系统的奈奎斯特图}
+
+\subsubsection{绘制流程}
+\begin{enumerate}
+    \item 将 $G(s)$ 中的 $s$ 替换为 $j\omega$
+    \item 写出幅值 $A(\omega)$ 和相角 $\phi(\omega)$ 表达式
+    \item \textbf{【特殊】}分析 $\omega=0$ 和 $\omega=0^+$ 时的幅值和相角
+    \item \textbf{【特殊】}计算垂直渐近线（仅I型系统有）
+    \item 根据趋势绘制实线部分
+    \item 补全虚线部分（从 $\omega=0$ 的方向经过无穷大圆弧连到 $\omega=0^+$ 的方向）
+\end{enumerate}
+
+\subsubsection{例题}
+
+\textbf{例：绘制 $G(s)H(s) = \frac{250}{s(s+5)(s+15)}$ 的幅相特性曲线。}
+
+\textit{解：}
+\begin{enumerate}
+    \item \textbf{变换}：
+    \[G(j\omega)H(j\omega) = \frac{250}{j\omega(j\omega+5)(j\omega+15)}\]
+    
+    \item \textbf{幅相表达式}：
+    \begin{align*}
+    A(\omega) &= \frac{250}{\omega\sqrt{\omega^2+25}\sqrt{\omega^2+225}} \\
+    \phi(\omega) &= -90° - \arctan(\frac{\omega}{5}) - \arctan(\frac{\omega}{15})
+    \end{align*}
+    
+    \item \textbf{关键频率点}：
+    \begin{align*}
+    \text{$\omega=0$：} \quad & A(0)=\infty, \quad \phi(0)=0° \text{ (虚线用)} \\
+    \text{$\omega=0^+$：} \quad & A(0^+)=\infty, \quad \phi(0^+)=-90° \text{ (实线起点)} \\
+    \text{$\omega=\infty$：} \quad & A(\infty)=0, \quad \phi(\infty)=-270° \text{ (或 }+90°\text{)}
+    \end{align*}
+    
+    \item \textbf{渐近线计算}：
+    \begin{itemize}
+        \item 化为标准型：$G(s) = \frac{250}{s \cdot 5(0.2s+1) \cdot 15(s/15+1)}$
+        \item 提取参数：$K=\frac{10}{3}$，$\sum T_z = 0$，$\sum T_p = 0.2 + \frac{1}{15}$
+        \item 渐近线位置：$x = \frac{10}{3}(0 - 0.2 - 1/15) = -\frac{8}{9} \approx -0.89$
+    \end{itemize}
+    
+    \item \textbf{趋势与绘制}：
+    \begin{itemize}
+        \item 实线部分从负虚轴无穷远处开始（$\phi=-90°$）
+        \item 逼近左侧垂直渐近线 $x \approx -0.89$
+        \item 相角持续减小至 $-270°$，因此会穿越负实轴
+        \item 终点为原点
+        \item 虚线部分是从 $\phi=0°$ 到 $\phi=-90°$ 的无穷大顺时针圆弧，连接 $\omega=0$ 和 $\omega=0^+$
+    \end{itemize}
+\end{enumerate}
+
+\subsection{非最小相位系统的奈奎斯特图}
+
+\subsubsection{非最小相位系统的特点}
+
+非最小相位系统在右半平面有零点或极点（如 $(s-a)$ 或 $(T_zs-1)$ 的项），这会深刻影响相角计算。
+
+\subsubsection{相角的特殊处理}
+
+对于右半平面的项，例如 $(s-a)$（$a > 0$），其相角为：
+\[\angle(j\omega-a) = \angle(-a+j\omega) = 180° - \arctan(\frac{\omega}{a})\]
+
+\textbf{结论}：
+\begin{itemize}
+    \item 传递函数中每出现一个分母的非最小相位项，总相角就要减去 $(180° - \arctan(...))$
+    \item 每出现一个分子的非最小相位项，总相角就要加上 $(180° - \arctan(...))$
+\end{itemize}
+
+\subsubsection{例题}
+
+\textbf{例：绘制非最小相位I型系统 $G(s)H(s) = \frac{10}{s(s-1)}$ 的幅相特性曲线。}
+
+\textit{解：}
+\begin{enumerate}
+    \item \textbf{变换}：
+    \[G(j\omega)H(j\omega) = \frac{10}{j\omega(j\omega-1)}\]
+    
+    \item \textbf{幅相表达式}：
+    \begin{align*}
+    A(\omega) &= \frac{10}{\omega\sqrt{\omega^2+1}} \\
+    \phi(\omega) &= -\angle(j\omega) - \angle(j\omega-1) \\
+    &= -90° - (180° - \arctan(\omega)) \\
+    &= \arctan(\omega) - 270°
+    \end{align*}
+    
+    \item \textbf{关键频率点}：
+    \begin{align*}
+    \text{$\omega=0$：} \quad & A(0)=\infty, \quad \phi(0)=-180° \text{ (分母 }s(s-1) \to s(-1)\text{)} \\
+    \text{$\omega=0^+$：} \quad & A(0^+)=\infty, \quad \phi(0^+)=\arctan(0)-270°=-270° \text{ (或 }+90°\text{)} \\
+    \text{$\omega=\infty$：} \quad & A(\infty)=0, \quad \phi(\infty)=90°-270°=-180°
+    \end{align*}
+    
+    \item \textbf{渐近线计算}：
+    \begin{itemize}
+        \item $G(s)=\frac{-10}{s(1-s)}$，参数为 $K=-10$，$T_p=-1$
+        \item 渐近线：$x = (-10)(0-(-1)) = -10$
+    \end{itemize}
+    
+    \item \textbf{趋势与绘制}：
+    \begin{itemize}
+        \item 实线起点在正虚轴无穷远处（$\phi=-270°$），不同于最小相位系统
+        \item 相角从 $-270°$ 增大到 $-180°$
+        \item 终点为原点
+        \item 虚线部分是从 $\phi=-180°$ 到 $\phi=-270°$ 的无穷大顺时针圆弧
+    \end{itemize}
+\end{enumerate}
 
 \subsection{奈奎斯特稳定性判据}
 

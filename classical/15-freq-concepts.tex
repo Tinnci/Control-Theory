@@ -1,17 +1,79 @@
 \section{频率特性基本概念}
 
 \subsection{频率特性的定义}
-线性定常系统的频率特性是指当输入为正弦信号时，系统稳态输出与输入的复数比：
+对于一个稳定的线性时不变系统，当输入一个正弦信号 $r(t) = A_{\text{in}}\sin(\omega t)$ 时，其稳态输出 $y_{\text{ss}}(t)$ 必然是同频率的正弦信号，形式为：
+\[y_{\text{ss}}(t) = A_{\text{out}}\sin(\omega t + \phi)\]
+
+线性定常系统的频率特性是指系统稳态输出与输入的复数比：
 \[G(\jw) = G(s)|_{s=\jw} = |G(\jw)|e^{j\phi(\omega)}\]
 
 其中：
 \begin{itemize}
-    \item $|G(\jw)|$：幅频特性
-    \item $\phi(\omega) = \angle G(\jw)$：相频特性
+    \item \textbf{幅频特性 $A(\omega)$}：输出响应的稳态分量幅值与输入信号幅值之比。
+    \[A(\omega) = \frac{A_{\text{out}}}{A_{\text{in}}} = |G(\jw)|\]
+    \item \textbf{相频特性 $\phi(\omega)$}：输出响应的稳态分量与输入信号的相位之差。
+    \[\phi(\omega) = \angle G(\jw)\]
 \end{itemize}
+
+幅频特性 $A(\omega)$ 和相频特性 $\phi(\omega)$ 统称为\textbf{频率特性}。
 
 \subsection{频率特性的物理意义}
 \begin{itemize}
     \item 幅频特性表示不同频率正弦输入信号通过系统后幅值的变化
     \item 相频特性表示不同频率正弦输入信号通过系统后相位的变化
 \end{itemize}
+
+\subsection{频率特性的计算}
+
+\subsubsection{计算步骤}
+\begin{enumerate}
+    \item 将传递函数 $G(s)$ 中的 $s$ 替换为 $j\omega$，得到 $G(j\omega)$
+    \item 计算幅频特性：$A(\omega) = |G(j\omega)|$
+    \item 计算相频特性：$\phi(\omega) = \angle G(j\omega)$
+\end{enumerate}
+
+\subsubsection{例题}
+
+\textbf{例1：已知传递函数为 $G(s)=\frac{4(s+1)}{s(s+2)}$，写出该传递函数的频率特性。}
+
+\textit{解：}
+\begin{enumerate}
+    \item 将 $s$ 替换为 $j\omega$：
+    \[G(j\omega)=\frac{4(j\omega+1)}{j\omega(j\omega+2)}\]
+    
+    \item 计算幅频特性 $A(\omega)$：
+    \[A(\omega) = |G(j\omega)| = \frac{|4(1+j\omega)|}{|j\omega||2+j\omega|} = \frac{4\sqrt{1^2+\omega^2}}{\omega\sqrt{2^2+\omega^2}} = \frac{4\sqrt{1+\omega^2}}{\omega\sqrt{4+\omega^2}}\]
+    
+    \item 计算相频特性 $\phi(\omega)$：
+    \begin{align*}
+    \phi(\omega) &= \angle G(j\omega) = \angle 4 + \angle(1+j\omega) - \angle(j\omega) - \angle(2+j\omega) \\
+    &= 0° + \arctan(\omega) - 90° - \arctan(\frac{\omega}{2}) \\
+    &= \arctan(\omega) - \arctan(\frac{\omega}{2}) - 90°
+    \end{align*}
+\end{enumerate}
+
+\textbf{例2：某单位负反馈的开环传递函数为 $G(s)=\frac{4}{s(s+2)}$。若输入信号 $r(t)=2\sin(2t)$，试求系统的稳态输出。}
+
+\textit{解：}
+\begin{enumerate}
+    \item 求闭环传递函数 $\Phi(s)$：
+    \[\Phi(s) = \frac{G(s)}{1+G(s)} = \frac{\frac{4}{s(s+2)}}{1+\frac{4}{s(s+2)}} = \frac{4}{s^2+2s+4}\]
+    
+    \item 分析输入信号：幅值 $A=2$，角频率 $\omega=2$ rad/s
+    
+    \item 计算闭环系统在 $\omega=2$ 处的频率响应 $\Phi(j2)$：
+    \[\Phi(j2) = \frac{4}{(j2)^2+2(j2)+4} = \frac{4}{-4+j4+4} = \frac{4}{j4} = -j\]
+    
+    \item 计算幅值和相角：
+    \begin{align*}
+    |\Phi(j2)| &= |-j| = 1 \\
+    \angle\Phi(j2) &= \angle(-j) = -90°
+    \end{align*}
+    
+    \item 写出稳态输出 $c_{\text{ss}}(t)$：
+    \begin{align*}
+    c_{\text{ss}}(t) &= A \cdot |\Phi(j2)| \cdot \sin(\omega t + \angle\Phi(j2)) \\
+    &= 2 \cdot 1 \cdot \sin(2t - 90°) \\
+    &= 2\sin(2t-90°) = -2\cos(2t)
+    \end{align*}
+\end{enumerate}

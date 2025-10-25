@@ -182,19 +182,19 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
     xmin=0.1, xmax=1000
 ]
 \nextgroupplot[ylabel={幅度 (dB)}, legend pos=south west]
-\addplot[blue, thick, samples=200, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.1*10*x)^2))};
+\addplot[blue, thick, samples=100, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.1*10*x)^2))};
 \addlegendentry{$\zeta=0.1$}
-\addplot[red, thick, samples=200, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.5*10*x)^2))};
+\addplot[red, thick, samples=100, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.5*10*x)^2))};
 \addlegendentry{$\zeta=0.5$}
-\addplot[green!60!black, thick, samples=200, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*1.0*10*x)^2))};
+\addplot[green!60!black, thick, samples=100, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*1.0*10*x)^2))};
 \addlegendentry{$\zeta=1.0$}
 
 \nextgroupplot[ylabel={相位 (度)}, legend pos=south west]
-\addplot[blue, thick, samples=200, domain=0.1:1000] {deg(-atan2(2*0.1*10*x, 100-x^2))};
+\addplot[blue, thick, samples=100, domain=0.1:1000] {deg(-atan2(2*0.1*10*x, 100-x^2))};
 \addlegendentry{$\zeta=0.1$}
-\addplot[red, thick, samples=200, domain=0.1:1000] {deg(-atan2(2*0.5*10*x, 100-x^2))};
+\addplot[red, thick, samples=100, domain=0.1:1000] {deg(-atan2(2*0.5*10*x, 100-x^2))};
 \addlegendentry{$\zeta=0.5$}
-\addplot[green!60!black, thick, samples=200, domain=0.1:1000] {deg(-atan2(2*1.0*10*x, 100-x^2))};
+\addplot[green!60!black, thick, samples=100, domain=0.1:1000] {deg(-atan2(2*1.0*10*x, 100-x^2))};
 \addlegendentry{$\zeta=1.0$}
 \end{groupplot}
 \end{tikzpicture}
@@ -202,9 +202,156 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 
 图中所有曲线对应 $\omega_n = 10$ rad/s，不同阻尼比 $\zeta$。
 
+\subsection{伯德图的基本概念}
+
+伯德图由两个图组成，横坐标都是对数刻度的频率 $\omega$：
+\begin{itemize}
+    \item \textbf{对数幅频图}：纵坐标是系统幅值的对数 $L(\omega) = 20\log_{10}A(\omega)$，单位为分贝(dB)
+    \item \textbf{对数相频图}：纵坐标是系统相角 $\phi(\omega)$，单位为度(°)
+\end{itemize}
+
+\subsubsection{对数幅频图的转折频率}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{典型环节类别} & \textbf{典型环节传递函数} & \textbf{转折频率及斜率变化} \\
+\hline
+\multirow{2}{*}{一阶环节} & $\displaystyle\frac{1}{Ts+1}$ & $\omega_c = \frac{1}{T}$，斜率 $-20$ dB/dec \\
+\cline{2-3}
+& $Ts+1$ & $\omega_c = \frac{1}{T}$，斜率 $+20$ dB/dec \\
+\hline
+\multirow{2}{*}{二阶环节} & $\displaystyle\frac{1}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$，斜率 $-40$ dB/dec \\
+\cline{2-3}
+& $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$，斜率 $+40$ dB/dec \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{低频段渐近线的确定}
+
+对于标准型 $G(s) = K \frac{\prod(1+T_i s)}{\prod(1+T_j s)}$（以及其高阶形式）：
+\begin{itemize}
+    \item 低频段的斜率由系统型别 $v$（积分环节 $s^v$ 的个数）决定，为 $-20v$ dB/dec
+    \item 这条渐近线（或其延长线）必定经过点 $(1, 20\log_{10}K)$
+    \item 也可以通过点 $(\omega_0, 20\lg K - 20v\lg\omega_0)$ 来确定直线
+\end{itemize}
+
+\subsubsection{例题：伯德图绘制示例}
+
+\textbf{例1：绘制 $G(s) = \frac{2}{(2s+1)(8s+1)}$ 的开环对数幅频特性曲线。}
+
+\textit{解：}
+\begin{enumerate}
+    \item \textbf{标准型}：$G(s) = \frac{2}{(2s+1)(8s+1)}$。开环增益 $K=2$，系统为0型 ($v=0$)
+    
+    \item \textbf{转折频率}：
+    \begin{align*}
+    T_1=2 &\implies \omega_1=\frac{1}{2}=0.5 \text{ rad/s} \\
+    T_2=8 &\implies \omega_2=\frac{1}{8}=0.125 \text{ rad/s}
+    \end{align*}
+    按从小到大排列：$\omega_1 = 0.125$ rad/s，$\omega_2 = 0.5$ rad/s
+    
+    \item \textbf{低频段} ($\omega < 0.125$)：
+    \begin{itemize}
+        \item 斜率为 $-20 \times 0 = 0$ dB/dec（水平线）
+        \item 幅值为 $L(\omega) = 20\lg(2) \approx 6$ dB
+    \end{itemize}
+    
+    \item \textbf{中频段1} ($0.125 < \omega < 0.5$)：
+    \begin{itemize}
+        \item 经过第一个转折频率 $\omega_1 = 0.125$（一阶极点）
+        \item 斜率变为 $0 - 20 = -20$ dB/dec
+    \end{itemize}
+    
+    \item \textbf{高频段} ($\omega > 0.5$)：
+    \begin{itemize}
+        \item 经过第二个转折频率 $\omega_2 = 0.5$（一阶极点）
+        \item 斜率变为 $-20 - 20 = -40$ dB/dec
+    \end{itemize}
+\end{enumerate}
+
 \subsection{伯德图的绘制方法}
 
-\subsubsection{基本步骤}
+\subsubsection{伯德图绘制六步法}
+
+这是一套标准化、模板化的绘制流程，特别适合考试手绘：
+
+\textbf{第一步：化为"尾1"标准型}
+
+将传递函数中所有的一阶和二阶环节都化为 $(Ts+1)$ 或 $((s/\omega_n)^2 + 2\zeta(s/\omega_n) + 1)$ 的形式。这样可以方便地读出开环增益 $K$ 和各转折频率。
+
+标准形式为：
+\begin{align*}
+G(s) = K \frac{\prod(1+T_{zi}s)\prod((s/\omega_{ni})^2+2\zeta_i(s/\omega_{ni})+1)}{s^v\prod(1+T_{pi}s)\prod((s/\omega_{nj})^2+2\zeta_j(s/\omega_{nj})+1)}
+\end{align*}
+
+\textbf{第二步：列出系统的转折频率}
+
+转折频率（交接频率）是渐近线斜率发生改变的点：
+\begin{itemize}
+    \item 一阶环节 $(Ts \pm 1)$：转折频率为 $\omega_c = \frac{1}{T}$
+    \item 二阶环节 $((s/\omega_n)^2 + ...)$：转折频率为 $\omega_c = \omega_n$
+\end{itemize}
+
+\textbf{将所有转折频率从小到大排列}。
+
+\textbf{第三步：确定开环增益 $K$}
+
+从"尾1"标准型中直接读出比例项 $K$。
+
+\textbf{第四步：求与横轴的交点（剪切频率 $\omega_{gc}$）}
+
+横轴（0dB 线）代表 $|G(j\omega)| = 1$。需要求解方程 $|G(j\omega_{gc})| = 1$，利用下面的"幅值近似原则"。
+
+\textbf{第五步：绘制低频段渐近线}
+
+低频段渐近线由以下三个性质唯一确定：
+\begin{enumerate}
+    \item \textbf{斜率}：由系统型别 $v$（积分环节 $s^v$ 的个数）决定，斜率为 $-20v$ dB/dec
+    \item \textbf{定位点1}：低频段渐近线（或其延长线）\textbf{必过点 $(\omega=1, 20\log_{10}K)$}
+    \item \textbf{定位点2（$v \geq 1$ 时）}：低频段渐近线（或其延长线）\textbf{与0dB横轴相交于点 $(\omega = \sqrt[v]{K}, 0\text{ dB})$}
+\end{enumerate}
+
+\textbf{第六步：依次绘制后续曲线}
+
+从最低的转折频率开始，每经过一个转折频率，渐近线的斜率发生一次改变：
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{典型环节} & \textbf{位置} & \textbf{斜率变化} \\
+\hline
+\multirow{2}{*}{一阶环节} & 分母 & $-20$ dB/dec \\
+\cline{2-3}
+& 分子 & $+20$ dB/dec \\
+\hline
+\multirow{2}{*}{二阶环节} & 分母 & $-40$ dB/dec \\
+\cline{2-3}
+& 分子 & $+40$ dB/dec \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{【最终验证】}：绘制完成后，检查最后一个频段的斜率是否等于 $-20(n-m)$ dB/dec，其中 $n$ 是分母阶次，$m$ 是分子阶次。
+
+\subsubsection{幅值近似原则（关键技巧）}
+
+在手绘伯德图和计算剪切频率时，使用的是近似幅值而非精确值。这是加快计算的关键：
+
+\textbf{一阶环节 $(Ts+1)$ 的近似}：
+\begin{itemize}
+    \item 在转折频率前（$\omega < 1/T$）：虚部 $T\omega < 1$，\textbf{保留常数项1}。环节幅值近似为 $1$
+    \item 在转折频率后（$\omega > 1/T$）：虚部 $T\omega > 1$，\textbf{保留虚部项 $T\omega$}。环节幅值近似为 $T\omega$
+\end{itemize}
+
+\textbf{二阶环节 $((s/\omega_n)^2 + ...)$ 的近似}：
+\begin{itemize}
+    \item 在转折频率前（$\omega < \omega_n$）：\textbf{保留常数项1}。环节幅值近似为 $1$
+    \item 在转折频率后（$\omega > \omega_n$）：\textbf{保留平方项 $(s/\omega_n)^2$}。环节幅值近似为 $(\omega/\omega_n)^2$
+\end{itemize}
+
+\subsubsection{基本步骤（原有内容）}
 \begin{enumerate}
     \item \textbf{将传递函数化为标准形式}
     \begin{align*}
@@ -287,6 +434,72 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
     \item $\zeta = 0.5$：误差约 $-1$ dB
     \item $\zeta = 0.707$：误差 $-3$ dB（临界阻尼）
     \item $\zeta = 1.0$：误差 $-6$ dB（过阻尼）
+\end{itemize}
+
+\subsubsection{六步法综合例题}
+
+\textbf{例1：绘制 $G(s) = \frac{8(\frac{s}{0.1}+1)}{s(s^2+s+1)(\frac{s}{2}+1)}$ 的开环对数幅频特性曲线。}
+
+\textit{解：}
+\begin{enumerate}
+    \item \textbf{化为标准型}：
+    \[G(s) = \frac{8(10s+1)}{s(s^2+s+1)(0.5s+1)}\]
+    
+    \item \textbf{转折频率}：
+    \begin{itemize}
+        \item 分子一阶：$T_z=10 \implies \omega_1 = \frac{1}{10} = 0.1$ rad/s（零点，+20 dB/dec）
+        \item 分母二阶：由 $s^2+s+1 = 0$ 得 $2\zeta\omega_n = 1, \omega_n^2 = 1$，所以 $\omega_n=1$ rad/s（极点，-40 dB/dec）
+        \item 分母一阶：$T_p=0.5 \implies \omega_3 = \frac{1}{0.5} = 2$ rad/s（极点，-20 dB/dec）
+        \item 排序：$0.1, 1, 2$
+    \end{itemize}
+    
+    \item \textbf{开环增益}：$K = 8$
+    
+    \item \textbf{低频段} ($\omega < 0.1$)：
+    \begin{itemize}
+        \item 系统为I型 ($v=1$)，斜率为 $-20$ dB/dec
+        \item 与0dB轴交于 $\omega = \sqrt[1]{K} = 8$ rad/s
+        \item 但 $8 > 0.1$，说明交点不在低频段
+        \item 可用定位点：在 $\omega=1$ 处，幅值为 $L(1) = 20\lg 8 - 20 \times 1 = 18.06$ dB
+    \end{itemize}
+    
+    \item \textbf{各频段渐近线}：
+    \begin{itemize}
+        \item $0.1 < \omega < 1$：经过 $\omega_1=0.1$（分子一阶零点），斜率变为 $-20+20=0$ dB/dec
+        \item $1 < \omega < 2$：经过 $\omega_2=1$（分母二阶极点），斜率变为 $0-40=-40$ dB/dec
+        \item $\omega > 2$：经过 $\omega_3=2$（分母一阶极点），斜率变为 $-40-20=-60$ dB/dec
+    \end{itemize}
+    
+    \item \textbf{最终验证}：
+    \begin{itemize}
+        \item 分子阶次 $m=1$（一阶零点）
+        \item 分母阶次 $n=4$（1个一阶 + 1个二阶 + 1个积分 = 4）
+        \item 最终斜率应为 $-20(n-m) = -20(4-1) = -60$ dB/dec，正确✓
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{剪切频率的计算}
+
+剪切频率（增益穿越频率 $\omega_{gc}$）是幅值等于1（0 dB）的频率，通过求解 $|G(j\omega_{gc})| = 1$ 得到。
+
+\textbf{计算方法}：利用幅值近似原则
+\begin{enumerate}
+    \item 在不同频段，根据主导环节使用近似幅值
+    \item 在所有转折频率处分别计算幅值，判断穿越点在哪一段
+    \item 在该频段内使用简化的近似幅值公式求解
+\end{enumerate}
+
+\textbf{典型例子}：$G(s) = \frac{2}{(2s+1)(8s+1)}$
+
+设 $\omega_1 = 0.125, \omega_2 = 0.5$，则：
+\begin{itemize}
+    \item 低频 $\omega < 0.125$：$|G(j\omega)| \approx 2$（>1），不包含穿越点
+    \item 中频 $0.125 < \omega < 0.5$：$|G(j\omega)| \approx \frac{2}{8\omega}$
+    \begin{itemize}
+        \item 令 $\frac{2}{8\omega} = 1 \implies \omega = 0.25$
+        \item 由于 $0.125 < 0.25 < 0.5$，假设成立，所以 $\omega_{gc} = 0.25$
+    \end{itemize}
+    \item 高频验证：若需更精确，可用精确公式验证
 \end{itemize}
 
 \subsubsection{绘图示例}

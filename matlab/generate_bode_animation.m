@@ -1,6 +1,6 @@
-%% Generate Bode Diagram Animation
-% 支持逐步动画和视频输出
-% 输出格式: MP4 或 GIF
+%% Generate Bode Diagram Animation - Simplified Stable Version
+% 优化版本: 增强配色、对比度、系统参数显示
+% 输出格式: MP4
 
 function generate_bode_animation(output_file)
     % 默认输出文件
@@ -40,25 +40,40 @@ end
 function systems = create_bode_systems()
     systems = struct();
     
-    % 系统 1: 一阶系统
-    systems(1).name = '一阶系统 (First-Order)';
-    systems(1).description = 'G(s) = 10 / (1 + 0.1s)';
+    % 系统 1: 一阶惯性系统
+    systems(1).name = '一阶惯性系统 (First-Order)';
+    systems(1).description = 'G(s) = 10/(1+0.1s)';
     systems(1).sys = tf([10], [0.1, 1]);
+    systems(1).K = 10;
+    systems(1).type = 0;
+    systems(1).params = {'τ = 0.1 s', 'ωc = 10 rad/s'};
     
-    % 系统 2: 二阶系统
-    systems(2).name = '二阶系统 (Second-Order)';
-    systems(2).description = 'G(s) = 100 / (s^2 + 2s + 100)';
+    % 系统 2: 二阶欠阻尼系统
+    systems(2).name = '二阶欠阻尼系统 (Underdamped)';
+    systems(2).description = 'G(s) = 100/(s²+2s+100)';
     systems(2).sys = tf([100], [1, 2, 100]);
+    systems(2).K = 100;
+    systems(2).type = 0;
+    systems(2).params = {'ωn = 10 rad/s', 'ζ = 0.1 (低阻尼)'};
     
     % 系统 3: I型系统
-    systems(3).name = 'I型系统 (Type-I)';
-    systems(3).description = 'G(s) = 250 / (s(s+5)(s+15))';
+    systems(3).name = 'I型系统 (Type-I System)';
+    systems(3).description = 'G(s) = 250/[s(s+5)(s+15)]';
     systems(3).sys = tf([250], [1, 20, 75, 0]);
+    systems(3).K = 250;
+    systems(3).type = 1;
+    systems(3).params = {'积分环节', '低频: -20 dB/dec'};
 end
 
 %% 创建 Bode 图动画帧
 function create_bode_animation_frame(system, output_file)
     fprintf('[PROCESS] 创建 Bode 图: %s\n', system.name);
+    
+    % ===== 配色方案（专业设计）=====
+    Color_BG = [0.97 0.97 0.98];           % 淡灰蓝背景
+    Color_Magnitude = [0 102 204]/255;     % 深蓝（幅度曲线）
+    Color_Phase = [204 51 0]/255;          % 深橙（相位曲线）
+    Color_Text_Dark = [0.1 0.1 0.15];      % 深灰文字
     
     % 频率范围
     wmin = 0.01;
@@ -72,25 +87,19 @@ function create_bode_animation_frame(system, output_file)
     phase = squeeze(phase);
     
     % 创建视频写入器
-    [~, name, ext] = fileparts(output_file);
-    is_gif = strcmpi(ext, '.gif');
-    
-    if is_gif
-        fprintf('[INFO] 输出格式: GIF\n');
-        gif_frames = [];
-    else
-        fprintf('[INFO] 输出格式: MP4\n');
-        v = VideoWriter(output_file, 'MPEG-4');
-        v.FrameRate = 30;
-        v.Quality = 95;
-        open(v);
-    end
+    fprintf('[INFO] 输出格式: MP4\n');
+    v = VideoWriter(output_file, 'MPEG-4');
+    v.FrameRate = 30;
+    v.Quality = 95;
+    open(v);
     
     % 创建图形窗口
-    fig = figure('Visible', 'off', 'Position', [0, 0, 1200, 800]);
+    fig = figure('Visible', 'off', 'Position', [0, 0, 1300, 850]);
+    fig.Color = Color_BG;
+    set(fig, 'PaperPositionMode', 'auto');
     
     % 动画帧数
-    num_frames = 60;
+    num_frames = 70;
     points_per_frame = num_points / num_frames;
     
     fprintf('[ANIMATE] 生成帧 [');
@@ -102,53 +111,107 @@ function create_bode_animation_frame(system, output_file)
         
         % 清空图形
         clf(fig);
+        fig.Color = Color_BG;
         
         % 创建子图
         ax1 = subplot(2, 1, 1, 'Parent', fig);
         ax2 = subplot(2, 1, 2, 'Parent', fig);
         
-        % 绘制幅频特性
+        % ========== 幅频特性图 ==========
         hold(ax1, 'on');
-        semilogx(ax1, w(1:end_idx), 20*log10(mag(1:end_idx)), ...
-            'b-', 'LineWidth', 2.5);
-        grid(ax1, 'on');
-        xlabel(ax1, '频率 ω (rad/s)', 'FontSize', 11);
-        ylabel(ax1, '幅度 (dB)', 'FontSize', 11);
-        title(ax1, sprintf('Bode 幅频特性 - %s (%d%%)', ...
-            system.name, round(progress*100)), 'FontSize', 12, 'FontWeight', 'bold');
-        axis(ax1, 'tight');
+        ax1.Color = Color_BG;
         
-        % 绘制相频特性
-        hold(ax2, 'on');
-        semilogx(ax2, w(1:end_idx), phase(1:end_idx), ...
-            'r-', 'LineWidth', 2.5);
-        grid(ax2, 'on');
-        xlabel(ax2, '频率 ω (rad/s)', 'FontSize', 11);
-        ylabel(ax2, '相位 (度)', 'FontSize', 11);
-        title(ax2, sprintf('Bode 相频特性 (%d%%)', round(progress*100)), ...
-            'FontSize', 12, 'FontWeight', 'bold');
-        axis(ax2, 'tight');
-        
-        % 获取帧
-        frame_data = getframe(fig);
-        
-        if is_gif
-            % 保存为 GIF 帧
-            im = frame_data.cdata;
-            [X, map] = rgb2ind(im, 256);
-            if frame == 1
-                gif_frames = cat(3, X);
-                gif_colormap = map;
-            else
-                gif_frames = cat(4, gif_frames, X);
-            end
-        else
-            % 写入视频
-            writeVideo(v, frame_data);
+        % 绘制参考曲线（虚线）
+        if end_idx > 1
+            h_ref = semilogx(ax1, w(end_idx:end), 20*log10(mag(end_idx:end)), ...
+                '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 1);
+            set(h_ref, 'Color', [0.7 0.7 0.7 0.5]);
         end
         
+        % 绘制动画曲线（实线）
+        semilogx(ax1, w(1:end_idx), 20*log10(mag(1:end_idx)), ...
+            '-', 'Color', Color_Magnitude, 'LineWidth', 2.5);
+        
+        % 添加网格（不使用grid函数，改用line）
+        set(ax1, 'XScale', 'log');
+        ax1.XMinorGrid = 'on';
+        ax1.YMinorGrid = 'on';
+        ax1.GridLineStyle = '-';
+        ax1.GridAlpha = 0.15;
+        ax1.GridColor = [0.5 0.5 0.5];
+        
+        xlabel(ax1, '频率 ω (rad/s)', 'FontSize', 12, 'Color', Color_Text_Dark, 'FontWeight', 'bold');
+        ylabel(ax1, '幅度 (dB)', 'FontSize', 12, 'Color', Color_Text_Dark, 'FontWeight', 'bold');
+        title_str = sprintf('Bode 幅频特性 - %s (进度: %d%%)', system.name, round(progress*100));
+        title(ax1, title_str, 'FontSize', 13, 'FontWeight', 'bold', 'Color', Color_Text_Dark);
+        
+        % 美化轴线
+        ax1.XColor = Color_Text_Dark;
+        ax1.YColor = Color_Text_Dark;
+        ax1.LineWidth = 1.2;
+        ax1.Box = 'on';
+        
+        % ========== 相频特性图 ==========
+        hold(ax2, 'on');
+        ax2.Color = Color_BG;
+        
+        % 绘制参考曲线（虚线）
+        if end_idx > 1
+            h_ref2 = semilogx(ax2, w(end_idx:end), phase(end_idx:end), ...
+                '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 1);
+            set(h_ref2, 'Color', [0.7 0.7 0.7 0.5]);
+        end
+        
+        % 绘制动画曲线（实线）
+        semilogx(ax2, w(1:end_idx), phase(1:end_idx), ...
+            '-', 'Color', Color_Phase, 'LineWidth', 2.5);
+        
+        % 添加网格
+        set(ax2, 'XScale', 'log');
+        ax2.XMinorGrid = 'on';
+        ax2.YMinorGrid = 'on';
+        ax2.GridLineStyle = '-';
+        ax2.GridAlpha = 0.15;
+        ax2.GridColor = [0.5 0.5 0.5];
+        
+        xlabel(ax2, '频率 ω (rad/s)', 'FontSize', 12, 'Color', Color_Text_Dark, 'FontWeight', 'bold');
+        ylabel(ax2, '相位 (°)', 'FontSize', 12, 'Color', Color_Text_Dark, 'FontWeight', 'bold');
+        title(ax2, sprintf('Bode 相频特性 (进度: %d%%)', round(progress*100)), ...
+            'FontSize', 13, 'FontWeight', 'bold', 'Color', Color_Text_Dark);
+        
+        % 美化轴线
+        ax2.XColor = Color_Text_Dark;
+        ax2.YColor = Color_Text_Dark;
+        ax2.LineWidth = 1.2;
+        ax2.Box = 'on';
+        
+        % ========== 系统信息（在底部添加简洁信息）==========
+        if end_idx > 1
+            w_current = w(end_idx);
+            mag_current = mag(end_idx);
+            phase_current = phase(end_idx);
+            
+            % 在图形下方添加文本信息
+            info_text = sprintf('系统: %s | Type-%d | K=%.1f  |  ω=%.3f rad/s | |G|=%.2f dB | ∠=%.1f° | 进度=%d%%', ...
+                system.name, system.type, system.K, w_current, 20*log10(mag_current), phase_current, round(progress*100));
+            
+            % 添加注释在图形下方
+            annotation(fig, 'textbox', [0.1 0.01 0.8 0.04], ...
+                'String', info_text, ...
+                'FontSize', 9, 'HorizontalAlignment', 'left', ...
+                'BackgroundColor', [1 1 1], 'EdgeColor', Color_Magnitude, ...
+                'LineWidth', 1, 'Margin', 3, 'Interpreter', 'none');
+        end
+        
+        % 获取帧
+        drawnow;
+        frame_data = getframe(fig);
+        
+        % 写入视频
+        writeVideo(v, frame_data);
+        
         % 显示进度
-        if mod(frame, 6) == 0
+        if mod(frame, 7) == 0
             fprintf('█');
         end
     end
@@ -156,22 +219,8 @@ function create_bode_animation_frame(system, output_file)
     fprintf(']\n');
     
     % 关闭视频写入
-    if ~is_gif
-        close(v);
-        fprintf('[SUCCESS] 视频已保存: %s\n', output_file);
-    else
-        % 保存 GIF - 使用更简单的方法
-        for i = 1:num_frames
-            if i == 1
-                imwrite(gif_frames(:,:,i), gif_colormap, output_file, ...
-                    'gif', 'LoopCount', inf, 'DelayTime', 1/30);
-            else
-                imwrite(gif_frames(:,:,i), gif_colormap, output_file, ...
-                    'gif', 'WriteMode', 'append', 'DelayTime', 1/30);
-            end
-        end
-        fprintf('[SUCCESS] GIF 已保存: %s\n', output_file);
-    end
+    close(v);
+    fprintf('[SUCCESS] 视频已保存: %s\n', output_file);
     
     close(fig);
 end

@@ -2,15 +2,15 @@
     // LaTeX Workshop 配置
     "latex-workshop.latex.recipes": [
         {
-            "name": "LuaLaTeX ✨",
+            "name": "LuaLaTeX × 2 ✨ (默认)",
             "tools": [
+                "lualatex",
                 "lualatex"
             ]
         },
         {
-            "name": "LuaLaTeX × 2 (完整编译)",
+            "name": "LuaLaTeX (快速编译)",
             "tools": [
-                "lualatex",
                 "lualatex"
             ]
         },

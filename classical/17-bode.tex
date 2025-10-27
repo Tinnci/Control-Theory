@@ -3,6 +3,7 @@
 \subsection{伯德图的定义}
 伯德图（Bode Plot）是由亨德里克·韦德·伯德（Hendrik Wade Bode）提出的频率响应图示方法，由两个图组成：
 
+\begin{minipage}[t]{0.55\textwidth}
 \begin{itemize}
     \item \textbf{幅频特性图（Magnitude Plot）}：$L(\omega) = 20\lg|G(\jw)|$ dB vs $\lg\omega$
     \begin{itemize}
@@ -23,6 +24,22 @@
     \item 可用渐近线逼近，绘制简便
     \item 便于分析系统的稳定性和性能指标
 \end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.42\textwidth}
+\vspace{0pt}
+\textbf{典型伯德图示例：}
+
+% 示例：一阶惯性环节 G(s) = 1/(1+0.1s)
+\begin{center}
+\small
+\BodeTF{num/{1},den/{0.1,1}}{0.1}{1000}
+\end{center}
+\vspace{-0.3cm}
+\begin{center}
+\small
+\textit{图示：$G(s) = \frac{1}{1+0.1s}$ 的伯德图}
+\end{center}
+\end{minipage}
 
 \subsection{伯德图的基本概念}
 
@@ -34,30 +51,139 @@
 
 \subsubsection{对数幅频图的转折频率}
 
+\textbf{转折频率}（Corner Frequency / Break Frequency）是渐近线斜率发生变化的频率点。
+
+\begin{minipage}[t]{0.48\textwidth}
 \begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
-\textbf{典型环节类别} & \textbf{典型环节传递函数} & \textbf{转折频率及斜率变化} \\
+\textbf{典型环节} & \textbf{传递函数} & \textbf{转折频率与斜率} \\
 \hline
-\multirow{2}{*}{一阶环节} & $\displaystyle\frac{1}{Ts+1}$ & $\omega_c = \frac{1}{T}$，斜率 $-20$ dB/dec \\
-\cline{2-3}
-& $Ts+1$ & $\omega_c = \frac{1}{T}$，斜率 $+20$ dB/dec \\
+\multirow{2}{*}{一阶环节} & $\displaystyle\frac{1}{Ts+1}$ & $\omega_c = \frac{1}{T}$ \\ 
+& & 斜率 $-20$ dB/dec \\
 \hline
-\multirow{2}{*}{二阶环节} & $\displaystyle\frac{1}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$，斜率 $-40$ dB/dec \\
-\cline{2-3}
-& $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$，斜率 $+40$ dB/dec \\
+& $Ts+1$ & $\omega_c = \frac{1}{T}$ \\
+& & 斜率 $+20$ dB/dec \\
+\hline
+\multirow{2}{*}{二阶环节} & $\displaystyle\frac{1}{(s/\omega_n)^2+...}$ & $\omega_c = \omega_n$ \\
+& & 斜率 $-40$ dB/dec \\
+\hline
+& $(s/\omega_n)^2+...$ & $\omega_c = \omega_n$ \\
+& & 斜率 $+40$ dB/dec \\
 \hline
 \end{tabular}
 \end{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\begin{center}
+\textbf{转折频率图示：}
+
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    width=6.5cm, height=5cm,
+    xmode=log,
+    xlabel={$\omega$ (rad/s)},
+    ylabel={$L(\omega)$ (dB)},
+    grid=both,
+    xmin=0.1, xmax=100,
+    ymin=-30, ymax=10,
+    xtick={0.1,1,10,100},
+    ytick={-30,-20,-10,0,10},
+]
+% 渐近线
+\addplot[blue, thick, domain=0.1:10] {0};
+\addplot[blue, thick, domain=10:100] {-20*(log10(x)-1)};
+% 精确曲线
+\addplot[red, dashed, thick, samples=100, domain=0.1:100] 
+    {-20*log10(sqrt(1+(x/10)^2))};
+% 标注
+\node[blue] at (axis cs:1,2) {\small 0 dB/dec};
+\node[blue] at (axis cs:30,-20) {\small -20 dB/dec};
+\node[red] at (axis cs:10,-3) [pin={180:{\small $\omega_c=10$}}] {};
+\node[red] at (axis cs:10,-3) {\textbullet};
+\end{axis}
+\end{tikzpicture}
+
+\small\textit{一阶极点 $G(s)=\frac{1}{1+0.1s}$ 的转折频率}
+\end{center}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{关键概念：}
+\begin{itemize}
+    \item \textbf{渐近线}（蓝色实线）：在转折频率处改变斜率
+    \item \textbf{精确曲线}（红色虚线）：在转折频率处与渐近线有偏差
+    \item \textbf{修正值}：一阶环节在 $\omega_c$ 处偏差 $-3$ dB，二阶环节偏差 $\pm 6$ dB
+\end{itemize}
 
 \subsubsection{低频段渐近线的确定}
 
-对于标准型 $G(s) = K \frac{\prod(1+T_i s)}{\prod(1+T_j s)}$（以及其高阶形式）：
+低频段渐近线是伯德图绘制的起点，由系统型别和增益唯一确定。
+
+\begin{minipage}[t]{0.52\textwidth}
+对于标准型 $G(s) = K \frac{\prod(1+T_i s)}{s^v\prod(1+T_j s)}$：
 \begin{itemize}
-    \item 低频段的斜率由系统型别 $v$（积分环节 $s^v$ 的个数）决定，为 $-20v$ dB/dec
-    \item 这条渐近线（或其延长线）必定经过点 $(1, 20\log_{10}K)$
-    \item 也可以通过点 $(\omega_0, 20\lg K - 20v\lg\omega_0)$ 来确定直线
+    \item \textbf{斜率}：由系统型别 $v$（积分环节 $s^v$ 的个数）决定
+    \begin{itemize}
+        \item $v=0$（0型系统）：斜率 $0$ dB/dec
+        \item $v=1$（I型系统）：斜率 $-20$ dB/dec
+        \item $v=2$（II型系统）：斜率 $-40$ dB/dec
+    \end{itemize}
+    \item \textbf{定位点1}：渐近线（或其延长线）\textbf{必过点 $(1, 20\lg K)$}
+    \item \textbf{定位点2}（$v \geq 1$ 时）：与 0dB 线交于 $(\sqrt[v]{K}, 0)$
 \end{itemize}
+
+\vspace{0.2cm}
+\textbf{例如：}$G(s) = \frac{10}{s(1+0.1s)}$
+\begin{itemize}
+    \item $K=10$，$v=1$（I型系统）
+    \item 低频斜率：$-20$ dB/dec
+    \item 定位点1：$(1, 20\lg 10) = (1, 20)$ dB
+    \item 定位点2：$(\sqrt[1]{10}, 0) = (10, 0)$ dB
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\begin{center}
+\textbf{低频渐近线图示：}
+
+\begin{tikzpicture}[scale=0.9]
+\begin{axis}[
+    width=6.5cm, height=6cm,
+    xmode=log,
+    xlabel={$\omega$ (rad/s)},
+    ylabel={$L(\omega)$ (dB)},
+    grid=both,
+    xmin=0.1, xmax=100,
+    ymin=-20, ymax=30,
+    xtick={0.1,1,10,100},
+    ytick={-20,0,20},
+]
+% 低频渐近线（延长线）
+\addplot[blue, thick, dashed, domain=0.1:100] {20-20*log10(x)};
+% 完整渐近线（包括转折后）
+\addplot[red, very thick, domain=0.1:10] {20-20*log10(x)};
+\addplot[red, very thick, domain=10:100] {20-20*log10(x)-20*log10(x/10)};
+
+% 标注定位点
+\node[red] at (axis cs:1,20) {\Large\textbullet};
+\node[red, right] at (axis cs:1,20) {\small $(1, 20\lg K)$};
+\node[red] at (axis cs:10,0) {\Large\textbullet};
+\node[red, above right] at (axis cs:10,0) {\small $(\sqrt[v]{K}, 0)$};
+
+% 标注斜率
+\draw[<->, thick] (axis cs:1,20) -- (axis cs:10,0);
+\node at (axis cs:3,12) {\small $-20v$ dB/dec};
+
+% 标注转折频率
+\node[green!60!black] at (axis cs:10,-15) [pin={90:\small 转折频率}] {};
+\end{axis}
+\end{tikzpicture}
+
+\small\textit{$G(s)=\frac{10}{s(1+0.1s)}$ 的低频渐近线}
+\end{center}
+\end{minipage}
 
 \subsubsection{例题：伯德图绘制示例}
 
@@ -385,8 +511,73 @@ G(s) = K \frac{\prod(1+T_{zi}s)\prod((s/\omega_{ni})^2+2\zeta_i(s/\omega_{ni})+1
 
 \textbf{【最终验证】}：绘制完成后，检查最后一个频段的斜率是否等于 $-20(n-m)$ dB/dec，其中 $n$ 是分母阶次，$m$ 是分子阶次。
 
+\vspace{0.3cm}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!60!black,title=六步法绘制流程图示]
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+\begin{axis}[
+    width=13cm, height=7cm,
+    xmode=log,
+    xlabel={\large $\omega$ (rad/s)},
+    ylabel={\large $L(\omega)$ (dB)},
+    grid=both,
+    xmin=0.01, xmax=100,
+    ymin=-60, ymax=40,
+    xtick={0.01,0.1,1,10,100},
+    ytick={-60,-40,-20,0,20,40},
+    legend pos=north east,
+]
+% 示例系统：G(s) = 10(s+1) / [s(s+10)(s+100)]
+% K=10, v=1, 转折频率: 1, 10, 100
+
+% 低频段 (v=1, 斜率-20dB/dec)
+\addplot[blue, ultra thick, domain=0.01:1] {20-20*log10(x)};
+\addlegendentry{低频段：$-20$ dB/dec}
+
+% 中频段1 (经过ω=1零点，斜率变为0)
+\addplot[red, ultra thick, domain=1:10] {0};
+\addlegendentry{经过零点：0 dB/dec}
+
+% 中频段2 (经过ω=10极点，斜率变为-20)
+\addplot[green!60!black, ultra thick, domain=10:100] {-20*log10(x/10)};
+\addlegendentry{经过极点：$-20$ dB/dec}
+
+% 标注关键点
+\node[blue] at (axis cs:1,20) {\Large\textbullet};
+\node[blue, above] at (axis cs:1,20) {\small 步骤5: $(1, 20\lg K)$};
+
+\node[red] at (axis cs:1,0) {\Large\textbullet};
+\node[red, below right] at (axis cs:1,0) {\small 步骤2: $\omega_1=1$ (零点)};
+
+\node[green!60!black] at (axis cs:10,0) {\Large\textbullet};
+\node[green!60!black, below] at (axis cs:10,0) {\small 步骤6: $\omega_2=10$ (极点)};
+
+% 标注斜率
+\draw[<->, thick, blue] (axis cs:0.1,40) -- (axis cs:1,20);
+\node[blue] at (axis cs:0.3,32) {\small $-20v$};
+
+\draw[<->, thick, red] (axis cs:2,0) -- (axis cs:8,0);
+\node[red] at (axis cs:4,3) {\small $0$};
+
+\draw[<->, thick, green!60!black] (axis cs:20,-6) -- (axis cs:80,-18);
+\node[green!60!black] at (axis cs:40,-10) {\small $-20$};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\vspace{-0.2cm}
+\small
+\textbf{示例：}$G(s) = \frac{10(s+1)}{s(s+10)}$ 的绘制过程：
+\textbf{步骤1-3:} $K=10, v=1$；\textbf{步骤2:} $\omega_1=1$ (零点), $\omega_2=10$ (极点)；
+\textbf{步骤5:} 从 $(1,20)$ dB 开始，斜率 $-20$ dB/dec；
+\textbf{步骤6:} 在 $\omega_1=1$ 处斜率 $+20$，变为 0 dB/dec；在 $\omega_2=10$ 处斜率 $-20$，变为 $-20$ dB/dec
+\end{tcolorbox}
+
 \subsubsection{转折频率处的修正}
 
+渐近线在转折频率附近与精确曲线存在偏差，需要修正以提高精度。
+
+\begin{minipage}[t]{0.48\textwidth}
 \textbf{一阶环节 $\frac{1}{1+Ts}$ 的修正：}
 
 \begin{center}
@@ -395,12 +586,13 @@ G(s) = K \frac{\prod(1+T_{zi}s)\prod((s/\omega_{ni})^2+2\zeta_i(s/\omega_{ni})+1
 频率 & 渐近线误差 & 精确值修正 \\
 \hline
 $0.5\omega_c$ & $0$ dB & $-1$ dB \\
-$\omega_c$ & $0$ dB & $-3$ dB \\
+$\omega_c$ & $0$ dB & $\textbf{-3 dB}$ \\
 $2\omega_c$ & $0$ dB & $-1$ dB \\
 \hline
 \end{tabular}
 \end{center}
 
+\vspace{0.3cm}
 \textbf{二阶环节的修正}
 
 取决于阻尼比 $\zeta$，在 $\omega = \omega_n$ 处：
@@ -409,9 +601,55 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
     \item $\zeta = 0.2$：谐振峰值约 $+7$ dB
     \item $\zeta = 0.3$：谐振峰值约 $+3$ dB
     \item $\zeta = 0.5$：误差约 $-1$ dB
-    \item $\zeta = 0.707$：误差 $-3$ dB（临界阻尼）
+    \item $\zeta = 0.707$：误差 $\textbf{-3 dB}$（临界阻尼）
     \item $\zeta = 1.0$：误差 $-6$ dB（过阻尼）
 \end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\begin{center}
+\textbf{修正值图示（一阶极点）：}
+
+\begin{tikzpicture}[scale=0.9]
+\begin{axis}[
+    width=6.5cm, height=5.5cm,
+    xmode=log,
+    xlabel={$\omega/\omega_c$},
+    ylabel={$L(\omega)$ (dB)},
+    grid=both,
+    xmin=0.1, xmax=10,
+    ymin=-25, ymax=5,
+    xtick={0.1,0.5,1,2,10},
+    xticklabels={$0.1\omega_c$,$0.5\omega_c$,$\omega_c$,$2\omega_c$,$10\omega_c$},
+    ytick={-20,-10,-3,0},
+    legend pos=north east,
+]
+% 渐近线
+\addplot[blue, thick, domain=0.1:1] {0};
+\addplot[blue, thick, domain=1:10] {-20*(log10(x))};
+\addlegendentry{渐近线}
+
+% 精确曲线
+\addplot[red, thick, dashed, samples=100, domain=0.1:10] 
+    {-20*log10(sqrt(1+x^2))};
+\addlegendentry{精确曲线}
+
+% 标注修正点
+\node[green!60!black] at (axis cs:0.5,-1) {\textbullet};
+\node[green!60!black, left] at (axis cs:0.5,-1) {\tiny $-1$ dB};
+
+\node[green!60!black] at (axis cs:1,-3) {\Large\textbullet};
+\node[green!60!black, right] at (axis cs:1,-3) {\small $-3$ dB};
+
+\node[green!60!black] at (axis cs:2,-7) {\textbullet};
+\node[green!60!black, right] at (axis cs:2,-7) {\tiny $-1$ dB};
+
+\end{axis}
+\end{tikzpicture}
+
+\small\textit{一阶环节的渐近线与精确曲线对比}
+\end{center}
+\end{minipage}
 
 \subsubsection{六步法综合例题}
 
@@ -587,7 +825,7 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
 
 \subsubsection{快速参考}
 
-以下表格是伯德图绘制中各种典型环节的**快速参考**，可在考试或实际绘图时查阅。
+以下表格是伯德图绘制中各种典型环节的\textbf{快速参考}，可在考试或实际绘图时查阅。
 
 \textbf{1. 伯德图绘制规则速查表}
 
@@ -651,6 +889,51 @@ $+90°$ @ $\omega_n$ \\
     \item \textbf{积分/微分}：无转折频率，斜率固定
 \end{itemize}
 
+\vspace{0.3cm}
+\textbf{典型环节斜率可视化对比：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=14cm, height=6cm,
+    xmode=log,
+    xlabel={$\omega$ (rad/s)},
+    ylabel={$L(\omega)$ (dB)},
+    grid=both,
+    xmin=0.1, xmax=100,
+    ymin=-50, ymax=50,
+    xtick={0.1,1,10,100},
+    ytick={-40,-20,0,20,40},
+    legend pos=north west,
+    legend style={font=\small}
+]
+% 积分环节 1/s (斜率-20)
+\addplot[blue, ultra thick, domain=0.1:100] {20-20*log10(x)};
+\addlegendentry{积分 $\frac{1}{s}$: $-20$ dB/dec}
+
+% 比例环节 K=10
+\addplot[black, thick, domain=0.1:100] {20};
+\addlegendentry{比例 $K=10$: 0 dB/dec}
+
+% 微分环节 s (斜率+20)
+\addplot[green!60!black, ultra thick, domain=0.1:100] {20*log10(x)};
+\addlegendentry{微分 $s$: $+20$ dB/dec}
+
+% 一阶极点 (转折频率10)
+\addplot[red, thick, dashed, domain=0.1:10] {0};
+\addplot[red, thick, dashed, domain=10:100] {-20*log10(x/10)};
+\addlegendentry{一阶极点 $\frac{1}{1+0.1s}$: 0→$-20$ dB/dec}
+
+% 一阶零点 (转折频率10)
+\addplot[orange, thick, dotted, domain=0.1:10] {0};
+\addplot[orange, thick, dotted, domain=10:100] {20*log10(x/10)};
+\addlegendentry{一阶零点 $1+0.1s$: 0→$+20$ dB/dec}
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
 \textbf{2. 修正值详表}
 
 极点与零点总是"互为镜像"的，掌握以下规律能加快绘图速度。

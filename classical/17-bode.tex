@@ -311,20 +311,20 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 
 以下表格是伯德图绘制中各种典型环节的**快速参考**。对于更详细的分析、图示和计算示例，请参考前面"典型环节的伯德图"部分。
 
-{\renewcommand{\arraystretch}{2.2}
+{\renewcommand{\arraystretch}{2.0}
 \small
 \begin{center}
-\begin{tabular}{|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|p{4.8cm}|c|}
 \hline
 \rowcolor{blue!30}
-\multicolumn{5}{c|}{\Large\textbf{伯德图典型环节速查表}} \\
+\multicolumn{5}{|c|}{\Large\textbf{伯德图典型环节速查表}} \\
 \hline
 \rowcolor{blue!15}
-\textbf{环节} & \textbf{传递函数} & \textbf{转折频率} & \textbf{幅频特性} & \textbf{相频特性} \\
+\textbf{环节} & \textbf{传递函数} & \textbf{转折频率} & \textbf{幅频斜率} & \textbf{相频} \\
 \hline
 
 \rowcolor{gray!8}
-\textbf{比例} & $K$ & — & $0$ dB/dec & $0°$ 或 $180°$ \\
+\textbf{比例} & $K$ & — & $0$ dB/dec & $0°/180°$ \\
 \hline
 
 \rowcolor{white}
@@ -337,25 +337,25 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 
 \rowcolor{white}
 \textbf{一阶极点} & $\frac{1}{1+Ts}$ & $\omega_c = \frac{1}{T}$ & 
-$0 \text{ dB/dec}$ ($\omega<\omega_c$) 或 $-20 \text{ dB/dec}$ ($\omega>\omega_c$) & 
+低频：$0$；高频：$-20$ dB/dec & 
 $-45°$ @ $\omega_c$ \\
 \hline
 
 \rowcolor{gray!8}
 \textbf{一阶零点} & $1+Ts$ & $\omega_c = \frac{1}{T}$ & 
-$0 \text{ dB/dec}$ ($\omega<\omega_c$) 或 $+20 \text{ dB/dec}$ ($\omega>\omega_c$) & 
+低频：$0$；高频：$+20$ dB/dec & 
 $+45°$ @ $\omega_c$ \\
 \hline
 
 \rowcolor{white}
 \textbf{二阶极点} & $\frac{\omega_n^2}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$ & 
-$0 \text{ dB/dec}$ ($\omega<\omega_n$) 或 $-40 \text{ dB/dec}$ ($\omega>\omega_n$) & 
+低频：$0$；高频：$-40$ dB/dec & 
 $-90°$ @ $\omega_n$ \\
 \hline
 
 \rowcolor{gray!8}
 \textbf{二阶零点} & $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$ & 
-$0 \text{ dB/dec}$ ($\omega<\omega_n$) 或 $+40 \text{ dB/dec}$ ($\omega>\omega_n$) & 
+低频：$0$；高频：$+40$ dB/dec & 
 $+90°$ @ $\omega_n$ \\
 \hline
 

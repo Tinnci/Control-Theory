@@ -395,7 +395,8 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
     xlabel={频率 $\omega$ (rad/s)},
     xmin=0.1, xmax=1000
 ]
-\nextgroupplot[ylabel={幅度 (dB)}, legend pos=south west]
+\nextgroupplot[ylabel={幅度 (dB)}, legend pos=south west, 
+    legend style={fill=white, fill opacity=0.8, draw opacity=1, text opacity=1, font=\tiny}]
 \addplot[blue, thick, samples=100, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.1*10*x)^2))};
 \addlegendentry{$\zeta=0.1$}
 \addplot[red, thick, samples=100, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*0.5*10*x)^2))};
@@ -403,7 +404,8 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 \addplot[green!60!black, thick, samples=100, domain=0.1:1000] {20*log10(100/sqrt((100-x^2)^2 + (2*1.0*10*x)^2))};
 \addlegendentry{$\zeta=1.0$}
 
-\nextgroupplot[ylabel={相位 (度)}, legend pos=south west]
+\nextgroupplot[ylabel={相位 (度)}, legend pos=north east,
+    legend style={fill=white, fill opacity=0.8, draw opacity=1, text opacity=1, font=\tiny}]
 \addplot[blue, thick, samples=100, domain=0.1:1000] {deg(-atan2(2*0.1*10*x, 100-x^2))};
 \addlegendentry{$\zeta=0.1$}
 \addplot[red, thick, samples=100, domain=0.1:1000] {deg(-atan2(2*0.5*10*x, 100-x^2))};
@@ -525,7 +527,8 @@ G(s) = K \frac{\prod(1+T_{zi}s)\prod((s/\omega_{ni})^2+2\zeta_i(s/\omega_{ni})+1
     ymin=-60, ymax=40,
     xtick={0.01,0.1,1,10,100},
     ytick={-60,-40,-20,0,20,40},
-    legend pos=north east,
+    legend pos=south west,
+    legend style={fill=white, fill opacity=0.8, draw opacity=1, text opacity=1, font=\small},
 ]
 % 示例系统：G(s) = 10(s+1) / [s(s+10)(s+100)]
 % K=10, v=1, 转折频率: 1, 10, 100
@@ -622,7 +625,8 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
     xtick={0.1,0.5,1,2,10},
     xticklabels={$0.1\omega_c$,$0.5\omega_c$,$\omega_c$,$2\omega_c$,$10\omega_c$},
     ytick={-20,-10,-3,0},
-    legend pos=north east,
+    legend pos=south west,
+    legend style={fill=white, fill opacity=0.8, draw opacity=1, text opacity=1, font=\tiny},
 ]
 % 渐近线
 \addplot[blue, thick, domain=0.1:1] {0};
@@ -904,8 +908,8 @@ $+90°$ @ $\omega_n$ \\
     ymin=-50, ymax=50,
     xtick={0.1,1,10,100},
     ytick={-40,-20,0,20,40},
-    legend pos=north west,
-    legend style={font=\small}
+    legend pos=outer north east,
+    legend style={font=\scriptsize},
 ]
 % 积分环节 1/s (斜率-20)
 \addplot[blue, ultra thick, domain=0.1:100] {20-20*log10(x)};

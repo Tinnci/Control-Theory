@@ -273,6 +273,184 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 
 \subsection{伯德图的绘制方法}
 
+\subsubsection{伯德图绘制规则总览}
+
+以下表格总结了伯德图绘制中各种典型环节的规则：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{longtable}{>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{4.5cm}|>{\raggedright\arraybackslash}p{4.5cm}}
+\hline
+\rowcolor{blue!30}
+\multicolumn{3}{c}{\Large\textbf{伯德图典型环节绘制规则}} \\
+\hline
+\rowcolor{blue!15}
+\textbf{环节类型} & \textbf{幅频特性规则} & \textbf{相频特性规则} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{blue!30}
+\multicolumn{3}{c}{\Large\textbf{伯德图典型环节绘制规则（续）}} \\
+\hline
+\rowcolor{blue!15}
+\textbf{环节类型} & \textbf{幅频特性规则} & \textbf{相频特性规则} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\rowcolor{gray!8}
+\multirow{3}{*}{\centering\textbf{比例环节} \\ $K$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 横轴全为常数 $20\lg|K|$ dB
+\item 水平线，斜率 $0$ dB/dec
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item $K>0$：相位 $0°$；$K<0$：相位 $\pm 180°$
+\item 相位不随频率变化
+\end{enumerate} \\
+\hline
+
+\rowcolor{white}
+\multirow{3}{*}{\centering\textbf{积分环节} \\ $\frac{1}{s}$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频渐近线从点 $(1, 20\lg K)$ 出发
+\item 斜率 $-20$ dB/dec（十倍频）
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 相位恒定 $-90°$
+\item I 型系统有无穷远圆弧
+\end{enumerate} \\
+\hline
+
+\rowcolor{gray!8}
+\multirow{3}{*}{\centering\textbf{微分环节} \\ $s$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 从点 $(1, 20\lg K)$ 出发
+\item 斜率 $+20$ dB/dec（十倍频）
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 相位恒定 $+90°$
+\item 常见于补偿器设计
+\end{enumerate} \\
+\hline
+
+\rowcolor{white}
+\multirow{4}{*}{\centering\textbf{一阶极点} \\ $\frac{1}{1+Ts}$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 转折频率 $\omega_c = \frac{1}{T}$
+\item 低频斜率 $0$ dB/dec
+\item 高频斜率 $-20$ dB/dec
+\item 在 $\omega_c$ 处修正 $-3$ dB
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频 $0°$，高频 $-90°$
+\item $\omega=\omega_c$ 时相位 $-45°$
+\item 变化范围：$0° \to -90°$
+\end{enumerate} \\
+\hline
+
+\rowcolor{gray!8}
+\multirow{4}{*}{\centering\textbf{一阶零点} \\ $1+Ts$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 转折频率 $\omega_c = \frac{1}{T}$
+\item 低频斜率 $0$ dB/dec
+\item 高频斜率 $+20$ dB/dec
+\item 在 $\omega_c$ 处修正 $+3$ dB
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频 $0°$，高频 $+90°$
+\item $\omega=\omega_c$ 时相位 $+45°$
+\item 变化范围：$0° \to +90°$
+\end{enumerate} \\
+\hline
+
+\rowcolor{white}
+\multirow{4}{*}{\centering\textbf{二阶极点} \\ $\frac{\omega_n^2}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 转折频率 $\omega_c = \omega_n$
+\item 低频斜率 $0$ dB/dec
+\item 高频斜率 $-40$ dB/dec
+\item $\zeta < 0.707$ 时有谐振峰
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频 $0°$，高频 $-180°$
+\item $\omega=\omega_n$ 时相位 $-90°$
+\item 阻尼比越小变化越快
+\end{enumerate} \\
+\hline
+
+\rowcolor{gray!8}
+\multirow{4}{*}{\centering\textbf{二阶零点} \\ $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 转折频率 $\omega_c = \omega_n$
+\item 低频斜率 $0$ dB/dec
+\item 高频斜率 $+40$ dB/dec
+\item $\zeta < 0.707$ 时有谷值
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频 $0°$，高频 $+180°$
+\item $\omega=\omega_n$ 时相位 $+90°$
+\item 阻尼比越小变化越快
+\end{enumerate} \\
+\hline
+
+\rowcolor{white}
+\multirow{3}{*}{\centering\textbf{多重极点} \\ $s^{-n}$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频斜率 $-20n$ dB/dec
+\item 各频段斜率变化 $-20n$ dB/dec
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频相位 $-90n°$
+\item 高频相位 $-90n°$（恒定）
+\end{enumerate} \\
+\hline
+
+\rowcolor{gray!8}
+\multirow{3}{*}{\centering\textbf{多重零点} \\ $s^{n}$} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频斜率 $+20n$ dB/dec
+\item 各频段斜率变化 $+20n$ dB/dec
+\end{enumerate} & \vspace{0.1cm}\begin{enumerate}[label=\arabic*., leftmargin=*]\setlength{\itemsep}{0.2cm}
+\item 低频相位 $+90n°$
+\item 高频相位 $+90n°$（恒定）
+\end{enumerate} \\
+\hline
+
+\end{longtable}
+\renewcommand{\arraystretch}{1}
+\end{center}
+
+\subsubsection{转折频率处的修正规则}
+
+\textbf{一阶环节修正}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{环节位置} & \textbf{频率比例} & \textbf{幅值修正（dB）} & \textbf{备注} \\
+\hline
+\multirow{3}{*}{一阶极点 $\frac{1}{1+Ts}$} & $0.5\omega_c$ & $-1$ dB & 略小于渐近线 \\
+\cline{2-4}
+& $\omega_c$ & $-3$ dB & 精确值 \\
+\cline{2-4}
+& $2\omega_c$ & $-1$ dB & 略小于渐近线 \\
+\hline
+\multirow{3}{*}{一阶零点 $1+Ts$} & $0.5\omega_c$ & $+1$ dB & 略大于渐近线 \\
+\cline{2-4}
+& $\omega_c$ & $+3$ dB & 精确值 \\
+\cline{2-4}
+& $2\omega_c$ & $+1$ dB & 略大于渐近线 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{二阶环节修正（分母极点）}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{阻尼比 $\zeta$} & \textbf{在 $\omega=\omega_n$ 处的值} & \textbf{幅值（dB）} & \textbf{特征} \\
+\hline
+$0.1$ & 谐振峰值 & $\approx +14$ dB & 强谐振 \\
+\hline
+$0.2$ & 谐振峰值 & $\approx +7$ dB & 明显谐振 \\
+\hline
+$0.3$ & 谐振峰值 & $\approx +3$ dB & 中等谐振 \\
+\hline
+$0.5$ & 略低于渐近线 & $\approx -1$ dB & 弱谐振 \\
+\hline
+$0.707$ & 临界值 & $-3$ dB & 临界阻尼 \\
+\hline
+$1.0$ & 过阻尼 & $-6$ dB & 无谐振 \\
+\hline
+\end{tabular}
+\end{center}
+
 \subsubsection{伯德图绘制六步法}
 
 这是一套标准化、模板化的绘制流程，特别适合考试手绘：

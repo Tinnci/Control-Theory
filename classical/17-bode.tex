@@ -24,6 +24,75 @@
     \item 便于分析系统的稳定性和性能指标
 \end{enumerate}
 
+\subsection{伯德图的基本概念}
+
+伯德图由两个图组成，横坐标都是对数刻度的频率 $\omega$：
+\begin{itemize}
+    \item \textbf{对数幅频图}：纵坐标是系统幅值的对数 $L(\omega) = 20\log_{10}A(\omega)$，单位为分贝(dB)
+    \item \textbf{对数相频图}：纵坐标是系统相角 $\phi(\omega)$，单位为度(°)
+\end{itemize}
+
+\subsubsection{对数幅频图的转折频率}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{典型环节类别} & \textbf{典型环节传递函数} & \textbf{转折频率及斜率变化} \\
+\hline
+\multirow{2}{*}{一阶环节} & $\displaystyle\frac{1}{Ts+1}$ & $\omega_c = \frac{1}{T}$，斜率 $-20$ dB/dec \\
+\cline{2-3}
+& $Ts+1$ & $\omega_c = \frac{1}{T}$，斜率 $+20$ dB/dec \\
+\hline
+\multirow{2}{*}{二阶环节} & $\displaystyle\frac{1}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$，斜率 $-40$ dB/dec \\
+\cline{2-3}
+& $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$，斜率 $+40$ dB/dec \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{低频段渐近线的确定}
+
+对于标准型 $G(s) = K \frac{\prod(1+T_i s)}{\prod(1+T_j s)}$（以及其高阶形式）：
+\begin{itemize}
+    \item 低频段的斜率由系统型别 $v$（积分环节 $s^v$ 的个数）决定，为 $-20v$ dB/dec
+    \item 这条渐近线（或其延长线）必定经过点 $(1, 20\log_{10}K)$
+    \item 也可以通过点 $(\omega_0, 20\lg K - 20v\lg\omega_0)$ 来确定直线
+\end{itemize}
+
+\subsubsection{例题：伯德图绘制示例}
+
+\textbf{例1：绘制 $G(s) = \frac{2}{(2s+1)(8s+1)}$ 的开环对数幅频特性曲线。}
+
+\textit{解：}
+\begin{enumerate}
+    \item \textbf{标准型}：$G(s) = \frac{2}{(2s+1)(8s+1)}$。开环增益 $K=2$，系统为0型 ($v=0$)
+    
+    \item \textbf{转折频率}：
+    \begin{align*}
+    T_1=2 &\implies \omega_1=\frac{1}{2}=0.5 \text{ rad/s} \\
+    T_2=8 &\implies \omega_2=\frac{1}{8}=0.125 \text{ rad/s}
+    \end{align*}
+    按从小到大排列：$\omega_1 = 0.125$ rad/s，$\omega_2 = 0.5$ rad/s
+    
+    \item \textbf{低频段} ($\omega < 0.125$)：
+    \begin{itemize}
+        \item 斜率为 $-20 \times 0 = 0$ dB/dec（水平线）
+        \item 幅值为 $L(\omega) = 20\lg(2) \approx 6$ dB
+    \end{itemize}
+    
+    \item \textbf{中频段1} ($0.125 < \omega < 0.5$)：
+    \begin{itemize}
+        \item 经过第一个转折频率 $\omega_1 = 0.125$（一阶极点）
+        \item 斜率变为 $0 - 20 = -20$ dB/dec
+    \end{itemize}
+    
+    \item \textbf{高频段} ($\omega > 0.5$)：
+    \begin{itemize}
+        \item 经过第二个转折频率 $\omega_2 = 0.5$（一阶极点）
+        \item 斜率变为 $-20 - 20 = -40$ dB/dec
+    \end{itemize}
+\end{enumerate}
+
 \subsection{典型环节的伯德图}
 
 \subsubsection{比例环节 \texorpdfstring{$K$}{K}}
@@ -236,215 +305,23 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 \BodeTF{num/{100},den/{1,20,100}}{0.1}{1000}
 \end{center}
 
-\subsection{伯德图的基本概念}
-
-伯德图由两个图组成，横坐标都是对数刻度的频率 $\omega$：
-\begin{itemize}
-    \item \textbf{对数幅频图}：纵坐标是系统幅值的对数 $L(\omega) = 20\log_{10}A(\omega)$，单位为分贝(dB)
-    \item \textbf{对数相频图}：纵坐标是系统相角 $\phi(\omega)$，单位为度(°)
-\end{itemize}
-
-\subsubsection{对数幅频图的转折频率}
-
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\textbf{典型环节类别} & \textbf{典型环节传递函数} & \textbf{转折频率及斜率变化} \\
-\hline
-\multirow{2}{*}{一阶环节} & $\displaystyle\frac{1}{Ts+1}$ & $\omega_c = \frac{1}{T}$，斜率 $-20$ dB/dec \\
-\cline{2-3}
-& $Ts+1$ & $\omega_c = \frac{1}{T}$，斜率 $+20$ dB/dec \\
-\hline
-\multirow{2}{*}{二阶环节} & $\displaystyle\frac{1}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$，斜率 $-40$ dB/dec \\
-\cline{2-3}
-& $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$，斜率 $+40$ dB/dec \\
-\hline
-\end{tabular}
-\end{center}
-
-\subsubsection{低频段渐近线的确定}
-
-对于标准型 $G(s) = K \frac{\prod(1+T_i s)}{\prod(1+T_j s)}$（以及其高阶形式）：
-\begin{itemize}
-    \item 低频段的斜率由系统型别 $v$（积分环节 $s^v$ 的个数）决定，为 $-20v$ dB/dec
-    \item 这条渐近线（或其延长线）必定经过点 $(1, 20\log_{10}K)$
-    \item 也可以通过点 $(\omega_0, 20\lg K - 20v\lg\omega_0)$ 来确定直线
-\end{itemize}
-
-\subsubsection{例题：伯德图绘制示例}
-
-\textbf{例1：绘制 $G(s) = \frac{2}{(2s+1)(8s+1)}$ 的开环对数幅频特性曲线。}
-
-\textit{解：}
-\begin{enumerate}
-    \item \textbf{标准型}：$G(s) = \frac{2}{(2s+1)(8s+1)}$。开环增益 $K=2$，系统为0型 ($v=0$)
-    
-    \item \textbf{转折频率}：
-    \begin{align*}
-    T_1=2 &\implies \omega_1=\frac{1}{2}=0.5 \text{ rad/s} \\
-    T_2=8 &\implies \omega_2=\frac{1}{8}=0.125 \text{ rad/s}
-    \end{align*}
-    按从小到大排列：$\omega_1 = 0.125$ rad/s，$\omega_2 = 0.5$ rad/s
-    
-    \item \textbf{低频段} ($\omega < 0.125$)：
-    \begin{itemize}
-        \item 斜率为 $-20 \times 0 = 0$ dB/dec（水平线）
-        \item 幅值为 $L(\omega) = 20\lg(2) \approx 6$ dB
-    \end{itemize}
-    
-    \item \textbf{中频段1} ($0.125 < \omega < 0.5$)：
-    \begin{itemize}
-        \item 经过第一个转折频率 $\omega_1 = 0.125$（一阶极点）
-        \item 斜率变为 $0 - 20 = -20$ dB/dec
-    \end{itemize}
-    
-    \item \textbf{高频段} ($\omega > 0.5$)：
-    \begin{itemize}
-        \item 经过第二个转折频率 $\omega_2 = 0.5$（一阶极点）
-        \item 斜率变为 $-20 - 20 = -40$ dB/dec
-    \end{itemize}
-\end{enumerate}
-
 \subsection{伯德图的绘制方法}
 
-\subsubsection{伯德图绘制规则速查表}
+\subsubsection{幅值近似原则（关键技巧）}
 
-以下表格是伯德图绘制中各种典型环节的**快速参考**。对于更详细的分析、图示和计算示例，请参考前面"典型环节的伯德图"部分。
+在手绘伯德图和计算剪切频率时，使用的是近似幅值而非精确值。这是加快计算的关键：
 
-{\renewcommand{\arraystretch}{2.0}
-\small
-\begin{center}
-\begin{tabular}{|c|c|c|p{4.8cm}|c|}
-\hline
-\rowcolor{blue!30}
-\multicolumn{5}{|c|}{\Large\textbf{伯德图典型环节速查表}} \\
-\hline
-\rowcolor{blue!15}
-\textbf{环节} & \textbf{传递函数} & \textbf{转折频率} & \textbf{幅频斜率} & \textbf{相频} \\
-\hline
-
-\rowcolor{gray!8}
-\textbf{比例} & $K$ & — & $0$ dB/dec & $0°/180°$ \\
-\hline
-
-\rowcolor{white}
-\textbf{积分} & $\frac{1}{s}$ & — & $-20$ dB/dec & $-90°$ \\
-\hline
-
-\rowcolor{gray!8}
-\textbf{微分} & $s$ & — & $+20$ dB/dec & $+90°$ \\
-\hline
-
-\rowcolor{white}
-\textbf{一阶极点} & $\frac{1}{1+Ts}$ & $\omega_c = \frac{1}{T}$ & 
-低频：$0$；高频：$-20$ dB/dec & 
-$-45°$ @ $\omega_c$ \\
-\hline
-
-\rowcolor{gray!8}
-\textbf{一阶零点} & $1+Ts$ & $\omega_c = \frac{1}{T}$ & 
-低频：$0$；高频：$+20$ dB/dec & 
-$+45°$ @ $\omega_c$ \\
-\hline
-
-\rowcolor{white}
-\textbf{二阶极点} & $\frac{\omega_n^2}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$ & 
-低频：$0$；高频：$-40$ dB/dec & 
-$-90°$ @ $\omega_n$ \\
-\hline
-
-\rowcolor{gray!8}
-\textbf{二阶零点} & $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$ & 
-低频：$0$；高频：$+40$ dB/dec & 
-$+90°$ @ $\omega_n$ \\
-\hline
-
-\end{tabular}
-\end{center}
-}
-
-\textbf{快速参考提示：}
+\textbf{一阶环节 $(Ts+1)$ 的近似}：
 \begin{itemize}
-    \item \textbf{转折点修正}：一阶环节修正 $\pm 3$ dB，二阶环节修正 $\pm 6$ dB
-    \item \textbf{极点}：幅频向下（负斜率），相频向下（变负）
-    \item \textbf{零点}：幅频向上（正斜率），相频向上（变正）
-    \item \textbf{积分/微分}：无转折频率，斜率固定
+    \item 在转折频率前（$\omega < 1/T$）：虚部 $T\omega < 1$，\textbf{保留常数项1}。环节幅值近似为 $1$
+    \item 在转折频率后（$\omega > 1/T$）：虚部 $T\omega > 1$，\textbf{保留虚部项 $T\omega$}。环节幅值近似为 $T\omega$
 \end{itemize}
 
-\subsubsection{关键修正值详表}
-
-注意：极点与零点总是"互为镜像"的，掌握以下规律能加快绘图速度。
-
-{\renewcommand{\arraystretch}{1.6}
-\begin{center}
-\small
-\begin{tabular}{|c|c|c|}
-\hline
-\rowcolor{blue!20}
-\textbf{特征} & \textbf{一阶/二阶极点} & \textbf{一阶/二阶零点} \\
-\hline
-\rowcolor{gray!5}
-\textbf{斜率变化} & 负值（衰减） & 正值（增强） \\
-\hline
-\textbf{相位变化方向} & 向下（越来越负） & 向上（越来越正） \\
-\hline
-\rowcolor{gray!5}
-\textbf{在转折点修正} & 减少 $\pm 3$ dB / $\pm 6$ dB & 增加 $\pm 3$ dB / $\pm 6$ dB \\
-\hline
-\textbf{谐振特征} & 可能出现谐振峰 & 可能出现谷值 \\
-\hline
-\end{tabular}
-\end{center}
-}
-
-\subsubsection{修正值参考表 — 用于精化渐近线}
-
-用于将渐近线逼近精确曲线。在考试手绘时，可根据精度要求选择性使用。
-
-\textbf{一阶环节（极点和零点）}
-
-\begin{center}
-\small
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{环节} & \textbf{频率点} & \textbf{修正值} & \textbf{说明} \\
-\hline
-\multirow{3}{*}{\shortstack{一阶极点 \\ $\frac{1}{1+Ts}$}} & $0.5\omega_c$ & $-1$ dB & 稍低于渐近线 \\
-\cline{2-4}
-& $\omega_c$ & $-3$ dB & 精确值 \\
-\cline{2-4}
-& $2\omega_c$ & $-1$ dB & 稍低于渐近线 \\
-\hline
-\multirow{3}{*}{\shortstack{一阶零点 \\ $1+Ts$}} & $0.5\omega_c$ & $+1$ dB & 稍高于渐近线 \\
-\cline{2-4}
-& $\omega_c$ & $+3$ dB & 精确值 \\
-\cline{2-4}
-& $2\omega_c$ & $+1$ dB & 稍高于渐近线 \\
-\hline
-\end{tabular}
-\end{center}
-
-\textbf{二阶极点 — 不同阻尼比下的谐振特性}
-
-\begin{center}
-\small
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{阻尼比 $\zeta$} & \textbf{在 $\omega=\omega_n$ 处} & \textbf{幅值（dB）} & \textbf{特征分类} \\
-\hline
-$0.1 \sim 0.3$ & 明显谐振峰 & $+3$ 到 $+14$ dB & 强谐振 \\
-\hline
-$0.5$ & 轻微谐振 & $\approx -1$ dB & 中等阻尼 \\
-\hline
-$0.707$ & 临界点 & $-3$ dB & \textbf{临界阻尼} \\
-\hline
-$1.0$ 以上 & 过阻尼 & $-6$ dB 以下 & 无谐振 \\
-\hline
-\end{tabular}
-\end{center}
-
-\vspace{0.3cm}
-\textit{提示：当 $\zeta > 0.707$ 时，二阶极点的行为接近两个一阶极点，可用叠加法求解。}
+\textbf{二阶环节 $((s/\omega_n)^2 + ...)$ 的近似}：
+\begin{itemize}
+    \item 在转折频率前（$\omega < \omega_n$）：\textbf{保留常数项1}。环节幅值近似为 $1$
+    \item 在转折频率后（$\omega > \omega_n$）：\textbf{保留平方项 $(s/\omega_n)^2$}。环节幅值近似为 $(\omega/\omega_n)^2$
+\end{itemize}
 
 \subsubsection{伯德图绘制六步法}
 
@@ -507,79 +384,6 @@ G(s) = K \frac{\prod(1+T_{zi}s)\prod((s/\omega_{ni})^2+2\zeta_i(s/\omega_{ni})+1
 \end{center}
 
 \textbf{【最终验证】}：绘制完成后，检查最后一个频段的斜率是否等于 $-20(n-m)$ dB/dec，其中 $n$ 是分母阶次，$m$ 是分子阶次。
-
-\subsubsection{幅值近似原则（关键技巧）}
-
-在手绘伯德图和计算剪切频率时，使用的是近似幅值而非精确值。这是加快计算的关键：
-
-\textbf{一阶环节 $(Ts+1)$ 的近似}：
-\begin{itemize}
-    \item 在转折频率前（$\omega < 1/T$）：虚部 $T\omega < 1$，\textbf{保留常数项1}。环节幅值近似为 $1$
-    \item 在转折频率后（$\omega > 1/T$）：虚部 $T\omega > 1$，\textbf{保留虚部项 $T\omega$}。环节幅值近似为 $T\omega$
-\end{itemize}
-
-\textbf{二阶环节 $((s/\omega_n)^2 + ...)$ 的近似}：
-\begin{itemize}
-    \item 在转折频率前（$\omega < \omega_n$）：\textbf{保留常数项1}。环节幅值近似为 $1$
-    \item 在转折频率后（$\omega > \omega_n$）：\textbf{保留平方项 $(s/\omega_n)^2$}。环节幅值近似为 $(\omega/\omega_n)^2$
-\end{itemize}
-
-\subsubsection{基本步骤（原有内容）}
-\begin{enumerate}
-    \item \textbf{将传递函数化为标准形式}
-    \begin{align*}
-    G(s) = \frac{K\prod(1+T_i s)\prod(\frac{s^2}{\omega_{ni}^2}+\frac{2\zeta_i}{\omega_{ni}}s+1)}{s^v\prod(1+T_j s)\prod(\frac{s^2}{\omega_{nj}^2}+\frac{2\zeta_j}{\omega_{nj}}s+1)}
-    \end{align*}
-    
-    \item \textbf{识别各个典型环节}
-    \begin{itemize}
-        \item 比例环节 $K$
-        \item 积分/微分环节 $s^{\pm v}$
-        \item 一阶环节 $(1+Ts)^{\pm 1}$
-        \item 二阶环节 $(\frac{s^2}{\omega_n^2}+\frac{2\zeta s}{\omega_n}+1)^{\pm 1}$
-    \end{itemize}
-    
-    \item \textbf{确定转折频率}
-    \begin{itemize}
-        \item 一阶环节：$\omega_c = \frac{1}{T}$
-        \item 二阶环节：$\omega_c = \omega_n$
-        \item 按从小到大排列所有转折频率
-    \end{itemize}
-    
-    \item \textbf{绘制低频渐近线}
-    \begin{itemize}
-        \item 起始点：选择 $\omega = 1$ rad/s 或最小转折频率的 $\frac{1}{10}$
-        \item 起始斜率：由积分环节数 $v$ 决定（$-20v$ dB/十倍频）
-        \item 起始幅值：$L(\omega_0) = 20\lg K - 20v\lg\omega_0$
-    \end{itemize}
-    
-    \item \textbf{绘制各段渐近线}
-    \begin{itemize}
-        \item 每经过一个转折频率，斜率改变
-        \item 零点（分子）：斜率增加
-        \begin{itemize}
-            \item 一阶零点：$+20$ dB/十倍频
-            \item 二阶零点：$+40$ dB/十倍频
-        \end{itemize}
-        \item 极点（分母）：斜率减少
-        \begin{itemize}
-            \item 一阶极点：$-20$ dB/十倍频
-            \item 二阶极点：$-40$ dB/十倍频
-        \end{itemize}
-    \end{itemize}
-    
-    \item \textbf{修正转折频率附近的误差}
-    \begin{itemize}
-        \item 一阶环节在 $\omega = \omega_c$ 处：$-3$ dB（极点）或 $+3$ dB（零点）
-        \item 二阶环节：根据阻尼比 $\zeta$ 修正
-    \end{itemize}
-    
-    \item \textbf{绘制相频特性}
-    \begin{itemize}
-        \item 每个环节的相位直接相加
-        \item 注意各环节的相位贡献
-    \end{itemize}
-\end{enumerate}
 
 \subsubsection{转折频率处的修正}
 
@@ -780,6 +584,143 @@ $2\omega_c$ & $0$ dB & $-1$ dB \\
 \end{minipage}
 
 \end{tcolorbox}
+
+\subsubsection{快速参考}
+
+以下表格是伯德图绘制中各种典型环节的**快速参考**，可在考试或实际绘图时查阅。
+
+\textbf{1. 伯德图绘制规则速查表}
+
+{\renewcommand{\arraystretch}{2.0}
+\small
+\begin{center}
+\begin{tabular}{|c|c|c|p{4.8cm}|c|}
+\hline
+\rowcolor{blue!30}
+\multicolumn{5}{|c|}{\Large\textbf{伯德图典型环节速查表}} \\
+\hline
+\rowcolor{blue!15}
+\textbf{环节} & \textbf{传递函数} & \textbf{转折频率} & \textbf{幅频斜率} & \textbf{相频} \\
+\hline
+
+\rowcolor{gray!8}
+\textbf{比例} & $K$ & — & $0$ dB/dec & $0°/180°$ \\
+\hline
+
+\rowcolor{white}
+\textbf{积分} & $\frac{1}{s}$ & — & $-20$ dB/dec & $-90°$ \\
+\hline
+
+\rowcolor{gray!8}
+\textbf{微分} & $s$ & — & $+20$ dB/dec & $+90°$ \\
+\hline
+
+\rowcolor{white}
+\textbf{一阶极点} & $\frac{1}{1+Ts}$ & $\omega_c = \frac{1}{T}$ & 
+低频：$0$；高频：$-20$ dB/dec & 
+$-45°$ @ $\omega_c$ \\
+\hline
+
+\rowcolor{gray!8}
+\textbf{一阶零点} & $1+Ts$ & $\omega_c = \frac{1}{T}$ & 
+低频：$0$；高频：$+20$ dB/dec & 
+$+45°$ @ $\omega_c$ \\
+\hline
+
+\rowcolor{white}
+\textbf{二阶极点} & $\frac{\omega_n^2}{(s/\omega_n)^2+2\zeta(s/\omega_n)+1}$ & $\omega_c = \omega_n$ & 
+低频：$0$；高频：$-40$ dB/dec & 
+$-90°$ @ $\omega_n$ \\
+\hline
+
+\rowcolor{gray!8}
+\textbf{二阶零点} & $(s/\omega_n)^2+2\zeta(s/\omega_n)+1$ & $\omega_c = \omega_n$ & 
+低频：$0$；高频：$+40$ dB/dec & 
+$+90°$ @ $\omega_n$ \\
+\hline
+
+\end{tabular}
+\end{center}
+}
+
+\textbf{快速参考提示：}
+\begin{itemize}
+    \item \textbf{转折点修正}：一阶环节修正 $\pm 3$ dB，二阶环节修正 $\pm 6$ dB
+    \item \textbf{极点}：幅频向下（负斜率），相频向下（变负）
+    \item \textbf{零点}：幅频向上（正斜率），相频向上（变正）
+    \item \textbf{积分/微分}：无转折频率，斜率固定
+\end{itemize}
+
+\textbf{2. 修正值详表}
+
+极点与零点总是"互为镜像"的，掌握以下规律能加快绘图速度。
+
+{\renewcommand{\arraystretch}{1.6}
+\begin{center}
+\small
+\begin{tabular}{|c|c|c|}
+\hline
+\rowcolor{blue!20}
+\textbf{特征} & \textbf{一阶/二阶极点} & \textbf{一阶/二阶零点} \\
+\hline
+\rowcolor{gray!5}
+\textbf{斜率变化} & 负值（衰减） & 正值（增强） \\
+\hline
+\textbf{相位变化方向} & 向下（越来越负） & 向上（越来越正） \\
+\hline
+\rowcolor{gray!5}
+\textbf{在转折点修正} & 减少 $\pm 3$ dB / $\pm 6$ dB & 增加 $\pm 3$ dB / $\pm 6$ dB \\
+\hline
+\textbf{谐振特征} & 可能出现谐振峰 & 可能出现谷值 \\
+\hline
+\end{tabular}
+\end{center}
+}
+
+\textbf{一阶环节（极点和零点）修正值参考}
+
+\begin{center}
+\small
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{环节} & \textbf{频率点} & \textbf{修正值} & \textbf{说明} \\
+\hline
+\multirow{3}{*}{\shortstack{一阶极点 \\ $\frac{1}{1+Ts}$}} & $0.5\omega_c$ & $-1$ dB & 稍低于渐近线 \\
+\cline{2-4}
+& $\omega_c$ & $-3$ dB & 精确值 \\
+\cline{2-4}
+& $2\omega_c$ & $-1$ dB & 稍低于渐近线 \\
+\hline
+\multirow{3}{*}{\shortstack{一阶零点 \\ $1+Ts$}} & $0.5\omega_c$ & $+1$ dB & 稍高于渐近线 \\
+\cline{2-4}
+& $\omega_c$ & $+3$ dB & 精确值 \\
+\cline{2-4}
+& $2\omega_c$ & $+1$ dB & 稍高于渐近线 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{二阶极点 — 不同阻尼比下的谐振特性}
+
+\begin{center}
+\small
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{阻尼比 $\zeta$} & \textbf{在 $\omega=\omega_n$ 处} & \textbf{幅值（dB）} & \textbf{特征分类} \\
+\hline
+$0.1 \sim 0.3$ & 明显谐振峰 & $+3$ 到 $+14$ dB & 强谐振 \\
+\hline
+$0.5$ & 轻微谐振 & $\approx -1$ dB & 中等阻尼 \\
+\hline
+$0.707$ & 临界点 & $-3$ dB & \textbf{临界阻尼} \\
+\hline
+$1.0$ 以上 & 过阻尼 & $-6$ dB 以下 & 无谐振 \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.3cm}
+\textit{提示：当 $\zeta > 0.707$ 时，二阶极点的行为接近两个一阶极点，可用叠加法求解。}
 
 \subsection{伯德图的应用}
 

@@ -1018,52 +1018,895 @@ $1.0$ 以上 & 过阻尼 & $-6$ dB 以下 & 无谐振 \\
 \subsection{伯德图的应用}
 
 \subsubsection{由伯德图确定传递函数}
-根据伯德图的幅频特性，可以反推传递函数：
+
+根据伯德图的幅频特性，可以反推传递函数。这是伯德图绘制的逆过程。
+
+\textbf{基本步骤：}
 \begin{enumerate}
-    \item 从低频渐近线斜率确定积分环节数 $v$
-    \item 从转折频率确定各环节的时间常数
-    \item 从低频幅值确定增益 $K$
-    \item 从斜率变化确定零极点类型
+    \item \textbf{从低频渐近线确定系统型别 $v$ 和增益 $K$}
+    \begin{itemize}
+        \item 低频渐近线斜率 = $-20v$ dB/dec，确定积分环节数 $v$
+        \item 低频渐近线（或其延长线）过点 $(1, 20\lg K)$，确定增益 $K$
+    \end{itemize}
+    
+    \item \textbf{从转折频率确定各环节的时间常数}
+    \begin{itemize}
+        \item 一阶环节：$\omega_c = \frac{1}{T} \implies T = \frac{1}{\omega_c}$
+        \item 二阶环节：$\omega_c = \omega_n$
+    \end{itemize}
+    
+    \item \textbf{从斜率变化确定零极点类型}
+    \begin{itemize}
+        \item 斜率增加 $+20$ dB/dec：分子一阶（零点）
+        \item 斜率减少 $-20$ dB/dec：分母一阶（极点）
+        \item 斜率增加 $+40$ dB/dec：分子二阶（零点）
+        \item 斜率减少 $-40$ dB/dec：分母二阶（极点）
+    \end{itemize}
+    
+    \item \textbf{组合得到传递函数}
+    \begin{itemize}
+        \item 将所有环节相乘得到标准型传递函数
+    \end{itemize}
 \end{enumerate}
 
+\textbf{例题：已知系统的伯德图如下，求其传递函数。}
+
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{解题分析：}
+
+从给定的伯德图观察：
+
+\textbf{步骤1：确定型别和增益}
+\begin{itemize}
+    \item 低频段斜率：$-20$ dB/dec
+    \item 系统型别：$v = 1$（I型系统）
+    \item 延长低频线过点 $(1, 40)$ dB
+    \item 增益：$K = 10^{40/20} = 100$
+\end{itemize}
+
+\textbf{步骤2-3：识别转折频率和环节}
+\begin{itemize}
+    \item $\omega_1 = 1$ rad/s：斜率从 $-20$ 变为 $0$
+    \begin{itemize}
+        \item 变化：$+20$ dB/dec
+        \item 环节：分子一阶零点 $(1+s)$
+    \end{itemize}
+    \item $\omega_2 = 10$ rad/s：斜率从 $0$ 变为 $-20$
+    \begin{itemize}
+        \item 变化：$-20$ dB/dec
+        \item 环节：分母一阶极点 $\frac{1}{1+0.1s}$
+    \end{itemize}
+\end{itemize}
+
+\textbf{步骤4：组合传递函数}
+\begin{align*}
+G(s) &= \frac{K(1+s)}{s(1+0.1s)} \\
+&= \frac{100(s+1)}{s(s+10)}
+\end{align*}
+
+\textbf{验证：}
+\begin{itemize}
+    \item 低频段：$L(1) = 20\lg 100 - 20 = 40$ dB ✓
+    \item 转折频率：$1, 10$ rad/s ✓
+    \item 最终斜率：$-20(2-1) = -20$ dB/dec ✓
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\textbf{伯德图（已知）：}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+\begin{axis}[
+    width=6.5cm, height=6.5cm,
+    xmode=log,
+    xlabel={$\omega$ (rad/s)},
+    ylabel={$L(\omega)$ (dB)},
+    grid=both,
+    xmin=0.1, xmax=100,
+    ymin=-20, ymax=50,
+    xtick={0.1,1,10,100},
+    ytick={-20,0,20,40},
+]
+% 渐近线
+\addplot[blue, ultra thick, domain=0.1:1] {40-20*log10(x)};
+\addplot[blue, ultra thick, domain=1:10] {20};
+\addplot[blue, ultra thick, domain=10:100] {20-20*log10(x/10)};
+
+% 标注转折频率
+\node[red] at (axis cs:1,20) {\Large\textbullet};
+\node[red, above left] at (axis cs:1,20) {\small $\omega_1=1$};
+
+\node[red] at (axis cs:10,20) {\Large\textbullet};
+\node[red, above right] at (axis cs:10,20) {\small $\omega_2=10$};
+
+% 标注斜率
+\node[blue] at (axis cs:0.3,47) {\small $-20$ dB/dec};
+\node[blue] at (axis cs:3,23) {\small $0$ dB/dec};
+\node[blue] at (axis cs:40,5) {\small $-20$ dB/dec};
+
+% 标注定位点
+\node[green!60!black] at (axis cs:1,40) {\Large\textbullet};
+\node[green!60!black, right] at (axis cs:1,40) {\tiny $(1, 40)$ dB};
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{关键技巧总结：}
+\begin{itemize}
+    \item \textbf{低频段是关键}：从低频渐近线可以确定 $K$ 和 $v$
+    \item \textbf{转折频率即环节参数}：直接读出时间常数或自然频率
+    \item \textbf{斜率变化即环节类型}：$\pm 20$ 是一阶，$\pm 40$ 是二阶；正号是零点，负号是极点
+    \item \textbf{最终验证很重要}：检查分子分母阶次与最终斜率是否匹配
+\end{itemize}
+
 \subsubsection{稳定性分析}
+
+伯德图可以直观地分析闭环系统的稳定性，通过增益裕度和相位裕度来量化稳定裕量。
+
+\begin{minipage}[t]{0.52\textwidth}
 \textbf{增益裕度（Gain Margin，GM）：}
 \begin{align*}
 \text{GM} = -L(\omega_g) \text{ dB}
 \end{align*}
-其中 $\omega_g$ 为相位穿越频率（$\phi(\omega_g) = -180°$）
+其中 $\omega_g$ 为\textbf{相位穿越频率}（$\phi(\omega_g) = -180°$）
 
+\textbf{物理意义：}系统增益可以增加多少倍而不失稳
+
+\vspace{0.3cm}
 \textbf{相位裕度（Phase Margin，PM）：}
 \begin{align*}
 \text{PM} = 180° + \phi(\omega_c)
 \end{align*}
-其中 $\omega_c$ 为幅值穿越频率（$L(\omega_c) = 0$ dB）
+其中 $\omega_c$ 为\textbf{剪切频率}（增益穿越频率，$L(\omega_c) = 0$ dB）
 
+\textbf{物理意义：}相位可以再滞后多少度而不失稳
+
+\vspace{0.3cm}
 \textbf{稳定性判据：}
 \begin{itemize}
-    \item 稳定条件：GM $> 0$ dB 且 PM $> 0°$
-    \item 一般要求：GM $\geq 6$ dB，PM $\geq 30°$
-    \item 良好性能：GM $\geq 10$ dB，PM $\geq 45°$
+    \item \textbf{稳定条件}：GM $> 0$ dB 且 PM $> 0°$
+    \item \textbf{一般要求}：GM $\geq 6$ dB，PM $\geq 30°$
+    \item \textbf{良好性能}：GM $\geq 10$ dB，PM $\geq 45°$
 \end{itemize}
 
-\subsubsection{性能指标估算}
+\vspace{0.2cm}
+\textbf{裕度与性能的关系：}
 \begin{itemize}
-    \item \textbf{带宽频率} $\omega_b$：$L(\omega_b) = -3$ dB 对应的频率
-    \begin{itemize}
-        \item 带宽越大，系统响应越快
-    \end{itemize}
-    \item \textbf{谐振峰值} $M_r$：幅频特性的最大值
-    \begin{itemize}
-        \item $M_r$ 越大，超调量越大
-        \item 一般要求 $M_r < 1.3$（即 $< 2.3$ dB）
-    \end{itemize}
-    \item \textbf{低频增益}：反映稳态精度
-    \begin{itemize}
-        \item 型别越高，低频增益越大，稳态误差越小
-    \end{itemize}
-    \item \textbf{中频段斜率}：影响稳定性
-    \begin{itemize}
-        \item 斜率为 $-20$ dB/十倍频时系统一般稳定
-        \item 斜率为 $-40$ dB/十倍频时需检查相位裕度
-    \end{itemize}
+    \item PM $\approx 45°$：超调量 $\sigma\% \approx 20\%$
+    \item PM $\approx 60°$：超调量 $\sigma\% \approx 10\%$
+    \item PM 越大，系统越稳定，但响应越慢
+    \item GM 和 PM 越大，系统对参数变化越不敏感
 \end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{裕度图示：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=1 by 2, vertical sep=0.3cm},
+    width=6.5cm, height=3.5cm,
+    xmode=log,
+    grid=both,
+    xmin=0.1, xmax=100,
+]
+\nextgroupplot[ylabel={$L(\omega)$ (dB)}, ytick={-20,0,20}, ymin=-25, ymax=25]
+% 幅频曲线
+\addplot[blue, thick, samples=100, domain=0.1:100] 
+    {20-20*log10(x)-20*log10(sqrt(1+(x/10)^2))};
+% 0dB线
+\addplot[red, dashed] coordinates {(0.1,0) (100,0)};
+% 标注
+\node[red] at (axis cs:3,0) {\textbullet};
+\node[red, above] at (axis cs:3,3) {\tiny $\omega_c$ (剪切频率)};
+\node[green!60!black] at (axis cs:15,-10) {\textbullet};
+\node[green!60!black, below] at (axis cs:15,-13) {\tiny GM};
+\draw[<->, green!60!black, thick] (axis cs:15,-10) -- (axis cs:15,0);
+
+\nextgroupplot[ylabel={$\phi(\omega)$ (°)}, xlabel={$\omega$ (rad/s)}, 
+    ytick={-180,-90,0}, ymin=-200, ymax=0]
+% 相频曲线
+\addplot[blue, thick, samples=100, domain=0.1:100] 
+    {-90-deg(atan(x/10))};
+% -180°线
+\addplot[red, dashed] coordinates {(0.1,-180) (100,-180)};
+% 标注
+\node[red] at (axis cs:3,-135) {\textbullet};
+\node[red, above right] at (axis cs:3,-135) {\tiny PM};
+\draw[<->, red, thick] (axis cs:3,-180) -- (axis cs:3,-135);
+\node[green!60!black] at (axis cs:15,-180) {\textbullet};
+\node[green!60!black, left] at (axis cs:15,-180) {\tiny $\omega_g$};
+\end{groupplot}
+\end{tikzpicture}
+\end{center}
+
+\small\textit{示例：$G(s)=\frac{10}{s(1+0.1s)}$ 的裕度标注}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{例题：求系统 $G(s) = \frac{10}{s(1+0.1s)}$ 的增益裕度和相位裕度。}
+
+\textit{解：}
+
+\textbf{1. 求剪切频率 $\omega_c$（$L(\omega_c) = 0$ dB）}
+\begin{align*}
+L(\omega) &= 20\lg 10 - 20\lg\omega - 20\lg\sqrt{1+0.01\omega^2} = 0 \\
+\text{近似：} & \quad \omega < 10 \text{ 时，} L(\omega) \approx 20 - 20\lg\omega = 0 \\
+&\implies \omega_c \approx 10 \text{ rad/s}
+\end{align*}
+
+\textbf{2. 计算相位裕度}
+\begin{align*}
+\phi(\omega_c) &= -90° - \arctan(0.1 \times 10) = -90° - 45° = -135° \\
+\text{PM} &= 180° + \phi(\omega_c) = 180° - 135° = 45°
+\end{align*}
+
+\textbf{3. 求相位穿越频率 $\omega_g$（$\phi(\omega_g) = -180°$）}
+\begin{align*}
+\phi(\omega_g) &= -90° - \arctan(0.1\omega_g) = -180° \\
+\arctan(0.1\omega_g) &= 90° \implies \omega_g \to \infty
+\end{align*}
+该系统相位永远不会达到 $-180°$，所以 $\text{GM} = \infty$ dB
+
+\textbf{结论：}PM $= 45°$（良好），GM $= \infty$（极稳定）。系统稳定，性能良好。
+
+\subsubsection{性能指标估算}
+
+频域性能指标与时域性能指标有密切关系，可从伯德图直接估算系统的动态性能。
+
+\begin{minipage}[t]{0.52\textwidth}
+\textbf{1. 带宽频率 $\omega_b$}
+
+闭环幅频特性 $|M(\omega)|$ 下降到 $-3$ dB（即 $0.707$）时对应的频率。
+
+\textbf{物理意义：}
+\begin{itemize}
+    \item 系统能够有效跟踪输入信号的最高频率
+    \item 带宽越大，系统响应越快
+    \item 近似关系：上升时间 $t_r \approx \frac{1.8}{\omega_b}$
+\end{itemize}
+
+\textbf{估算方法：}
+\begin{itemize}
+    \item 开环 $\omega_c$ 近似等于闭环 $\omega_b$
+    \item 精确计算需用闭环频率响应
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{2. 谐振峰值 $M_r$}
+
+闭环幅频特性的最大值 $M_r = \max|M(\omega)|$。
+
+\textbf{物理意义：}
+\begin{itemize}
+    \item 反映系统的相对稳定性
+    \item $M_r$ 越大，系统阻尼越小，超调越大
+    \item 典型关系：
+    \begin{itemize}
+        \item $M_r = 1.0$（0 dB）：$\sigma\% = 0\%$（$\zeta = 1$）
+        \item $M_r = 1.3$（2.3 dB）：$\sigma\% \approx 30\%$（$\zeta = 0.4$）
+        \item $M_r = 1.6$（4 dB）：$\sigma\% \approx 50\%$（$\zeta = 0.3$）
+    \end{itemize}
+    \item \textbf{设计要求}：一般要求 $M_r \leq 1.3$（即 $\leq 2.3$ dB）
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{3. 相位裕度与超调量}
+
+经验公式（适用于二阶主导极点系统）：
+\begin{align*}
+\sigma\% &\approx 100 \cdot e^{-\frac{\pi \text{PM}}{180°\sqrt{1+(\text{PM}/180°)^2}}} \\
+\zeta &\approx \frac{\text{PM}}{100°}
+\end{align*}
+
+\textbf{常用对应关系：}
+\begin{itemize}
+    \item PM $= 30°$ $\implies$ $\sigma\% \approx 40\%$
+    \item PM $= 45°$ $\implies$ $\sigma\% \approx 20\%$
+    \item PM $= 60°$ $\implies$ $\sigma\% \approx 10\%$
+\end{itemize}
+
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{性能指标图示：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=6.5cm, height=5.5cm,
+    xmode=log,
+    grid=both,
+    xlabel={$\omega$ (rad/s)},
+    ylabel={$|M(\omega)|$ (dB)},
+    xmin=0.1, xmax=100,
+    ymin=-20, ymax=5,
+    ytick={-20,-15,-10,-5,-3,0,2.3},
+    legend style={at={(0.5,-0.22)}, anchor=north, font=\tiny, 
+                  fill=white, fill opacity=0.8, draw=black, 
+                  legend columns=2},
+]
+% 典型闭环频率响应（不同阻尼）
+\addplot[blue, thick, samples=200, domain=0.1:100] 
+    {-20*log10(sqrt((1-(x/10)^2)^2 + (2*0.7*x/10)^2))};
+\addlegendentry{$\zeta=0.7$}
+
+\addplot[red, thick, samples=200, domain=0.1:100] 
+    {-20*log10(sqrt((1-(x/10)^2)^2 + (2*0.4*x/10)^2))};
+\addlegendentry{$\zeta=0.4$}
+
+% -3dB线
+\addplot[green!60!black, dashed, thick] coordinates {(0.1,-3) (100,-3)};
+\addlegendentry{-3 dB}
+
+% 0dB线
+\addplot[black, dashed] coordinates {(0.1,0) (100,0)};
+
+% 标注
+\node[blue] at (axis cs:13,-3) {\textbullet};
+\node[blue, above right] at (axis cs:13,-3) {\tiny $\omega_b$};
+\draw[->, blue] (axis cs:13,-3) -- (axis cs:13,-8);
+
+\node[red] at (axis cs:8,2.3) {\textbullet};
+\node[red, above] at (axis cs:8,2.8) {\tiny $M_r = 1.3$ (2.3 dB)};
+\draw[->, red, thick] (axis cs:6,2.3) -- (axis cs:8,2.3);
+
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\small\textit{闭环幅频特性示例（$\omega_n = 10$ rad/s）}
+
+\vspace{0.3cm}
+\textbf{4. 低频增益与稳态精度}
+
+低频段幅值反映系统的稳态性能：
+
+\begin{itemize}
+    \item \textbf{0 型系统}：低频增益有限，位置误差有限
+    \item \textbf{I 型系统}：低频段斜率 $-20$ dB/dec，位置误差为 0
+    \item \textbf{II 型系统}：低频段斜率 $-40$ dB/dec，速度误差为 0
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{5. 中频段特性与稳定性}
+
+\begin{itemize}
+    \item \textbf{斜率 $-20$ dB/dec}：系统一般稳定
+    \item \textbf{斜率 $-40$ dB/dec}：需检查相位裕度
+    \item \textbf{斜率 $-60$ dB/dec}：通常不稳定
+\end{itemize}
+
+\textbf{理想中频段特性：}
+\begin{itemize}
+    \item 斜率：$-20$ dB/dec
+    \item 跨度：1.5-2 个十倍频
+    \item 剪切频率 $\omega_c$ 选择合适（满足带宽和稳定性要求）
+\end{itemize}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{例题：根据开环伯德图估算闭环系统性能指标。}
+
+已知单位反馈系统开环传递函数 $G(s) = \frac{100}{s(1+0.1s)}$，从伯德图估算闭环性能。
+
+\textit{解：}
+
+\textbf{1. 求剪切频率（开环）}
+
+$L(\omega) = 40 - 20\lg\omega - 20\lg\sqrt{1+0.01\omega^2} = 0$
+
+近似求解：$\omega_c \approx 10$ rad/s
+
+\textbf{2. 估算带宽（闭环）}
+
+$\omega_b \approx \omega_c = 10$ rad/s $\implies$ 上升时间 $t_r \approx \frac{1.8}{10} = 0.18$ s
+
+\textbf{3. 计算相位裕度}
+
+$\phi(\omega_c) = -90° - \arctan(1) = -135°$ $\implies$ PM $= 45°$
+
+\textbf{4. 估算超调量}
+
+由 PM $= 45°$ 查表或用公式：$\sigma\% \approx 20\%$
+
+等效阻尼比：$\zeta \approx 0.45$
+
+\textbf{5. 估算谐振峰值}
+
+$M_r \approx \frac{1}{2\zeta\sqrt{1-\zeta^2}} = \frac{1}{2 \times 0.45 \times 0.89} \approx 1.25$ $\implies$ 1.9 dB
+
+\textbf{结论：}$\omega_b = 10$ rad/s，$t_r \approx 0.18$ s，$\sigma\% \approx 20\%$，$M_r \approx 1.25$（性能良好）
+
+\subsubsection{超前校正}
+
+超前校正用于提高系统的相位裕度，改善稳定性和快速性，但不改善稳态精度。
+
+\textbf{超前校正器传递函数：}
+\begin{align*}
+G_c(s) = K_c \frac{1 + \alpha T s}{1 + T s}, \quad \alpha > 1
+\end{align*}
+
+其中：$K_c$ 为补偿增益，$\alpha$ 为超前比，$T$ 为时间常数。
+
+\begin{minipage}[t]{0.52\textwidth}
+\textbf{频率特性：}
+
+\textbf{1. 转折频率：}
+\begin{itemize}
+    \item 低频转折点：$\omega_1 = \frac{1}{\alpha T}$（零点）
+    \item 高频转折点：$\omega_2 = \frac{1}{T}$（极点）
+    \item 关系：$\omega_2 = \alpha \omega_1$
+\end{itemize}
+
+\textbf{2. 最大相位超前角：}
+\begin{align*}
+\phi_m &= \arcsin\frac{\alpha - 1}{\alpha + 1} \\
+\text{对应频率：} \quad \omega_m &= \frac{1}{T\sqrt{\alpha}} = \sqrt{\omega_1 \omega_2}
+\end{align*}
+
+\textbf{3. 幅值特性：}
+\begin{itemize}
+    \item 在 $\omega_m$ 处增益：$20\lg\sqrt{\alpha}$ dB
+    \item 高频增益：$20\lg(\alpha K_c)$ dB
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{设计步骤：}
+
+\textbf{步骤1：}确定所需相位超前量
+\begin{align*}
+\phi_m = \text{PM}_d - \text{PM}_0 + (5° \sim 15°)
+\end{align*}
+其中 PM$_d$ 为期望相位裕度，PM$_0$ 为原系统相位裕度，$5°$-$15°$ 为补偿量。
+
+\textbf{步骤2：}计算超前比
+\begin{align*}
+\alpha = \frac{1 + \sin\phi_m}{1 - \sin\phi_m}
+\end{align*}
+
+\textbf{步骤3：}确定新剪切频率 $\omega_c'$
+
+使原系统在 $\omega_c'$ 处的增益为 $-20\lg\sqrt{\alpha}$ dB。
+
+\textbf{步骤4：}计算时间常数
+\begin{align*}
+T = \frac{1}{\omega_c' \sqrt{\alpha}}
+\end{align*}
+
+\textbf{步骤5：}选择补偿增益 $K_c$ 使低频增益满足要求。
+
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{超前校正器伯德图：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=1 by 2, vertical sep=0.3cm},
+    width=6.5cm, height=3cm,
+    xmode=log,
+    grid=both,
+    xmin=0.1, xmax=100,
+]
+\nextgroupplot[ylabel={$L(\omega)$ (dB)}, ytick={0,5,10}, ymin=-2, ymax=12]
+% 幅频曲线（α=10）
+\addplot[blue, thick, samples=200, domain=0.1:100] 
+    {20*log10(sqrt(1+(10*x)^2)/sqrt(1+x^2))};
+% 渐近线
+\addplot[red, dashed, domain=0.1:1] {0};
+\addplot[red, dashed, domain=1:10] {20*log10(x)};
+\addplot[red, dashed, domain=10:100] {20*log10(10)};
+% 标注
+\node[green!60!black] at (axis cs:3.16,5) {\textbullet};
+\node[green!60!black, above] at (axis cs:3.16,6.5) {\tiny $\omega_m, 20\lg\sqrt{\alpha}$};
+\draw[<-, green!60!black] (axis cs:1,0) -- (axis cs:0.4,2);
+\node[green!60!black, left] at (axis cs:0.4,2) {\tiny $\omega_1$};
+\draw[<-, green!60!black] (axis cs:10,10) -- (axis cs:20,11);
+\node[green!60!black, right] at (axis cs:20,11) {\tiny $\omega_2$};
+
+\nextgroupplot[ylabel={$\phi(\omega)$ (°)}, xlabel={$\omega$ (rad/s)}, 
+    ytick={0,30,60}, ymin=-5, ymax=65]
+% 相频曲线
+\addplot[blue, thick, samples=200, domain=0.1:100] 
+    {deg(atan(10*x))-deg(atan(x))};
+% 标注
+\node[red] at (axis cs:3.16,54.9) {\textbullet};
+\node[red, above] at (axis cs:3.16,58) {\tiny $\phi_m$};
+\draw[->, red] (axis cs:3.16,0) -- (axis cs:3.16,54);
+\end{groupplot}
+\end{tikzpicture}
+\end{center}
+
+\small\textit{示例：$\alpha = 10$，$T = 0.316$，$\phi_m \approx 55°$}
+
+\vspace{0.3cm}
+\textbf{超前校正的作用：}
+
+\begin{itemize}
+    \item \textbf{增加相位裕度}：提高稳定性
+    \item \textbf{提高剪切频率}：加快响应速度
+    \item \textbf{减小超调量}：改善动态性能
+    \item \textbf{不改善稳态精度}：低频增益不变
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{注意事项：}
+
+\begin{itemize}
+    \item 通常 $\alpha < 20$（$\phi_m < 65°$）
+    \item $\alpha$ 过大会导致高频噪声放大
+    \item 需在 $\omega_m$ 处补偿增益损失
+\end{itemize}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{例题：}系统 $G(s) = \frac{4}{s(s+1)(0.5s+1)}$，要求 PM $\geq 45°$，设计超前校正器。
+
+\textit{解：}
+
+\textbf{1. 分析原系统}
+
+开环截止频率 $\omega_c \approx 1.6$ rad/s，相位裕度 PM$_0 = 180° - 90° - 58° - 38° \approx -6°$（不稳定）
+
+\textbf{2. 确定所需相位超前量}
+
+$\phi_m = 45° - (-6°) + 10° = 61°$（取补偿量 $10°$）
+
+\textbf{3. 计算超前比}
+
+$\alpha = \frac{1 + \sin 61°}{1 - \sin 61°} = \frac{1.875}{0.125} = 15$
+
+\textbf{4. 确定新剪切频率}
+
+原系统在 $\omega_c'$ 处增益应为 $-20\lg\sqrt{15} \approx -11.8$ dB
+
+从伯德图找到：$\omega_c' \approx 2.5$ rad/s
+
+\textbf{5. 计算时间常数}
+
+$T = \frac{1}{\omega_c'\sqrt{\alpha}} = \frac{1}{2.5 \times \sqrt{15}} \approx 0.103$
+
+\textbf{6. 校正器传递函数}
+
+$G_c(s) = \frac{1 + 1.545s}{1 + 0.103s}$（取 $K_c = 1$）
+
+\textbf{验证：}校正后 PM $\approx 45°$，满足要求。
+
+\subsubsection{滞后校正}
+
+滞后校正用于提高系统的稳态精度，同时保持或略微改善稳定性，但会降低响应速度。
+
+\textbf{滞后校正器传递函数：}
+\begin{align*}
+G_c(s) = K_c \frac{1 + T s}{1 + \beta T s}, \quad \beta > 1
+\end{align*}
+
+其中：$K_c$ 为补偿增益，$\beta$ 为滞后比，$T$ 为时间常数。
+
+\begin{minipage}[t]{0.52\textwidth}
+\textbf{频率特性：}
+
+\textbf{1. 转折频率：}
+\begin{itemize}
+    \item 低频转折点：$\omega_1 = \frac{1}{\beta T}$（极点）
+    \item 高频转折点：$\omega_2 = \frac{1}{T}$（零点）
+    \item 关系：$\omega_2 = \beta \omega_1$
+\end{itemize}
+
+\textbf{2. 相位滞后角：}
+\begin{itemize}
+    \item 最大滞后角：$\phi_{\min} = -\arcsin\frac{\beta - 1}{\beta + 1}$（负值）
+    \item 对应频率：$\omega_m = \frac{1}{T\sqrt{\beta}} = \sqrt{\omega_1 \omega_2}$
+    \item 特点：相位滞后，但幅值低频增加
+\end{itemize}
+
+\textbf{3. 幅值特性：}
+\begin{itemize}
+    \item 低频增益：$20\lg(K_c)$ dB（通常取 $K_c = \beta$）
+    \item 高频增益：$20\lg(K_c / \beta)$ dB
+    \item 低频段提升：$20\lg\beta$ dB
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{设计步骤：}
+
+\textbf{步骤1：}确定所需低频增益提升量
+
+根据稳态误差要求确定 $\beta$：
+\begin{align*}
+20\lg\beta = \text{所需低频增益提升（dB）}
+\end{align*}
+
+\textbf{步骤2：}确定新剪切频率 $\omega_c'$
+
+使新剪切频率满足相位裕度要求（通常比原 $\omega_c$ 小）。
+
+\textbf{步骤3：}选择转折频率
+
+使滞后环节在 $\omega_c'$ 处影响很小：
+\begin{align*}
+\omega_2 = \frac{1}{T} = \frac{\omega_c'}{5 \sim 10}
+\end{align*}
+
+\textbf{步骤4：}计算时间常数
+\begin{align*}
+T = \frac{5 \sim 10}{\omega_c'}, \quad \beta = \text{由步骤1确定}
+\end{align*}
+
+\textbf{步骤5：}通常取 $K_c = \beta$ 以保持原剪切频率附近增益。
+
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{滞后校正器伯德图：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=1 by 2, vertical sep=0.3cm},
+    width=6.5cm, height=3cm,
+    xmode=log,
+    grid=both,
+    xmin=0.01, xmax=100,
+]
+\nextgroupplot[ylabel={$L(\omega)$ (dB)}, ytick={0,10,20}, ymin=-2, ymax=22]
+% 幅频曲线（β=10, Kc=10）
+\addplot[blue, thick, samples=200, domain=0.01:100] 
+    {20*log10(10*sqrt(1+x^2)/sqrt(1+(10*x)^2))};
+% 渐近线
+\addplot[red, dashed, domain=0.01:0.1] {20*log10(10)};
+\addplot[red, dashed, domain=0.1:1] {20*log10(10)-20*log10(x/0.1)};
+\addplot[red, dashed, domain=1:100] {0};
+% 标注
+\draw[<-, green!60!black] (axis cs:0.1,20) -- (axis cs:0.03,21);
+\node[green!60!black, left] at (axis cs:0.03,21) {\tiny $\omega_1$};
+\draw[<-, green!60!black] (axis cs:1,0) -- (axis cs:3,2);
+\node[green!60!black, right] at (axis cs:3,2) {\tiny $\omega_2$};
+\node[purple] at (axis cs:0.01,20) {};
+\draw[<->, purple, thick] (axis cs:0.015,0) -- (axis cs:0.015,20);
+\node[purple, left] at (axis cs:0.012,10) {\tiny $20\lg\beta$};
+
+\nextgroupplot[ylabel={$\phi(\omega)$ (°)}, xlabel={$\omega$ (rad/s)}, 
+    ytick={-60,-30,0}, ymin=-65, ymax=5]
+% 相频曲线
+\addplot[blue, thick, samples=200, domain=0.01:100] 
+    {deg(atan(x))-deg(atan(10*x))};
+% 标注
+\node[red] at (axis cs:0.316,-54.9) {\textbullet};
+\node[red, below] at (axis cs:0.316,-60) {\tiny $\phi_{\min}$};
+\draw[<-, red] (axis cs:0.316,-54.9) -- (axis cs:0.8,-50);
+\end{groupplot}
+\end{tikzpicture}
+\end{center}
+
+\small\textit{示例：$\beta = 10$，$K_c = 10$，$T = 1$}
+
+\vspace{0.3cm}
+\textbf{滞后校正的作用：}
+
+\begin{itemize}
+    \item \textbf{提高低频增益}：改善稳态精度
+    \item \textbf{保持稳定性}：相位裕度基本不变或略增
+    \item \textbf{降低响应速度}：剪切频率降低
+    \item \textbf{抑制高频噪声}：高频衰减特性
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{注意事项：}
+
+\begin{itemize}
+    \item $\omega_2$ 应远小于 $\omega_c'$（通常 $\omega_2 \leq \omega_c'/5$）
+    \item 避免在中频段引入过多相位滞后
+    \item 适用于原系统相位裕度已满足要求的情况
+\end{itemize}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{例题：}系统 $G(s) = \frac{K}{s(s+1)(0.2s+1)}$，$K=5$ 时 PM $= 50°$，要求稳态速度误差系数 $K_v = 50$ s$^{-1}$，设计滞后校正器。
+
+\textit{解：}
+
+\textbf{1. 确定所需增益提升}
+
+原系统：$K_v = \lim_{s\to 0} s \cdot G(s) = 5$
+
+所需提升：$\beta = \frac{50}{5} = 10$ $\implies$ $20\lg\beta = 20$ dB
+
+\textbf{2. 分析原系统}
+
+$K = 5$ 时，$\omega_c \approx 1.5$ rad/s，PM $= 50°$（满足要求）
+
+\textbf{3. 选择新剪切频率}
+
+为保持 PM $\approx 50°$，希望滞后环节对 $\omega_c$ 影响小，选择 $\omega_c' \approx \omega_c = 1.5$ rad/s
+
+\textbf{4. 确定转折频率}
+
+$\omega_2 = \frac{\omega_c'}{10} = 0.15$ rad/s $\implies T = \frac{1}{\omega_2} = 6.67$ s
+
+$\omega_1 = \frac{\omega_2}{\beta} = 0.015$ rad/s
+
+\textbf{5. 滞后校正器}
+
+$G_c(s) = 10 \cdot \frac{1 + 6.67s}{1 + 66.7s}$
+
+\textbf{6. 校正后系统}
+
+$G_c(s)G(s) = \frac{50(1+6.67s)}{s(s+1)(0.2s+1)(1+66.7s)}$，$K_v = 50$ s$^{-1}$，PM $\approx 48°$（满足）
+
+\textbf{验证：}稳态精度提高10倍，稳定性基本保持。
+
+\subsubsection{超前-滞后综合校正}
+
+当系统既需要改善稳态精度，又需要提高稳定性和快速性时，采用超前-滞后综合校正。
+
+\textbf{综合校正器传递函数：}
+\begin{align*}
+G_c(s) = K_c \cdot \frac{(1 + \alpha T_1 s)(1 + T_2 s)}{(1 + T_1 s)(1 + \beta T_2 s)}, \quad \alpha > 1, \beta > 1
+\end{align*}
+
+\begin{minipage}[t]{0.52\textwidth}
+\textbf{结构分析：}
+
+综合校正器 = 超前部分 $\times$ 滞后部分
+
+\textbf{1. 超前部分：}$\frac{1 + \alpha T_1 s}{1 + T_1 s}$
+\begin{itemize}
+    \item 转折频率：$\omega_1' = \frac{1}{\alpha T_1}$，$\omega_2' = \frac{1}{T_1}$
+    \item 作用：提供相位超前，提高 PM
+\end{itemize}
+
+\textbf{2. 滞后部分：}$K_c \frac{1 + T_2 s}{1 + \beta T_2 s}$
+\begin{itemize}
+    \item 转折频率：$\omega_1'' = \frac{1}{\beta T_2}$，$\omega_2'' = \frac{1}{T_2}$
+    \item 作用：提高低频增益，改善稳态精度
+\end{itemize}
+
+\textbf{3. 频段分离：}
+\begin{itemize}
+    \item 滞后部分在低频段起作用（$\omega < \omega_c/10$）
+    \item 超前部分在中频段起作用（$\omega \approx \omega_c$）
+    \item 两部分互不干扰：$\omega_2'' \ll \omega_1'$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{设计步骤：}
+
+\textbf{步骤1：}根据稳态误差要求确定 $\beta$
+
+\textbf{步骤2：}根据动态性能要求确定 $\alpha$ 和超前角 $\phi_m$
+
+\textbf{步骤3：}设计滞后部分
+\begin{itemize}
+    \item 确定新剪切频率 $\omega_c'$（考虑 $\beta$ 引起的增益提升）
+    \item 选择 $\omega_2'' = \omega_c'/10$，计算 $T_2$
+\end{itemize}
+
+\textbf{步骤4：}设计超前部分
+\begin{itemize}
+    \item 在 $\omega_c'$ 处提供所需相位超前 $\phi_m$
+    \item 计算 $\alpha$ 和 $T_1$
+\end{itemize}
+
+\textbf{步骤5：}选择 $K_c$ 调整总增益
+
+\textbf{步骤6：}验证校正后系统性能
+
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{综合校正器伯德图：}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=1 by 2, vertical sep=0.3cm},
+    width=6.5cm, height=3.2cm,
+    xmode=log,
+    grid=both,
+    xmin=0.01, xmax=100,
+]
+\nextgroupplot[ylabel={$L(\omega)$ (dB)}, ytick={0,10,20}, ymin=-2, ymax=25, 
+    legend style={at={(0.5,-0.15)}, anchor=north, font=\tiny, legend columns=2}]
+% 滞后部分（低频）
+\addplot[green!60!black, dashed, samples=100, domain=0.01:10] 
+    {20*log10(10*sqrt(1+x^2)/sqrt(1+(10*x)^2))};
+\addlegendentry{滞后部分}
+% 超前部分（中高频）
+\addplot[orange, dashed, samples=100, domain=0.1:100] 
+    {20*log10(sqrt(1+(10*x)^2)/sqrt(1+x^2))};
+\addlegendentry{超前部分}
+% 综合（叠加）
+\addplot[blue, thick, samples=200, domain=0.01:100] 
+    {20*log10(10*sqrt(1+x^2)/sqrt(1+(10*x)^2)) + 20*log10(sqrt(1+(10*x)^2)/sqrt(1+x^2))};
+\addlegendentry{综合}
+
+\nextgroupplot[ylabel={$\phi(\omega)$ (°)}, xlabel={$\omega$ (rad/s)}, 
+    ytick={-60,-30,0,30,60}, ymin=-70, ymax=70]
+% 相频特性
+\addplot[blue, thick, samples=200, domain=0.01:100] 
+    {deg(atan(x))-deg(atan(10*x)) + deg(atan(10*x))-deg(atan(x))};
+\addplot[green!60!black, dashed, samples=100, domain=0.01:10] 
+    {deg(atan(x))-deg(atan(10*x))};
+\addplot[orange, dashed, samples=100, domain=0.1:100] 
+    {deg(atan(10*x))-deg(atan(x))};
+\end{groupplot}
+\end{tikzpicture}
+\end{center}
+
+\small\textit{滞后 $\beta=10$，超前 $\alpha=10$}
+
+\vspace{0.3cm}
+\textbf{综合校正的特点：}
+
+\begin{itemize}
+    \item \textbf{兼顾稳态和动态}：同时改善精度和稳定性
+    \item \textbf{设计灵活}：可独立调整两部分参数
+    \item \textbf{应用广泛}：适用于性能要求全面的系统
+    \item \textbf{参数较多}：需要仔细设计和调试
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{三种校正方式比较：}
+
+\begin{center}
+\small
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{校正方式} & \textbf{稳态精度} & \textbf{动态性能} & \textbf{适用场合} \\
+\hline
+超前 & 不变 & 改善 & PM不足，精度满足 \\
+\hline
+滞后 & 提高 & 略降 & PM满足，精度不足 \\
+\hline
+超前-滞后 & 提高 & 改善 & 精度和PM均不足 \\
+\hline
+\end{tabular}
+\end{center}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{例题：}系统 $G(s) = \frac{K}{s(s+1)(0.5s+1)}$，$K=4$，要求 $K_v = 20$ s$^{-1}$，PM $\geq 45°$。原系统 PM $\approx 17°$。设计综合校正器。
+
+\textit{解：}
+
+\textbf{1. 确定所需增益提升（滞后部分）}
+
+$\beta = \frac{20}{4} = 5$ $\implies$ $20\lg\beta = 14$ dB
+
+\textbf{2. 确定所需相位超前（超前部分）}
+
+所需：$\phi_m = 45° - 17° + 10° = 38°$ $\implies$ $\alpha = \frac{1+\sin 38°}{1-\sin 38°} \approx 4.2$
+
+\textbf{3. 设计滞后部分}
+
+原 $\omega_c \approx 1.5$ rad/s，增益提升后新 $\omega_c' \approx 3$ rad/s
+
+选择：$\omega_2'' = 0.3$ rad/s $\implies T_2 = 3.33$ s
+
+$\omega_1'' = \omega_2''/\beta = 0.06$ rad/s
+
+滞后部分：$G_{c1}(s) = 5 \cdot \frac{1+3.33s}{1+16.65s}$
+
+\textbf{4. 设计超前部分}
+
+在 $\omega_c' = 3$ rad/s 处提供 $38°$ 相位超前
+
+$T_1 = \frac{1}{\omega_c'\sqrt{\alpha}} = \frac{1}{3 \times 2.05} \approx 0.163$ s
+
+$\omega_1' = \frac{1}{\alpha T_1} = 1.46$ rad/s，$\omega_2' = \frac{1}{T_1} = 6.13$ rad/s
+
+超前部分：$G_{c2}(s) = \frac{1+0.68s}{1+0.163s}$
+
+\textbf{5. 综合校正器}
+
+$G_c(s) = 5 \cdot \frac{(1+0.68s)(1+3.33s)}{(1+0.163s)(1+16.65s)}$
+
+\textbf{验证：}校正后 $K_v = 20$ s$^{-1}$，PM $\approx 45°$，满足要求。

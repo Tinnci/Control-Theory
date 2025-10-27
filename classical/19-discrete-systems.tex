@@ -1,0 +1,488 @@
+\section{离散系统}
+
+\subsection{离散系统概述}
+
+\subsubsection{离散系统的定义}
+
+\textbf{离散系统}（数字控制系统）是指信号在时间上离散，通常涉及采样、数字处理和保持等环节。
+
+\begin{minipage}[t]{0.52\textwidth}
+\textbf{连续系统 vs 离散系统：}
+
+\textbf{连续系统：}
+\begin{itemize}
+    \item 信号连续变化
+    \item 微分方程描述
+    \item 拉普拉斯变换分析
+\end{itemize}
+
+\textbf{离散系统：}
+\begin{itemize}
+    \item 信号在采样时刻定义
+    \item 差分方程描述
+    \item Z变换分析
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{离散系统的组成：}
+
+\begin{enumerate}
+    \item \textbf{采样器}：将连续信号转换为离散序列
+    \item \textbf{数字控制器}：对离散信号进行数字处理
+    \item \textbf{保持器}：将离散信号还原为连续信号
+    \item \textbf{被控对象}：连续系统
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{采样定理（Nyquist-Shannon定理）：}
+
+为无失真恢复连续信号，采样频率必须：
+\begin{align*}
+f_s \geq 2f_{\max}
+\end{align*}
+
+或采样周期：
+\begin{align*}
+T \leq \frac{\pi}{\omega_{\max}}
+\end{align*}
+
+其中 $f_{\max}$ 是信号的最高频率分量。
+
+\textbf{工程实践：}
+\begin{itemize}
+    \item 一般取 $f_s = (6 \sim 10) f_{\max}$
+    \item 或采样周期 $T = (0.1 \sim 0.5) T_s$（$T_s$ 为系统时间常数）
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{离散控制系统结构：}
+
+离散控制系统包含以下环节：
+\begin{itemize}
+    \item 采样器（周期 $T$）
+    \item 数字控制器
+    \item 保持器（通常为零阶保持器）
+    \item 被控对象（连续系统）
+\end{itemize}
+
+采样器将连续信号在离散时刻采样，数字控制器对离散信号进行处理，保持器将离散信号还原为阶梯波形式的连续信号，最后作用于被控对象。
+
+\vspace{0.3cm}
+\textbf{采样过程：}
+
+采样过程将连续信号 $r(t)$ 在时刻 $t = kT$（$k=0,1,2,\ldots$）进行采样，得到离散序列 $r(kT)$。
+\end{minipage}
+
+\subsection{Z变换}
+
+Z变换是分析离散系统的数学工具，类似于连续系统中的拉普拉斯变换。
+
+\subsubsection{Z变换的定义}
+
+对于离散序列 $\{f(kT)\}$（$k = 0, 1, 2, \ldots$），其Z变换定义为：
+\begin{align*}
+F(z) = \mathcal{Z}\{f(kT)\} = \sum_{k=0}^{\infty} f(kT) z^{-k}
+\end{align*}
+
+其中 $z$ 是复变量。
+
+\subsubsection{Z变换与拉氏变换的关系}
+
+对于采样信号 $f^*(t) = \sum_{k=0}^{\infty} f(kT)\delta(t-kT)$，其拉氏变换为：
+\begin{align*}
+F^*(s) = \sum_{k=0}^{\infty} f(kT) e^{-skT}
+\end{align*}
+
+令 $z = e^{sT}$，则：
+\begin{align*}
+F(z) = F^*(s)\Big|_{z=e^{sT}}
+\end{align*}
+
+\textbf{$s$ 平面与 $z$ 平面的映射：}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+% s平面
+\begin{scope}[shift={(0,0)}]
+\draw[->] (-2,0) -- (2,0) node[right] {$\text{Re}(s)$};
+\draw[->] (0,-2) -- (0,2) node[above] {$\text{Im}(s)$};
+\draw[blue, thick] (-2,-2) -- (-2,2);
+\draw[red, thick] (0,-2) -- (0,2);
+\node[blue, left] at (-2,1.5) {不稳定};
+\node[red, right] at (0,1.5) {稳定};
+\node[below] at (0,-2.5) {$s$ 平面};
+\end{scope}
+
+% 箭头
+\draw[->, thick] (2.5,0) -- (3.5,0) node[midway, above] {\small $z=e^{sT}$};
+
+% z平面
+\begin{scope}[shift={(6,0)}]
+\draw[->] (-2,0) -- (2,0) node[right] {$\text{Re}(z)$};
+\draw[->] (0,-2) -- (0,2) node[above] {$\text{Im}(z)$};
+\draw[thick] (0,0) circle (1);
+\fill[blue, opacity=0.2] (0,0) circle (1);
+\node[red] at (1.5,0) {不稳定};
+\node[blue] at (0.5,0.5) {稳定};
+\node[below] at (0,-2.5) {$z$ 平面};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+\textbf{关键对应关系：}
+\begin{itemize}
+    \item $s$ 平面左半平面 $\leftrightarrow$ $z$ 平面单位圆内
+    \item $s$ 平面虚轴 $\leftrightarrow$ $z$ 平面单位圆上
+    \item $s$ 平面右半平面 $\leftrightarrow$ $z$ 平面单位圆外
+\end{itemize}
+
+\subsubsection{常用序列的Z变换}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{序列} $f(kT)$ & \textbf{Z变换} $F(z)$ & \textbf{收敛域} \\
+\hline
+$\delta(kT)$（单位脉冲） & $1$ & 全平面 \\
+\hline
+$1(kT)$（单位阶跃） & $\frac{z}{z-1}$ & $|z| > 1$ \\
+\hline
+$kT$ & $\frac{Tz}{(z-1)^2}$ & $|z| > 1$ \\
+\hline
+$e^{-akT}$ & $\frac{z}{z-e^{-aT}}$ & $|z| > e^{-aT}$ \\
+\hline
+$\sin(\omega kT)$ & $\frac{z\sin(\omega T)}{z^2 - 2z\cos(\omega T) + 1}$ & $|z| > 1$ \\
+\hline
+$\cos(\omega kT)$ & $\frac{z[z-\cos(\omega T)]}{z^2 - 2z\cos(\omega T) + 1}$ & $|z| > 1$ \\
+\hline
+$a^k$ & $\frac{z}{z-a}$ & $|z| > |a|$ \\
+\hline
+$ka^k$ & $\frac{az}{(z-a)^2}$ & $|z| > |a|$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Z变换的性质}
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{性质} & \textbf{时域} & \textbf{Z域} \\
+\hline
+线性 & $a f_1(kT) + b f_2(kT)$ & $a F_1(z) + b F_2(z)$ \\
+\hline
+右移 & $f(kT - nT)$ & $z^{-n} F(z)$ \\
+\hline
+左移 & $f(kT + nT)$ & $z^n [F(z) - \sum_{k=0}^{n-1} f(kT) z^{-k}]$ \\
+\hline
+初值定理 & $f(0)$ & $\lim_{z\to\infty} F(z)$ \\
+\hline
+终值定理 & $\lim_{k\to\infty} f(kT)$ & $\lim_{z\to 1} (z-1)F(z)$ \\
+\hline
+卷积 & $\sum_{i=0}^k f_1(iT) f_2(kT-iT)$ & $F_1(z) \cdot F_2(z)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{脉冲传递函数}
+
+\subsubsection{定义}
+
+脉冲传递函数是离散系统的输出Z变换与输入Z变换之比（零初始条件）：
+\begin{align*}
+G(z) = \frac{Y(z)}{X(z)}
+\end{align*}
+
+\subsubsection{零阶保持器（ZOH）}
+
+零阶保持器在采样周期内保持采样值不变。
+
+\begin{minipage}[t]{0.52\textwidth}
+\textbf{零阶保持器的传递函数：}
+\begin{align*}
+G_h(s) = \frac{1 - e^{-Ts}}{s}
+\end{align*}
+
+\textbf{含零阶保持器的系统：}
+
+采样器 + ZOH + 连续对象 $G(s)$
+
+等效脉冲传递函数：
+\begin{align*}
+G(z) = \mathcal{Z}\left\{\frac{1-e^{-Ts}}{s} G(s)\right\} = (1-z^{-1})\mathcal{Z}\left\{\frac{G(s)}{s}\right\}
+\end{align*}
+
+\vspace{0.3cm}
+\textbf{常用公式：}
+
+对于 $G(s) = \frac{1}{s+a}$：
+\begin{align*}
+G(z) = (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s(s+a)}\right\} = \frac{1-e^{-aT}}{z-e^{-aT}}
+\end{align*}
+
+对于 $G(s) = \frac{1}{s(s+a)}$：
+\begin{align*}
+G(z) = (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s^2(s+a)}\right\} = \frac{T - \frac{1-e^{-aT}}{a}}{(z-1)(z-e^{-aT})}
+\end{align*}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\textbf{零阶保持器输出示意：}
+
+零阶保持器（Zero-Order Hold, ZOH）在每个采样周期内保持采样值不变，将离散信号转换为阶梯波形式的连续信号。
+
+输出特点：
+\begin{itemize}
+    \item 在每个采样周期 $[kT, (k+1)T)$ 内，输出保持为 $y(kT)$
+    \item 在采样时刻发生跳变
+    \item 形成阶梯波形
+\end{itemize}
+
+\vspace{0.5cm}
+\textbf{例题：}求含ZOH和对象 $G(s) = \frac{1}{s+2}$ 的脉冲传递函数，$T = 0.1$ s。
+
+\textit{解：}
+
+\textbf{方法1：查表法}
+\begin{align*}
+G(z) &= (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s(s+2)}\right\} \\
+&= \frac{1-e^{-2T}}{z-e^{-2T}} \\
+&= \frac{1-e^{-0.2}}{z-e^{-0.2}} \\
+&= \frac{0.1813}{z-0.8187}
+\end{align*}
+
+\textbf{方法2：部分分式法}
+\begin{align*}
+\frac{G(s)}{s} &= \frac{1}{s(s+2)} = \frac{0.5}{s} - \frac{0.5}{s+2} \\
+\mathcal{Z}\left\{\frac{1}{s(s+2)}\right\} &= 0.5\frac{z}{z-1} - 0.5\frac{z}{z-e^{-2T}} \\
+G(z) &= (1-z^{-1}) \times \text{上式} \\
+&= \frac{0.1813}{z-0.8187}
+\end{align*}
+\end{minipage}
+
+\subsection{离散系统的稳定性}
+
+\subsubsection{稳定性判据}
+
+离散系统稳定的充要条件：闭环脉冲传递函数 $\Phi(z)$ 的所有极点都在 $z$ 平面单位圆内，即：
+\begin{align*}
+|z_i| < 1, \quad i = 1, 2, \ldots, n
+\end{align*}
+
+\subsubsection{劳斯判据的应用（双线性变换）}
+
+通过双线性变换 $z = \frac{1+w}{1-w}$，将 $z$ 平面单位圆内映射到 $w$ 平面左半平面，然后应用劳斯判据。
+
+\textbf{步骤：}
+
+1. 求闭环特征方程 $D(z) = 0$
+
+2. 进行双线性变换：$z = \frac{1+w}{1-w}$，得 $D(w) = 0$
+
+3. 对 $D(w) = 0$ 应用劳斯判据
+
+\vspace{0.3cm}
+\textbf{例题：}判断系统 $\Phi(z) = \frac{K}{z^2 - 1.5z + 0.5}$ 的稳定性，$K = 1$。
+
+\textit{解：}
+
+\textbf{1. 特征方程}
+\begin{align*}
+D(z) = z^2 - 1.5z + 0.5 + K = z^2 - 1.5z + 1.5 = 0
+\end{align*}
+
+\textbf{2. 双线性变换}
+
+令 $z = \frac{1+w}{1-w}$：
+\begin{align*}
+\left(\frac{1+w}{1-w}\right)^2 - 1.5\frac{1+w}{1-w} + 1.5 &= 0 \\
+(1+w)^2 - 1.5(1+w)(1-w) + 1.5(1-w)^2 &= 0 \\
+1 + 2w + w^2 - 1.5(1-w^2) + 1.5(1-2w+w^2) &= 0 \\
+1 + 2w + w^2 - 1.5 + 1.5w^2 + 1.5 - 3w + 1.5w^2 &= 0 \\
+4w^2 - w + 1 &= 0
+\end{align*}
+
+\textbf{3. 劳斯表}
+\begin{center}
+\begin{tabular}{c|cc}
+$w^2$ & 4 & 1 \\
+$w^1$ & -1 & 0 \\
+$w^0$ & 1 &  \\
+\end{tabular}
+\end{center}
+
+第一列有符号变化（+，-，+）$\implies$ \textbf{不稳定}
+
+\textbf{验证：}直接求根：$z = \frac{1.5 \pm \sqrt{2.25-6}}{2} = 0.75 \pm 0.968j$，$|z| = 1.22 > 1$
+
+\subsubsection{Jury稳定性判据}
+
+Jury判据直接在 $z$ 域判断稳定性，无需变换。
+
+设特征方程：
+\begin{align*}
+D(z) = a_0 z^n + a_1 z^{n-1} + \cdots + a_{n-1} z + a_n = 0
+\end{align*}
+
+\textbf{稳定的必要条件：}
+\begin{align*}
+D(1) > 0, \quad (-1)^n D(-1) > 0
+\end{align*}
+
+\textbf{充要条件：}构造Jury表，所有行的首元素满足特定符号条件。
+
+（详细方法略，工程中常用数值计算求根判断）
+
+\subsection{离散系统的动态性能}
+
+\subsubsection{稳态误差}
+
+\textbf{终值定理：}
+\begin{align*}
+e_{ss} = \lim_{k\to\infty} e(kT) = \lim_{z\to 1} (z-1)E(z)
+\end{align*}
+
+\textbf{单位阶跃输入：}$R(z) = \frac{z}{z-1}$
+\begin{align*}
+e_{ss} = \lim_{z\to 1} (z-1) \frac{R(z)}{1+G(z)} = \frac{1}{1 + \lim_{z\to 1} G(z)}
+\end{align*}
+
+\textbf{单位斜坡输入：}$R(z) = \frac{Tz}{(z-1)^2}$
+\begin{align*}
+e_{ss} = \lim_{z\to 1} (z-1) \frac{Tz}{(z-1)^2[1+G(z)]} = \frac{T}{\lim_{z\to 1} (z-1)G(z)/T}
+\end{align*}
+
+\subsubsection{瞬态性能指标}
+
+离散系统的时域响应可以通过Z反变换求得：
+\begin{align*}
+y(kT) = \mathcal{Z}^{-1}\{Y(z)\}
+\end{align*}
+
+\textbf{常用方法：}
+\begin{itemize}
+    \item \textbf{长除法}：直接展开为序列
+    \item \textbf{部分分式法}：分解后查表反变换
+    \item \textbf{留数法}：复变函数理论
+\end{itemize}
+
+\textbf{性能指标：}
+\begin{itemize}
+    \item 上升时间 $t_r$
+    \item 超调量 $\sigma\%$
+    \item 调节时间 $t_s$
+    \item 振荡次数
+\end{itemize}
+
+\subsection{数字PID控制}
+
+\subsubsection{连续PID的离散化}
+
+连续PID控制器：
+\begin{align*}
+u(t) = K_p e(t) + K_i \int_0^t e(\tau) d\tau + K_d \frac{de(t)}{dt}
+\end{align*}
+
+\textbf{位置式数字PID：}
+\begin{align*}
+u(k) = K_p e(k) + K_i T \sum_{j=0}^k e(j) + K_d \frac{e(k) - e(k-1)}{T}
+\end{align*}
+
+\textbf{速度式数字PID：}
+\begin{align*}
+\Delta u(k) = u(k) - u(k-1) &= K_p [e(k) - e(k-1)] \\
+&\quad + K_i T e(k) \\
+&\quad + K_d \frac{e(k) - 2e(k-1) + e(k-2)}{T}
+\end{align*}
+
+\subsubsection{数字PID的改进}
+
+\textbf{1. 积分分离}：误差大时不积分，避免积分饱和
+\begin{align*}
+u(k) = K_p e(k) + K_i T \sum_{j=k_0}^k e(j) + K_d \frac{e(k) - e(k-1)}{T}
+\end{align*}
+
+\textbf{2. 微分先行}：仅对输出微分，避免对设定值突变响应过大
+\begin{align*}
+u(k) = K_p e(k) + K_i T \sum_{j=0}^k e(j) - K_d \frac{y(k) - y(k-1)}{T}
+\end{align*}
+
+\textbf{3. 不完全微分}：加入滤波环节，减小噪声影响
+\begin{align*}
+u_d(k) = \alpha u_d(k-1) + K_d (1-\alpha) \frac{e(k) - e(k-1)}{T}
+\end{align*}
+
+其中 $\alpha = \frac{T}{T + \tau_d}$，$\tau_d$ 为滤波时间常数。
+
+\subsection{离散系统设计}
+
+\subsubsection{最少拍控制}
+
+\textbf{设计目标：}在最少的采样周期内使系统输出达到并保持在期望值。
+
+\textbf{设计步骤：}
+
+1. 确定期望闭环传递函数 $\Phi^*(z)$
+
+2. 计算控制器传递函数：
+\begin{align*}
+D(z) = \frac{\Phi^*(z)}{G(z)[1-\Phi^*(z)]}
+\end{align*}
+
+3. 验证物理可实现性和稳定性
+
+\textbf{常用期望响应：}
+\begin{itemize}
+    \item 单拍系统：$\Phi^*(z) = z^{-1}$
+    \item 有纹波最少拍：$\Phi^*(z) = \frac{(1-a)z^{-1}}{1-az^{-1}}$
+    \item 无纹波最少拍（I型系统）：$\Phi^*(z) = z^{-1}(2-z^{-1})$
+\end{itemize}
+
+\subsubsection{数字控制器的实现}
+
+\textbf{直接编程法：}
+
+控制器传递函数 $D(z) = \frac{U(z)}{E(z)}$ 转换为差分方程，直接编程实现。
+
+\textbf{串行校正：}
+
+类似连续系统的超前/滞后校正，设计数字校正器：
+\begin{align*}
+D(z) = K \frac{z - a}{z - b}
+\end{align*}
+
+\textbf{并行校正：}
+
+采用状态反馈等现代控制方法。
+
+\subsection{总结}
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{特性} & \textbf{连续系统} & \textbf{离散系统} \\
+\hline
+数学描述 & 微分方程 & 差分方程 \\
+\hline
+变换工具 & 拉普拉斯变换 & Z变换 \\
+\hline
+频域函数 & 传递函数 $G(s)$ & 脉冲传递函数 $G(z)$ \\
+\hline
+稳定域 & $s$ 平面左半平面 & $z$ 平面单位圆内 \\
+\hline
+稳定判据 & 劳斯、奈奎斯特 & 双线性变换+劳斯、Jury \\
+\hline
+控制器 & 模拟PID & 数字PID、最少拍 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{离散系统设计要点：}
+\begin{enumerate}
+    \item 选择合适的采样周期（满足采样定理，通常 $T = 0.1 \sim 0.5$ 时间常数）
+    \item 考虑零阶保持器的影响
+    \item 数字控制器设计（数字PID、最少拍等）
+    \item 验证闭环稳定性（极点在单位圆内）
+    \item 评估动态性能（超调、调节时间等）
+\end{enumerate}

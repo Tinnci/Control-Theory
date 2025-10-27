@@ -44,6 +44,11 @@ L(\omega) &= 20\lg K \text{ dB（水平线）}
 \end{cases}
 \end{align*}
 
+\textbf{伯德图示例：}$G(s) = 2$
+\begin{center}
+\BodeTF{num/{2},den/{1}}{0.1}{1000}
+\end{center}
+
 \subsubsection{积分环节 $\frac{1}{s}$}
 传递函数：$G(s) = \frac{1}{s}$
 
@@ -64,12 +69,22 @@ L(\omega) &= 20\lg\frac{1}{\omega} = -20\lg\omega \text{ dB}
 \phi(\omega) &= -90°\text{（恒定）}
 \end{align*}
 
+\textbf{伯德图示例：}$G(s) = \frac{1}{s}$
+\begin{center}
+\BodeTF{num/{1},den/{1,0}}{0.1}{1000}
+\end{center}
+
 \subsubsection{微分环节 $s$}
 与积分环节对称：
 \begin{itemize}
     \item $L(\omega) = 20\lg\omega$ dB（斜率 $+20$ dB/十倍频）
     \item $\phi(\omega) = 90°$
 \end{itemize}
+
+\textbf{伯德图示例：}$G(s) = s$
+\begin{center}
+\BodeTF{num/{1,0},den/{1}}{0.1}{1000}
+\end{center}
 
 \subsubsection{惯性环节 \texorpdfstring{$\frac{1}{1+Ts}$}{1/(1+Ts)}}
 传递函数：$G(s) = \frac{1}{1+Ts}$
@@ -101,9 +116,8 @@ L(\omega) &= 20\lg|G(\jw)| = -20\lg\sqrt{1 + \omega^2T^2}
     \item $\omega \to \infty$：$\phi \to -90°$
 \end{itemize}
 
-\textbf{示例伯德图：}$G(s) = \frac{1}{1+0.1s}$ ($\omega_c = 10$ rad/s)
+\textbf{伯德图示例：}$G(s) = \frac{1}{1+0.1s}$ （$\omega_c = 10$ rad/s）
 \begin{center}
-% Bode plot for G(s) = 1/(1+0.1 s), corner freq ω_c = 10 rad/s
 \BodeTF{num/{1},den/{0.1,1}}{0.1}{1000}
 \end{center}
 
@@ -113,6 +127,11 @@ L(\omega) &= 20\lg|G(\jw)| = -20\lg\sqrt{1 + \omega^2T^2}
     \item 幅频特性：低频0 dB，高频斜率 $+20$ dB/十倍频
     \item 相频特性：$\phi(\omega) = \arctan(\omega T)$，$\phi(\omega_c) = 45°$
 \end{itemize}
+
+\textbf{伯德图示例：}$G(s) = 1 + 0.1s$ （$\omega_c = 10$ rad/s）
+\begin{center}
+\BodeTF{num/{0.1,1},den/{1}}{0.1}{1000}
+\end{center}
 
 \subsubsection{振荡环节 $\frac{\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$}
 传递函数标准形式：
@@ -201,6 +220,21 @@ L(\omega) &= 20\lg\frac{\omega_n^2}{\sqrt{(\omega_n^2-\omega^2)^2 + (2\zeta\omeg
 \end{center}
 
 图中所有曲线对应 $\omega_n = 10$ rad/s，不同阻尼比 $\zeta$。
+
+\textbf{伯德图示例（欠阻尼，有谐振）：}$G(s) = \frac{100}{s^2 + 2s + 100}$ （$\omega_n = 10$ rad/s，$\zeta = 0.1$）
+\begin{center}
+\BodeTF{num/{100},den/{1,2,100}}{0.1}{1000}
+\end{center}
+
+\textbf{伯德图示例（临界阻尼）：}$G(s) = \frac{100}{s^2 + 14.14s + 100}$ （$\omega_n = 10$ rad/s，$\zeta = 0.707$）
+\begin{center}
+\BodeTF{num/{100},den/{1,14.14,100}}{0.1}{1000}
+\end{center}
+
+\textbf{伯德图示例（过阻尼）：}$G(s) = \frac{100}{s^2 + 20s + 100}$ （$\omega_n = 10$ rad/s，$\zeta = 1.0$）
+\begin{center}
+\BodeTF{num/{100},den/{1,20,100}}{0.1}{1000}
+\end{center}
 
 \subsection{伯德图的基本概念}
 

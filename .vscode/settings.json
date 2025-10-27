@@ -106,6 +106,15 @@
     "latex-workshop.message.error.show": true,
     "latex-workshop.message.warning.show": false,
     
+    // 诊断设置 - 抑制不必要的警告
+    "latex-workshop.linting.enabled": true,
+    "latex-workshop.linting.delay": 300,
+    // 忽略 LaTeX 日志中的以下模式（正则表达式）
+    "latex-workshop.linting.chktex.enabled": false,
+    // 使用 VS Code 内置的语法检查，忽略字符警告
+    "latex-workshop.linting.underfull.enabled": false,
+    "latex-workshop.linting.overfull.enabled": false,
+    
     // IntelliSense
     "latex-workshop.intellisense.package.enabled": true,
     "latex-workshop.intellisense.unimathsymbols.enabled": true,

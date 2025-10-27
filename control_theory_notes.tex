@@ -47,37 +47,58 @@
 \tableofcontents
 \newpage
 
-% Content will be added here piece by piece
+\part{经典控制理论}
+
+% ==================== 基础理论 ====================
 \input{classical/01-general-concepts.tex}
 \input{classical/02-classification.tex}
+
+% ==================== 数学工具 ====================
 \input{classical/03-laplace.tex}
 \input{classical/04-transfer-function.tex}
 \input{classical/05-diagrams.tex}
 \input{classical/06-mason.tex}
+
+% ==================== 时域分析方法 ====================
 \input{classical/07-time-domain.tex}
 \input{classical/08-first-order.tex}
 \input{classical/09-second-order.tex}
 \input{classical/10-stability.tex}
 \input{classical/11-steady-state-error.tex}
+
+% ==================== 根轨迹分析方法 ====================
 \input{classical/12-root-locus.tex}
 \input{classical/13-zero-deg-locus.tex}
 \input{classical/14-param-locus.tex}
+
+% ==================== 频率域分析方法 ====================
 \input{classical/15-freq-concepts.tex}
 \input{classical/16-nyquist.tex}
 \input{classical/17-bode.tex}
-\input{classical/18-nonlinear-systems.tex}
-\input{classical/19-discrete-systems.tex}
 
+\part{现代控制理论}
+
+% ==================== 状态空间理论 ====================
 \input{modern/01-state-space.tex}
 \input{modern/02-transfer-function.tex}
 \input{modern/03-linear-transformation.tex}
 \input{modern/04-solving-state-space.tex}
+
+% ==================== 系统性能分析 ====================
 \input{modern/05-controllability-observability.tex}
 \input{modern/06-standard-forms.tex}
 \input{modern/07-structural-decomposition.tex}
 \input{modern/08-jordan-form.tex}
+
+% ==================== 系统设计与稳定性 ====================
 \input{modern/09-lyapunov-stability.tex}
 \input{modern/10-pole-placement.tex}
 \input{modern/11-state-observer.tex}
+
+\part{高级主题}
+
+% ==================== 非线性与离散系统 ====================
+\input{modern/12-nonlinear-systems.tex}
+\input{modern/13-discrete-systems.tex}
 
 \end{document}

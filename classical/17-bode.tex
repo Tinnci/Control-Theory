@@ -117,6 +117,111 @@
     \item \textbf{修正值}：一阶环节在 $\omega_c$ 处偏差 $-3$ dB，二阶环节偏差 $\pm 6$ dB
 \end{itemize}
 
+\subsubsection{系统型别的判断}
+
+\textbf{系统型别 $v$} 是指系统开环传递函数中积分环节 $\displaystyle\frac{1}{s^v}$ 的阶数，即分母中因子 $s$ 的幂次。
+
+\begin{minipage}[t]{0.54\textwidth}
+\textbf{定义：}
+
+对于开环传递函数：
+$$G(s) = K \frac{s^m(T_1s+1)(T_2s+1)\cdots}{s^v(T_as+1)(T_bs+1)\cdots}$$
+
+其中 $v$ 称为\textbf{系统型别}（Type Number），$v$ 的值为：
+\begin{itemize}
+    \item $v = 0$：\textbf{0型系统}（无积分环节）
+    \item $v = 1$：\textbf{I型系统}（1个积分环节）
+    \item $v = 2$：\textbf{II型系统}（2个积分环节）
+    \item $v \geq 3$：高阶系统（较少见）
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{判断方法：}
+\begin{enumerate}
+    \item 将传递函数化为\textbf{尾1标准型}
+    \item 统计分母中\textbf{独立因子 $s$ 的个数}
+    \item 该个数即为系统型别 $v$
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.43\textwidth}
+\vspace{0pt}
+\textbf{判断示例：}
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{传递函数} & \textbf{型别} \\
+\hline
+$\displaystyle\frac{10}{(s+1)(2s+1)}$ & $v=0$ \\[0.3cm]
+\hline
+$\displaystyle\frac{5}{s(s+2)}$ & $v=1$ \\[0.3cm]
+\hline
+$\displaystyle\frac{20(s+1)}{s^2(s+5)}$ & $v=2$ \\[0.3cm]
+\hline
+$\displaystyle\frac{100}{s^3(s+1)}$ & $v=3$ \\[0.3cm]
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.2cm}
+\textbf{注意：}
+\begin{itemize}
+    \item 只计算\textbf{分母}中的 $s$
+    \item 分子中的 $s$ 不影响型别
+    \item $(Ts+1)$ 中的 $s$ 不计入 $v$
+\end{itemize}
+\end{minipage}
+
+\vspace{0.3cm}
+\textbf{例题：判断以下系统的型别}
+
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{例1：}$\displaystyle G(s) = \frac{5(2s+1)}{s(0.1s+1)(0.5s+1)}$
+
+\textit{解：}
+\begin{itemize}
+    \item 分母中独立因子 $s$ 的个数：1个
+    \item 系统型别：$v = 1$（I型系统）
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{例2：}$\displaystyle G(s) = \frac{100s}{s^2(s+1)(s+10)}$
+
+\textit{解：}
+\begin{itemize}
+    \item 分母中独立因子 $s$ 的个数：2个
+    \item 系统型别：$v = 2$（II型系统）
+    \item 注意：分子的 $s$ 不影响型别
+\end{itemize}
+\end{minipage}
+
+\vspace{0.2cm}
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{例3：}$\displaystyle G(s) = \frac{10}{(s+2)(s+5)}$
+
+需要先化为标准型（尾1形式）：
+$$G(s) = \frac{10}{(s+2)(s+5)} = \frac{10/10}{(s/2+1)(s/5+1)} = \frac{1}{(0.5s+1)(0.2s+1)}$$
+
+\textit{解：}
+\begin{itemize}
+    \item 分母中独立因子 $s$ 的个数：0个
+    \item 系统型别：$v = 0$（0型系统）
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{例4：}$\displaystyle G(s) = \frac{K}{s(s^2+2s+10)}$
+
+先分解二阶项（虽然不能分解为实根）：
+$$G(s) = \frac{K}{s(s^2+2s+10)}$$
+
+\textit{解：}
+\begin{itemize}
+    \item 分母中独立因子 $s$ 的个数：1个
+    \item $(s^2+2s+10)$ 是二阶振荡环节，不计入 $v$
+    \item 系统型别：$v = 1$（I型系统）
+\end{itemize}
+\end{minipage}
+
 \subsubsection{低频段渐近线的确定}
 
 低频段渐近线是伯德图绘制的起点，由系统型别和增益唯一确定。

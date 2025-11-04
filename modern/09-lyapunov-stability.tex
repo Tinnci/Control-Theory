@@ -68,6 +68,122 @@
     \item 如果能找到半正定的 $Q$ 使得存在正定的 $P$，但对所有正定 $Q$ 都无解，则系统可能是\textbf{李雅普诺夫稳定}（临界稳定）
 \end{itemize}
 
+\subsection{局部稳定性 vs 全局稳定性}
+
+\subsubsection{核心概念辨析}
+
+在李雅普诺夫理论中，\textbf{局部渐近稳定}和\textbf{全局渐近稳定}（又称\textbf{大范围渐近稳定}）是两个截然不同的概念。区分它们对于理解非线性系统的稳定性至关重要。
+
+\paragraph{1. 局部渐近稳定 (Local Asymptotic Stability)}
+
+\textbf{直观比喻：}想象一个\textbf{放在巨大桌子中央的小碗}。
+
+\textbf{含义：}
+\begin{itemize}
+    \item 只要初始状态在平衡点的\textbf{某个邻域}内（碗里面），系统最终会收敛到平衡点
+    \item 但如果初始状态在这个邻域之外（碗外面的桌子上），系统行为无法保证
+    \item 这个邻域称为\textbf{吸引域 (Domain of Attraction)} 或\textbf{稳定域}
+\end{itemize}
+
+\textbf{数学定义：}存在 $\delta > 0$，当 $\|x(0) - x_e\| < \delta$ 时，有 $\lim_{t \to \infty} x(t) = x_e$。
+
+\paragraph{2. 全局渐近稳定 (Global Asymptotic Stability)}
+
+\textbf{直观比喻：}想象\textbf{整个地球就是一个巨大的碗}，只有一个最低点。
+
+\textbf{含义：}
+\begin{itemize}
+    \item \textbf{无论初始状态在状态空间的任何位置}，系统最终都会收敛到平衡点
+    \item 吸引域是\textbf{整个状态空间}
+    \item 这是一个非常强的性质，在实际系统中并不常见
+\end{itemize}
+
+\textbf{数学定义：}对于\textbf{任意}初始状态 $x(0)$，都有 $\lim_{t \to \infty} x(t) = x_e$。
+
+\subsubsection{全局稳定性的判断条件}
+
+要证明全局渐近稳定，李雅普诺夫函数必须满足更严格的条件：
+
+\begin{enumerate}
+    \item $V(x)$ 在\textbf{整个状态空间}都是正定的
+    \item $\dot{V}(x)$ 在\textbf{整个状态空间}都是负定的（除平衡点外）
+    \item \textbf{$V(x)$ 是径向无界的 (Radially Unbounded)}：
+    \[\lim_{\|x\| \to \infty} V(x) = \infty\]
+\end{enumerate}
+
+\paragraph{为什么需要「径向无界」条件？}
+
+\textbf{比喻：}这个条件确保「碗壁是无限高的」。
+
+\textbf{原因：}
+\begin{itemize}
+    \item 如果 $V(x)$ 在远处趋向某个有限值，可能存在「平坦的高原」
+    \item 系统状态可能停留在这个高原上，永远无法回到平衡点
+    \item 无限高的碗壁保证了状态总是处于向平衡点倾斜的「斜坡」上
+\end{itemize}
+
+对于常用的二次型函数 $V(x) = x^T P x$（$P$ 正定），它天然满足径向无界条件。因此，关键是判断 $\dot{V}(x)$ 是否在\textbf{整个空间}都是负定的。
+
+\subsubsection{判断示例：为什么局部≠全局}
+
+考虑系统：
+\begin{align*}
+\dot{x}_1 &= -2x_1 + 2x_2^4 \\
+\dot{x}_2 &= -x_2
+\end{align*}
+
+选择李雅普诺夫函数 $V(x) = \frac{1}{2}x_1^2 + x_2^2$，计算得：
+\[\dot{V}(x) = -2x_1^2 + 2x_1x_2^4 - 2x_2^2\]
+
+\paragraph{局部分析（原点附近）}
+
+当 $x_1, x_2$ 很小时，二次项 $-2x_1^2 - 2x_2^2$ 占主导，高阶项 $2x_1x_2^4$ 可忽略，因此 $\dot{V}(x) < 0$。
+
+\textbf{结论：}系统在原点附近是\textbf{局部渐近稳定}的。
+
+\paragraph{全局分析（远离原点）}
+
+取 $x_2 = 2$，$x_1 = 10$：
+\[\dot{V}(10, 2) = -2(100) + 2(10)(16) - 2(4) = -200 + 320 - 8 = 112 > 0\]
+
+在点 $(10, 2)$ 处，$\dot{V}(x) > 0$，能量\textbf{正在增加}！
+
+\textbf{结论：}$\dot{V}(x)$ 不是全局负定的，系统\textbf{不是全局渐近稳定}的。
+
+\subsubsection{关键要点总结}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|p{6cm}|p{6cm}|}
+\hline
+\rowcolor[gray]{0.9}
+\textbf{对比维度} & \textbf{局部渐近稳定} & \textbf{全局渐近稳定} \\
+\hline
+\textbf{吸引域} & 平衡点的某个邻域 & 整个状态空间 \\
+\hline
+\textbf{初始条件要求} & 必须在稳定域内 & 任意初始状态 \\
+\hline
+\textbf{$V(x)$ 正定性} & 在邻域内正定 & 在整个空间正定 \\
+\hline
+\textbf{$\dot{V}(x)$ 负定性} & 在邻域内负定 & 在整个空间负定 \\
+\hline
+\textbf{径向无界条件} & 不要求 & \textbf{必须满足} \\
+\hline
+\textbf{证明难度} & 相对容易 & 通常很困难 \\
+\hline
+\textbf{实际意义} & 小扰动下稳定 & 任何扰动下都稳定 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{重要提醒：}
+\begin{itemize}
+    \item 对于\textbf{线性系统}，局部渐近稳定等价于全局渐近稳定
+    \item 对于\textbf{非线性系统}，局部稳定\textbf{不能}推出全局稳定
+    \item 在解题时，如果只证明了 $\dot{V}(x)$ 在邻域内负定，结论应是「局部渐近稳定」
+    \item 声称「全局稳定」需要更严格的证明
+\end{itemize}
+
 \section{李雅普诺夫稳定性判断——范例}
 
 \subsection{范例：临界稳定系统的李雅普诺夫分析}

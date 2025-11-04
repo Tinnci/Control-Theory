@@ -33,51 +33,35 @@ A_{21} & A_{22} & A_{23} & A_{24} \\
 两大分解题型在思想上是\textbf{对偶}的，解题步骤高度相似，但目标和细节有所不同。下表进行并排对比：
 
 \begin{center}
-\begin{tabular}{|m{2cm}|m{6cm}|m{6cm}|}
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{|l|p{7cm}|p{7cm}|}
 \hline
-\textbf{} & \textbf{能控性分解} & \textbf{能观性分解} \\
+\rowcolor[gray]{0.9}
+\textbf{对比维度} & \textbf{能控性分解} & \textbf{能观性分解} \\
 \hline
-\textbf{核心目的} & 将状态空间分为「能被输入影响的部分」和「完全不受输入影响的部分」。 & 将状态空间分为「能从输出观测到的部分」和「完全无法从输出观测到的部分」。 \\
+\textbf{核心目的} & 将状态空间分为「能被输入影响」和「完全不受输入影响」两部分 & 将状态空间分为「能从输出观测」和「完全无法观测」两部分 \\
 \hline
-\textbf{前提条件} & 系统不完全能控，即 $\text{rank}(Q_c) < n$ & 系统不完全能观，即 $\text{rank}(Q_o) < n$ \\
+\textbf{前提条件} & $\text{rank}(Q_c) < n$（不完全能控） & $\text{rank}(Q_o) < n$（不完全能观） \\
 \hline
-\textbf{关键矩阵} & 能控性矩阵：$Q_c = \begin{bmatrix} B & AB & \cdots & A^{n-1}B \end{bmatrix}$ & 能观性矩阵：$Q_o = \begin{bmatrix} C \\ CA \\ \vdots \\ CA^{n-1} \end{bmatrix}$ \\
+\textbf{关键矩阵} & 
+能控性矩阵 $Q_c = \begin{bmatrix} B & AB & \cdots & A^{n-1}B \end{bmatrix}$ & 
+能观性矩阵 $Q_o = \begin{bmatrix} C \\ CA \\ \vdots \\ CA^{n-1} \end{bmatrix}$ \\
 \hline
-\textbf{子空间定义} & 
-\begin{minipage}{6cm}
-\begin{itemize}
-\item 能控子空间 ($R_c$)：$Q_c$ 的列空间
-\item 不能控子空间：$Q_c^T$ 的零空间
-\end{itemize}
-\end{minipage}
-&
-\begin{minipage}{6cm}
-\begin{itemize}
-\item 能观子空间 ($R_o$)：$Q_o^T$ 的列空间
-\item 不能观子空间 ($N_o$)：$Q_o$ 的零空间
-\end{itemize}
-\end{minipage}
-\\
+\textbf{子空间} & 
+能控：$Q_c$ 的列空间 \newline 不能控：$Q_c^T$ 的零空间 & 
+能观：$Q_o^T$ 的列空间 \newline 不能观：$Q_o$ 的零空间 \\
 \hline
-\textbf{变换矩阵} & 构造 $P^{-1}$，列向量为基向量：前 $r_c$ 列为能控子空间基，后 $n-r_c$ 列为不能控子空间基 & 构造 $P^{-1}$，列向量为基向量：前 $r_o$ 列为能观子空间基，后 $n-r_o$ 列为不能观子空间基 \\
+\textbf{变换矩阵 $P^{-1}$} & 
+列向量顺序：[能控基向量...不能控基向量] & 
+列向量顺序：[能观基向量...不能观基向量] \\
 \hline
 \textbf{分解标准形} & 
-$\bar{A} = \begin{bmatrix} A_c & A_{12} \\ \mathbf{0} & A_{uc} \end{bmatrix}$, $\bar{B} = \begin{bmatrix} B_c \\ \mathbf{0} \end{bmatrix}$, $\bar{C} = \begin{bmatrix} C_c & C_{uc} \end{bmatrix}$
-&
-$\bar{A} = \begin{bmatrix} A_o & \mathbf{0} \\ A_{21} & A_{uo} \end{bmatrix}$, $\bar{B} = \begin{bmatrix} B_o \\ B_{uo} \end{bmatrix}$, $\bar{C} = \begin{bmatrix} C_o & \mathbf{0} \end{bmatrix}$
-\\
+$\bar{A} = \begin{bmatrix} A_c & A_{12} \\ \mathbf{0} & A_{uc} \end{bmatrix}$ \newline $\bar{B} = \begin{bmatrix} B_c \\ \mathbf{0} \end{bmatrix}$ \newline $\bar{C} = \begin{bmatrix} C_c & C_{uc} \end{bmatrix}$ &
+$\bar{A} = \begin{bmatrix} A_o & \mathbf{0} \\ A_{21} & A_{uo} \end{bmatrix}$ \newline $\bar{B} = \begin{bmatrix} B_o \\ B_{uo} \end{bmatrix}$ \newline $\bar{C} = \begin{bmatrix} C_o & \mathbf{0} \end{bmatrix}$ \\
 \hline
-\textbf{结构解读} & 
-\begin{minipage}{6cm}
-$\bar{B}$ 中的零块：输入无法作用于不能控状态 $\bar{x}_{uc}$\\
-$\bar{A}$ 中的零块：不能控子系统动态不受能控状态影响
-\end{minipage}
-&
-\begin{minipage}{6cm}
-$\bar{C}$ 中的零块：不能观状态对输出没有贡献\\
-$\bar{A}$ 中的零块：能观子系统动态不受不能观状态影响
-\end{minipage}
-\\
+\textbf{零块含义} & 
+$\bar{B}$ 零块：输入无法作用于不能控状态 \newline $\bar{A}$ 零块：不能控动态不受能控状态影响 & 
+$\bar{C}$ 零块：不能观状态对输出无贡献 \newline $\bar{A}$ 零块：能观动态不受不能观状态影响 \\
 \hline
 \end{tabular}
 \end{center}

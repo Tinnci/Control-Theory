@@ -492,6 +492,114 @@ $\dot{V} < 0$（除原点外）$\implies$ 负定
 
 \textbf{结论：}原点是\textbf{渐近稳定}的平衡点。
 
+\subsubsection{范例 2：含高阶非线性项的李雅普诺夫分析}
+
+\textbf{题目：}分析系统的稳定性：
+\begin{align*}
+\dot{x}_1 &= -2x_1 + 2x_2^4 \\
+\dot{x}_2 &= -x_2
+\end{align*}
+
+\textit{解：}
+
+\textbf{1. 确定平衡点}
+
+令 $\dot{x}_1 = \dot{x}_2 = 0$：
+\begin{align*}
+-x_2 &= 0 \implies x_2 = 0 \\
+-2x_1 + 2(0)^4 &= 0 \implies x_1 = 0
+\end{align*}
+
+原点 $(0,0)$ 是唯一的平衡点。
+
+\textbf{2. 尝试最简单的李雅普诺夫函数}
+
+首次尝试：$V(x_1, x_2) = x_1^2 + x_2^2$（正定）
+
+计算其导数：
+\begin{align*}
+\dot{V} &= 2x_1 \dot{x}_1 + 2x_2 \dot{x}_2 \\
+&= 2x_1(-2x_1 + 2x_2^4) + 2x_2(-x_2) \\
+&= -4x_1^2 + 4x_1x_2^4 - 2x_2^2
+\end{align*}
+
+问题：交叉项 $4x_1x_2^4$ 的符号不确定，破坏了 $\dot{V}$ 的负定性。
+
+\textbf{3. 修改李雅普诺夫函数}
+
+基于交叉项的形式，我们调整系数，选择：
+\[V(x_1, x_2) = \frac{1}{2}x_1^2 + x_2^2\]
+
+验证正定性：显然 $V(0,0) = 0$ 且 $V(x_1, x_2) > 0$（$(x_1, x_2) \neq (0,0)$）。
+
+\textbf{4. 计算新的 $\dot{V}$}
+
+\begin{align*}
+\dot{V} &= x_1 \dot{x}_1 + 2x_2 \dot{x}_2 \\
+&= x_1(-2x_1 + 2x_2^4) + 2x_2(-x_2) \\
+&= -2x_1^2 + 2x_1x_2^4 - 2x_2^2
+\end{align*}
+
+\textbf{5. 分析 $\dot{V}$ 的定号性（配方法）}
+
+对含 $x_1$ 的项进行配方：
+\begin{align*}
+-2x_1^2 + 2x_1x_2^4 &= -2\left(x_1^2 - x_1x_2^4\right) \\
+&= -2\left[\left(x_1 - \frac{1}{2}x_2^4\right)^2 - \frac{1}{4}x_2^8\right] \\
+&= -2\left(x_1 - \frac{1}{2}x_2^4\right)^2 + \frac{1}{2}x_2^8
+\end{align*}
+
+因此：
+\begin{align*}
+\dot{V} &= -2\left(x_1 - \frac{1}{2}x_2^4\right)^2 + \frac{1}{2}x_2^8 - 2x_2^2 \\
+&= -2\left(x_1 - \frac{1}{2}x_2^4\right)^2 - 2x_2^2\left(1 - \frac{1}{4}x_2^6\right)
+\end{align*}
+
+\textbf{6. 确定稳定域}
+
+分析 $\dot{V}$ 的符号：
+\begin{itemize}
+    \item 第一项 $-2\left(x_1 - \frac{1}{2}x_2^4\right)^2 \leq 0$ 总是非正的
+    \item 第二项 $-2x_2^2\left(1 - \frac{1}{4}x_2^6\right)$：
+    \begin{itemize}
+        \item $x_2^2 \geq 0$
+        \item 括号项 $\left(1 - \frac{1}{4}x_2^6\right) > 0$ 当 $x_2^6 < 4$，即 $|x_2| < \sqrt[6]{4} \approx 1.26$
+        \item 因此在此区域内，第二项 $\leq 0$
+    \end{itemize}
+\end{itemize}
+
+在区域 $\{(x_1, x_2) : |x_2| < 1\}$ 内，$\dot{V}$ 是两个非正项之和。
+
+\textbf{7. 验证负定性}
+
+$\dot{V} = 0$ 当且仅当：
+\begin{align*}
+\begin{cases}
+x_1 - \frac{1}{2}x_2^4 = 0 \\
+x_2 = 0
+\end{cases}
+\implies
+\begin{cases}
+x_2 = 0 \\
+x_1 = 0
+\end{cases}
+\end{align*}
+
+因此在区域 $|x_2| < 1$ 内，除原点外 $\dot{V} < 0$（严格负定）。
+
+\textbf{8. 结论}
+
+原点 $(0,0)$ 是系统的\textbf{局部渐近稳定}平衡点，其稳定域（吸引域）至少包含区域 $\{(x_1, x_2) : |x_2| < 1\}$。
+
+\vspace{0.3cm}
+\textbf{关键技巧总结：}
+\begin{enumerate}
+    \item \textbf{配方法}：将含交叉项的表达式转化为标准形式
+    \item \textbf{系数调整}：根据 $\dot{V}$ 的结构选择合适的 $V(x)$ 系数
+    \item \textbf{局部分析}：对于非线性系统，稳定性通常是局部的，需要明确稳定域
+    \item \textbf{尝试与验证}：构造李雅普诺夫函数需要尝试，没有通用公式
+\end{enumerate}
+
 \subsection{总结}
 
 \begin{center}

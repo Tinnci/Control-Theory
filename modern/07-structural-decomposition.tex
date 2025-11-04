@@ -1,5 +1,10 @@
 \section{系统的结构分解——能控、能观性分解}
 
+\subsection{术语问题：能观/能控 vs 可观/可控}
+
+\subsubsection{术语等价性}
+\textbf{能控性 (Controllability)} 和 \textbf{可控性} 是同义词；\textbf{能观性 (Observability)} 和 \textbf{可观性} 是同义词。在国内的控制理论教材和学术文献中，这两种说法都在广泛使用，可以互换。在严谨的定义和数学含义上，它们没有任何区别。
+
 \subsection{系统的结构分解}
 一般线性系统可分解为四个子系统：
 \begin{itemize}
@@ -22,3 +27,249 @@ A_{21} & A_{22} & A_{23} & A_{24} \\
 \begin{bmatrix} B_1 \\ B_2 \\ 0 \\ 0 \end{bmatrix} u\]
 
 \[y = \begin{bmatrix} C_1 & C_2 & 0 & 0 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{bmatrix}\]
+
+\subsection{能观性分解与能控性分解对比}
+
+两大分解题型在思想上是\textbf{对偶}的，解题步骤高度相似，但目标和细节有所不同。下表进行并排对比：
+
+\begin{center}
+\begin{tabular}{|m{2cm}|m{6cm}|m{6cm}|}
+\hline
+\textbf{} & \textbf{能控性分解} & \textbf{能观性分解} \\
+\hline
+\textbf{核心目的} & 将状态空间分为"能被输入影响的部分"和"完全不受输入影响的部分"。 & 将状态空间分为"能从输出观测到的部分"和"完全无法从输出观测到的部分"。 \\
+\hline
+\textbf{前提条件} & 系统不完全能控，即 $\text{rank}(Q_c) < n$ & 系统不完全能观，即 $\text{rank}(Q_o) < n$ \\
+\hline
+\textbf{关键矩阵} & 能控性矩阵：$Q_c = \begin{bmatrix} B & AB & \cdots & A^{n-1}B \end{bmatrix}$ & 能观性矩阵：$Q_o = \begin{bmatrix} C \\ CA \\ \vdots \\ CA^{n-1} \end{bmatrix}$ \\
+\hline
+\textbf{子空间定义} & 
+\begin{minipage}{6cm}
+\begin{itemize}
+\item 能控子空间 ($R_c$)：$Q_c$ 的列空间
+\item 不能控子空间：$Q_c^T$ 的零空间
+\end{itemize}
+\end{minipage}
+&
+\begin{minipage}{6cm}
+\begin{itemize}
+\item 能观子空间 ($R_o$)：$Q_o^T$ 的列空间
+\item 不能观子空间 ($N_o$)：$Q_o$ 的零空间
+\end{itemize}
+\end{minipage}
+\\
+\hline
+\textbf{变换矩阵} & 构造 $P^{-1}$，列向量为基向量：前 $r_c$ 列为能控子空间基，后 $n-r_c$ 列为不能控子空间基 & 构造 $P^{-1}$，列向量为基向量：前 $r_o$ 列为能观子空间基，后 $n-r_o$ 列为不能观子空间基 \\
+\hline
+\textbf{分解标准形} & 
+$\bar{A} = \begin{bmatrix} A_c & A_{12} \\ \mathbf{0} & A_{uc} \end{bmatrix}$, $\bar{B} = \begin{bmatrix} B_c \\ \mathbf{0} \end{bmatrix}$, $\bar{C} = \begin{bmatrix} C_c & C_{uc} \end{bmatrix}$
+&
+$\bar{A} = \begin{bmatrix} A_o & \mathbf{0} \\ A_{21} & A_{uo} \end{bmatrix}$, $\bar{B} = \begin{bmatrix} B_o \\ B_{uo} \end{bmatrix}$, $\bar{C} = \begin{bmatrix} C_o & \mathbf{0} \end{bmatrix}$
+\\
+\hline
+\textbf{结构解读} & 
+\begin{minipage}{6cm}
+$\bar{B}$ 中的零块：输入无法作用于不能控状态 $\bar{x}_{uc}$\\
+$\bar{A}$ 中的零块：不能控子系统动态不受能控状态影响
+\end{minipage}
+&
+\begin{minipage}{6cm}
+$\bar{C}$ 中的零块：不能观状态对输出没有贡献\\
+$\bar{A}$ 中的零块：能观子系统动态不受不能观状态影响
+\end{minipage}
+\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{统一的解题流程（以能控分解为例）}
+
+\begin{enumerate}
+    \item \textbf{判断性质：}
+    \begin{itemize}
+        \item 计算能控性矩阵 $Q_c$
+        \item 计算 $Q_c$ 的秩 $r_c = \text{rank}(Q_c)$
+        \item 若 $r_c < n$，则系统不完全能控，需要进行分解
+    \end{itemize}
+    
+    \item \textbf{寻找基向量：}
+    \begin{itemize}
+        \item \textbf{能控子空间}：求出 $Q_c$ 的列空间的一组基（通常取 $Q_c$ 中 $r_c$ 个线性无关的列向量）
+        \item \textbf{不能控子空间}：求出 $Q_c^T$ 的零空间（解方程 $Q_c^T v = 0$）的一组基（共 $n-r_c$ 个向量）
+    \end{itemize}
+    
+    \item \textbf{构造变换矩阵：}
+    \begin{itemize}
+        \item 构造 $P^{-1}$ 矩阵，将上一步求出的基向量作为其\textbf{列向量}
+        \item \textbf{顺序至关重要}：必须把\textbf{能控}子空间的基放在\textbf{前面}，\textbf{不能控}子空间的基放在\textbf{后面}
+        \item 通过求逆得到 $P = (P^{-1})^{-1}$
+    \end{itemize}
+    
+    \item \textbf{进行坐标变换：}
+    \begin{itemize}
+        \item $\bar{A} = PAP^{-1}$
+        \item $\bar{B} = PB$
+        \item $\bar{C} = CP^{-1}$
+    \end{itemize}
+    
+    \item \textbf{验证与解读：}
+    \begin{itemize}
+        \item 检查变换后的 $(\bar{A}, \bar{B}, \bar{C})$ 是否呈现出标准分解形式（特别是关键的零块位置）
+        \item 根据分解后的形式，写出能控子系统和不能控子系统的状态方程，并进行解释
+    \end{itemize}
+\end{enumerate}
+
+\textbf{核心记忆点：}
+\begin{itemize}
+    \item \textbf{能控分解看 $Q_c$，能观分解看 $Q_o$}
+    \item \textbf{构造变换矩阵 $P^{-1}$ 时，列向量的顺序是"好的"部分在前（能控/能观），"坏的"部分在后（不能控/不能观）}
+    \item \textbf{记住分解后的标准形式，特别是零块的位置，这是最终的检验标准}
+\end{itemize}
+
+\subsection{综合范例 1：能观性结构分解}
+
+\subsubsection{题目}
+
+已知系统：
+\begin{align*}
+\dot{x} &= \begin{bmatrix} -4 & 2 \\ 2 & -4 \end{bmatrix} x + \begin{bmatrix} 12 \\ 0 \end{bmatrix} u \\
+y &= \begin{bmatrix} 2 & 2 \end{bmatrix} x
+\end{align*}
+
+\textbf{求：}
+\begin{enumerate}
+    \item 判断系统的能观性
+    \item 进行能观性分解
+\end{enumerate}
+
+\subsubsection{解答}
+
+\paragraph{(1) 判断系统的能观性}
+
+\begin{enumerate}
+    \item \textbf{识别矩阵：}
+    \[A = \begin{bmatrix} -4 & 2 \\ 2 & -4 \end{bmatrix}, \quad C = \begin{bmatrix} 2 & 2 \end{bmatrix}\]
+    系统阶数 $n=2$。
+    
+    \item \textbf{构造能观性矩阵 $Q_o$：}
+    \[Q_o = \begin{bmatrix} C \\ CA \end{bmatrix} = \begin{bmatrix} 2 & 2 \\ -4 & -4 \end{bmatrix}\]
+    
+    \item \textbf{判断秩：}
+    第二行为第一行的 $-2$ 倍，故 $\text{rank}(Q_o) = 1$。
+    
+    \item \textbf{结论：}
+    由于 $\text{rank}(Q_o) = 1 < n = 2$，该系统\textbf{不是完全能观的}。
+\end{enumerate}
+
+\paragraph{(2) 进行能观性分解}
+
+\begin{enumerate}
+    \item \textbf{寻找能观与不能观子空间：}
+    \begin{itemize}
+        \item \textbf{不能观子空间 ($N_o$)：}求解 $Q_o v = 0$
+        \[\begin{bmatrix} 2 & 2 \\ -4 & -4 \end{bmatrix} v = 0 \implies 2v_1 + 2v_2 = 0 \implies v_1 = -v_2\]
+        基向量：$q_{uo} = \begin{bmatrix} 1 \\ -1 \end{bmatrix}$
+        
+        \item \textbf{能观子空间 ($R_o$)：}$Q_o^T$ 的列空间
+        \[Q_o^T = \begin{bmatrix} 2 & -4 \\ 2 & -4 \end{bmatrix}\]
+        基向量：$q_o = \begin{bmatrix} 1 \\ 1 \end{bmatrix}$
+    \end{itemize}
+    
+    \item \textbf{构造变换矩阵：}
+    将能观基向量放前面，不能观基向量放后面：
+    \[P^{-1} = \begin{bmatrix} 1 & 1 \\ 1 & -1 \end{bmatrix}\]
+    求逆得：
+    \[P = \begin{bmatrix} 1/2 & 1/2 \\ 1/2 & -1/2 \end{bmatrix}\]
+    
+    \item \textbf{应用坐标变换：}
+    \[\bar{A} = PAP^{-1} = \begin{bmatrix} -2 & 0 \\ 0 & -6 \end{bmatrix}\]
+    \[\bar{B} = PB = \begin{bmatrix} 6 \\ 6 \end{bmatrix}\]
+    \[\bar{C} = CP^{-1} = \begin{bmatrix} 4 & 0 \end{bmatrix}\]
+    
+    \item \textbf{分解结果：}
+    系统的能观性分解为：
+    \begin{align*}
+    \dot{\bar{x}} &= \begin{bmatrix} -2 & 0 \\ 0 & -6 \end{bmatrix} \bar{x} + \begin{bmatrix} 6 \\ 6 \end{bmatrix} u \\
+    y &= \begin{bmatrix} 4 & 0 \end{bmatrix} \bar{x}
+    \end{align*}
+    
+    其中 $\bar{x} = \begin{bmatrix} \bar{x}_o \\ \bar{x}_{uo} \end{bmatrix}$。$\bar{x}_o$ 是能观状态，$\bar{x}_{uo}$ 是不能观状态。$\bar{C}$ 矩阵中对应 $\bar{x}_{uo}$ 的元素为 0，表明该状态对输出没有贡献，故不可见。
+\end{enumerate}
+
+\subsection{综合范例 2：能控性结构分解}
+
+\subsubsection{题目}
+
+已知系统状态方程：
+\begin{align*}
+\dot{x} &= \begin{bmatrix} 0 & 0 & 1 \\ 1 & 0 & 3 \\ 0 & 1 & 1 \end{bmatrix} x + \begin{bmatrix} 1 \\ 1 \\ 0 \end{bmatrix} u \\
+y &= \begin{bmatrix} 0 & 0 & 1 \end{bmatrix} x
+\end{align*}
+
+\textbf{求：}判断能控性，进行能控性分解。
+
+\subsubsection{解答}
+
+\paragraph{(1) 判断系统的能控性}
+
+\begin{enumerate}
+    \item \textbf{识别矩阵：}
+    \[A = \begin{bmatrix} 0 & 0 & 1 \\ 1 & 0 & 3 \\ 0 & 1 & 1 \end{bmatrix}, \quad B = \begin{bmatrix} 1 \\ 1 \\ 0 \end{bmatrix}\]
+    系统阶数 $n=3$。
+    
+    \item \textbf{构造能控性矩阵 $Q_c$：}
+    计算 $AB$ 和 $A^2B$：
+    \[AB = \begin{bmatrix} 0 & 0 & 1 \\ 1 & 0 & 3 \\ 0 & 1 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 1 \\ 0 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \\ 1 \end{bmatrix}\]
+    \[A^2B = \begin{bmatrix} 0 & 0 & 1 \\ 1 & 0 & 3 \\ 0 & 1 & 1 \end{bmatrix} \begin{bmatrix} 0 \\ 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ 3 \\ 2 \end{bmatrix}\]
+    \[Q_c = \begin{bmatrix} 1 & 0 & 1 \\ 1 & 1 & 3 \\ 0 & 1 & 2 \end{bmatrix}\]
+    
+    \item \textbf{判断秩：}
+    对 $Q_c$ 进行行初等变换：
+    \[\begin{bmatrix} 1 & 0 & 1 \\ 1 & 1 & 3 \\ 0 & 1 & 2 \end{bmatrix} \xrightarrow{R_2-R_1} \begin{bmatrix} 1 & 0 & 1 \\ 0 & 1 & 2 \\ 0 & 1 & 2 \end{bmatrix} \xrightarrow{R_3-R_2} \begin{bmatrix} 1 & 0 & 1 \\ 0 & 1 & 2 \\ 0 & 0 & 0 \end{bmatrix}\]
+    因此 $\text{rank}(Q_c) = 2$。
+    
+    \item \textbf{结论：}
+    由于 $\text{rank}(Q_c) = 2 < n = 3$，该系统\textbf{不是完全能控的}。
+\end{enumerate}
+
+\paragraph{(2) 进行能控性分解}
+
+\begin{enumerate}
+    \item \textbf{寻找能控与不能控子空间：}
+    \begin{itemize}
+        \item \textbf{能控子空间 ($R_c$)：}$Q_c$ 的列空间。秩为 2，可选前两列作为基：
+        \[q_{c1} = \begin{bmatrix} 1 \\ 1 \\ 0 \end{bmatrix}, \quad q_{c2} = \begin{bmatrix} 0 \\ 1 \\ 1 \end{bmatrix}\]
+        
+        \item \textbf{不能控子空间：}求解 $Q_c^T v = 0$
+        \[\begin{bmatrix} 1 & 1 & 0 \\ 0 & 1 & 1 \\ 1 & 3 & 2 \end{bmatrix} v = 0\]
+        从第一个方程：$v_1 + v_2 = 0 \implies v_1 = -v_2$
+        
+        从第二个方程：$v_2 + v_3 = 0 \implies v_3 = -v_2$
+        
+        基向量：$q_{uc} = \begin{bmatrix} 1 \\ -1 \\ 1 \end{bmatrix}$
+    \end{itemize}
+    
+    \item \textbf{构造变换矩阵：}
+    将能控基向量放前面，不能控基向量放后面：
+    \[P^{-1} = \begin{bmatrix} 1 & 0 & 1 \\ 1 & 1 & -1 \\ 0 & 1 & 1 \end{bmatrix}\]
+    
+    求逆（使用行列式和伴随矩阵）：
+    \[\det(P^{-1}) = 1(1+1) - 0 + 1(1-0) = 3\]
+    \[P = \frac{1}{3} \begin{bmatrix} 2 & 1 & -1 \\ -1 & 1 & 2 \\ 1 & -1 & 1 \end{bmatrix}\]
+    
+    \item \textbf{应用坐标变换：}
+    \[\bar{A} = PAP^{-1} = \begin{bmatrix} 0 & 1 & 2 \\ 1 & 2 & -1 \\ 0 & 0 & -1 \end{bmatrix}\]
+    
+    \[\bar{B} = PB = \frac{1}{3}\begin{bmatrix} 2 & 1 & -1 \\ -1 & 1 & 2 \\ 1 & -1 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 1 \\ 0 \end{bmatrix} = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}\]
+    
+    \[\bar{C} = CP^{-1} = \begin{bmatrix} 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} 1 & 0 & 1 \\ 1 & 1 & -1 \\ 0 & 1 & 1 \end{bmatrix} = \begin{bmatrix} 0 & 1 & 1 \end{bmatrix}\]
+    
+    \item \textbf{分解结果：}
+    系统的能控性分解为：
+    \begin{align*}
+    \dot{\bar{x}} &= \begin{bmatrix} 0 & 1 & 2 \\ 1 & 2 & -1 \\ 0 & 0 & -1 \end{bmatrix} \bar{x} + \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix} u \\
+    y &= \begin{bmatrix} 0 & 1 & 1 \end{bmatrix} \bar{x}
+    \end{align*}
+    
+    其中 $\bar{x} = \begin{bmatrix} \bar{x}_{c} \\ \bar{x}_{uc} \end{bmatrix}$。前 2 个状态 $\bar{x}_c$ 是能控状态，第 3 个状态 $\bar{x}_{uc}$ 是不能控状态。$\bar{B}$ 矩阵中对应 $\bar{x}_{uc}$ 的元素为 0，表明输入 $u$ 无法影响该状态。同时，$\bar{A}$ 的左下角为零块，说明不能控状态的演化不受能控状态的影响（但能控状态可能受其影响）。
+\end{enumerate}

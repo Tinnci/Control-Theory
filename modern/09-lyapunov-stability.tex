@@ -29,3 +29,132 @@
 其中 $P$ 为正定矩阵。稳定的充要条件是李雅普诺夫方程：
 \[A^T P + PA = -Q\]
 对于给定的正定矩阵 $Q$，存在唯一的正定解 $P$。
+
+\subsection{李雅普诺夫方法的核心思想}
+
+\subsubsection{直观理解}
+李雅普诺夫方法的思想非常直观：\textbf{如果能为系统找到一个类似于"能量"的函数 $V(x)$，并且证明这个"能量"总是随时间减少（或至少不增加），那么系统最终必然会稳定下来。}
+
+\begin{itemize}
+    \item 这个函数 $V(x)$ 称为\textbf{李雅普诺夫函数}
+    \item $V(x)$ 必须是\textbf{正定的}（类似能量总是正的）
+    \item $V(x)$ 的导数 $\dot{V}(x)$ 必须是\textbf{负定的或半负定的}（能量随时间衰减或保持不变）
+\end{itemize}
+
+\subsubsection{线性系统的二次型李雅普诺夫函数}
+
+对于线性系统 $\dot{x} = Ax$，我们选择二次型的李雅普诺夫函数 $V(x) = x^T P x$，其中 $P$ 是对称正定矩阵。
+
+对 $V(x)$ 求导：
+\begin{align*}
+\dot{V}(x) &= \frac{d}{dt}(x^T P x) \\
+&= \dot{x}^T P x + x^T P \dot{x} \\
+&= (Ax)^T P x + x^T P (Ax) \\
+&= x^T A^T P x + x^T P A x \\
+&= x^T(A^T P + PA)x
+\end{align*}
+
+为了让 $\dot{V}(x)$ 是负定的，通常令 $\dot{V}(x) = -x^T Q x$，其中 $Q$ 是我们选择的对称正定矩阵。因此得到：
+\[\boxed{A^T P + PA = -Q}\]
+
+这就是著名的\textbf{李雅普诺夫方程}。
+
+\subsubsection{判据总结}
+
+对于给定的系统矩阵 $A$：
+\begin{itemize}
+    \item 如果对\textbf{任意}正定矩阵 $Q$，李雅普诺夫方程都有唯一的\textbf{正定解} $P$，则系统\textbf{渐近稳定}
+    \item 如果对某个正定矩阵 $Q$，方程无解或解不是正定的，则系统\textbf{不是渐近稳定的}
+    \item 如果能找到半正定的 $Q$ 使得存在正定的 $P$，但对所有正定 $Q$ 都无解，则系统可能是\textbf{李雅普诺夫稳定}（临界稳定）
+\end{itemize}
+
+\section{李雅普诺夫稳定性判断——范例}
+
+\subsection{范例：临界稳定系统的李雅普诺夫分析}
+
+\subsubsection{题目}
+
+判断系统稳定性：
+\begin{align*}
+\dot{x} &= \begin{bmatrix} 0 & 1 \\ -1 & 0 \end{bmatrix} x + \begin{bmatrix} 1 \\ 0 \end{bmatrix} u \\
+y &= \begin{bmatrix} 0 & 1 \end{bmatrix} x
+\end{align*}
+
+其中 $A = \begin{bmatrix} 0 & 1 \\ -1 & 0 \end{bmatrix}$
+
+\subsubsection{解答}
+
+判断稳定性时，我们只关心\textbf{零输入响应}（令 $u=0$），因此只分析系统矩阵 $A$。
+
+\paragraph{方法一：特征值法（快速验证）}
+
+这是最直接的方法，用于判断系统的稳定性。
+
+计算特征值，解 $\det(\lambda I - A) = 0$：
+\[\det \begin{bmatrix} \lambda & -1 \\ 1 & \lambda \end{bmatrix} = \lambda^2 + 1 = 0\]
+
+解得特征值为 $\lambda = \pm i$。
+
+\textbf{结论：}特征值的实部为 0，因此系统是\textbf{李雅普诺夫稳定}的（也称\textbf{临界稳定}），但\textbf{不是渐进稳定}。系统受扰动后会产生等幅振荡。
+
+\paragraph{方法二：李雅普诺夫第二方法（题目要求）}
+
+\begin{enumerate}
+    \item \textbf{选择对称正定矩阵 $Q$：}
+    
+    最简单的选择是单位矩阵：
+    \[Q = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}\]
+    
+    \item \textbf{设定待求的对称矩阵 $P$：}
+    
+    令 $P = \begin{bmatrix} p_{11} & p_{12} \\ p_{12} & p_{22} \end{bmatrix}$
+    
+    \item \textbf{构建李雅普诺夫方程 $A^T P + PA = -Q$：}
+    
+    首先计算各项：
+    \[A^T = \begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix}\]
+    
+    \[A^T P = \begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix} \begin{bmatrix} p_{11} & p_{12} \\ p_{12} & p_{22} \end{bmatrix} = \begin{bmatrix} -p_{12} & -p_{22} \\ p_{11} & p_{12} \end{bmatrix}\]
+    
+    \[PA = \begin{bmatrix} p_{11} & p_{12} \\ p_{12} & p_{22} \end{bmatrix} \begin{bmatrix} 0 & 1 \\ -1 & 0 \end{bmatrix} = \begin{bmatrix} -p_{12} & p_{11} \\ -p_{22} & p_{12} \end{bmatrix}\]
+    
+    \[A^T P + PA = \begin{bmatrix} -2p_{12} & p_{11}-p_{22} \\ p_{11}-p_{22} & 2p_{12} \end{bmatrix}\]
+    
+    令其等于 $-Q = \begin{bmatrix} -1 & 0 \\ 0 & -1 \end{bmatrix}$：
+    \[\begin{bmatrix} -2p_{12} & p_{11}-p_{22} \\ p_{11}-p_{22} & 2p_{12} \end{bmatrix} = \begin{bmatrix} -1 & 0 \\ 0 & -1 \end{bmatrix}\]
+    
+    \item \textbf{分析方程组：}
+    
+    由上式可得：
+    \begin{align*}
+    -2p_{12} &= -1 \implies p_{12} = \frac{1}{2} & \text{(第(1,1)元素)} \\
+    p_{11} - p_{22} &= 0 \implies p_{11} = p_{22} & \text{(第(1,2)元素)} \\
+    2p_{12} &= -1 \implies p_{12} = -\frac{1}{2} & \text{(第(2,2)元素)}
+    \end{align*}
+    
+    \textbf{出现矛盾！}从第(1,1)元素得 $p_{12} = \frac{1}{2}$，而从第(2,2)元素得 $p_{12} = -\frac{1}{2}$。
+    
+    这意味着对于正定矩阵 $Q=I$，\textbf{李雅普诺夫方程无解}。
+    
+    \item \textbf{得出结论：}
+    
+    根据李雅普诺夫稳定性判据，如果系统是渐进稳定的，那么对于\textbf{任意}正定 $Q$，都\textbf{必须}能解出唯一的正定 $P$。
+    
+    现在我们发现，对于最简单的正定 $Q=I$，方程都无解，这直接说明了系统\textbf{不是渐进稳定的}。
+\end{enumerate}
+
+\subsubsection{结论汇总}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{判断方法} & \textbf{结论} \\
+\hline
+特征值法 & 特征值 $\lambda = \pm i$，实部为 0，系统李雅普诺夫稳定但不渐近稳定 \\
+\hline
+李雅普诺夫第二方法 & 对正定 $Q=I$，方程无正定解 $P$，系统不渐近稳定 \\
+\hline
+\textbf{最终结论} & \textbf{系统临界稳定（李雅普诺夫稳定），受扰动后产生等幅振荡} \\
+\hline
+\end{tabular}
+\end{center}

@@ -57,28 +57,30 @@
     \item ✗ 采用太大的采样周期（后果：控制性能差、可能不稳定）
 \end{itemize}
 
-\subsection{离散系统概述
+\subsection{离散系统概述}
 
 \subsubsection{离散系统的定义}
 
 \textbf{离散系统}（数字控制系统）是指信号在时间上离散，通常涉及采样、数字处理和保持等环节。
 
-\begin{minipage}[t]{0.52\textwidth}
 \textbf{连续系统 vs 离散系统：}
 
+\begin{minipage}[t]{0.48\textwidth}
 \textbf{连续系统：}
 \begin{itemize}
     \item 信号连续变化
     \item 微分方程描述
     \item 拉普拉斯变换分析
 \end{itemize}
-
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
 \textbf{离散系统：}
 \begin{itemize}
     \item 信号在采样时刻定义
     \item 差分方程描述
     \item Z变换分析
 \end{itemize}
+\end{minipage}
 
 \vspace{0.3cm}
 \textbf{离散系统的组成：}
@@ -95,41 +97,123 @@
 
 为无失真恢复连续信号，采样频率必须：
 \begin{align*}
-f_s \geq 2f_{\max}
-\end{align*}
-
-或采样周期：
-\begin{align*}
-T \leq \frac{\pi}{\omega_{\max}}
+f_s \geq 2f_{\max} \quad \text{或采样周期：} \quad T \leq \frac{\pi}{\omega_{\max}}
 \end{align*}
 
 其中 $f_{\max}$ 是信号的最高频率分量。
 
-\textbf{工程实践：}
-\begin{itemize}
-    \item 一般取 $f_s = (6 \sim 10) f_{\max}$
-    \item 或采样周期 $T = (0.1 \sim 0.5) T_s$（$T_s$ 为系统时间常数）
-\end{itemize}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.45\textwidth}
-\vspace{0pt}
-\textbf{离散控制系统结构：}
+\textbf{工程实践：}一般取 $f_s = (6 \sim 10) f_{\max}$，或采样周期 $T = (0.1 \sim 0.5) \tau$（$\tau$ 为系统时间常数）
 
-离散控制系统包含以下环节：
-\begin{itemize}
-    \item 采样器（周期 $T$）
-    \item 数字控制器
-    \item 保持器（通常为零阶保持器）
-    \item 被控对象（连续系统）
-\end{itemize}
+\vspace{0.5cm}
+\textbf{频谱混叠（Aliasing）警告：}
 
-采样器将连续信号在离散时刻采样，数字控制器对离散信号进行处理，保持器将离散信号还原为阶梯波形式的连续信号，最后作用于被控对象。
+当采样频率不满足采样定理时，高频信号会\textquotedblleft 伪装\textquotedblright 成低频信号，导致\textbf{不可恢复}的信息丢失。
 
-\vspace{0.3cm}
-\textbf{采样过程：}
+\textbf{例子：}信号频率$f=9$Hz，采样频率$f_s=10$Hz（违反定理）。采样后看到的频率是$|f-f_s|=1$Hz——高频信号被误认为低频！
 
-采样过程将连续信号 $r(t)$ 在时刻 $t = kT$（$k=0,1,2,\ldots$）进行采样，得到离散序列 $r(kT)$。
-\end{minipage}
+\begin{center}
+\textbf{频谱混叠示意图：}
+
+\begin{tikzpicture}[scale=0.9]
+% 原始高频信号
+\draw[blue, thick, domain=0:3, samples=100] plot (\x, {0.8*sin(360*3*\x)});
+% 采样点
+\foreach \x in {0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0} {
+    \fill[red] (\x, {0.8*sin(360*3*\x)}) circle (1.5pt);
+}
+% 采样后看到的低频信号
+\draw[red, dashed, thick, domain=0:3, samples=50] plot (\x, {0.8*sin(360*0.3*\x)});
+
+\draw[->] (0,-1.2) -- (3.2,-1.2) node[right] {$t$};
+\draw (0,-1.2) -- (0,-1.3) node[below] {$0$};
+\draw (3,-1.2) -- (3,-1.3) node[below] {$3$s};
+
+\node[blue, above left] at (0.5, 0.8) {\small 原始$f=9$Hz};
+\node[red, below left] at (0.5, -0.8) {\small 采样后看到$f=1$Hz};
+\end{tikzpicture}
+\end{center}
+
+\textbf{结论}：采样定理不是\textquotedblleft 理论建议\textquotedblright，而是\textbf{物理约束}——违反它，控制系统会看到错误的世界！
+
+\subsubsection{数字控制系统的基本结构}
+
+\textbf{核心问题}：计算机无法输出\textquotedblleft 真正的连续信号\textquotedblright——它只能在每个采样周期\textquotedblleft 刷新\textquotedblright 一次输出值并保持。
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0, node distance=2cm, >=stealth]
+% 节点定义
+\node[draw, rectangle, minimum width=1.8cm, minimum height=1cm] (sampler) {采样器};
+\node[draw, rectangle, minimum width=2.2cm, minimum height=1cm, right=of sampler] (controller) {数字控制器};
+\node[draw, rectangle, minimum width=1.8cm, minimum height=1cm, right=of controller] (zoh) {ZOH};
+\node[draw, rectangle, minimum width=2.2cm, minimum height=1cm, right=of zoh] (plant) {被控对象};
+
+% 连接线
+\draw[->] (sampler) -- node[above] {\small $e(kT)$} (controller);
+\draw[->] (controller) -- node[above] {\small $u(kT)$} (zoh);
+\draw[->] (zoh) -- node[above] {\small $u(t)$} (plant);
+\draw[->] (plant) -- ++(2,0) node[right] {$y(t)$} -- ++(0,-1.5) -| (sampler);
+\draw[<-] (sampler) -- ++(-2,0) node[left] {$r(t)$};
+
+% 信号波形示意
+\node[below=1.5cm of controller, align=center] (pulse) {
+    \begin{tikzpicture}[scale=0.35]
+        \draw[->] (0,0) -- (5,0) node[right] {\tiny $t$};
+        \draw[->] (0,0) -- (0,2);
+        \foreach \x in {1,2,3,4} {
+            \draw[red, thick, ->] (\x, 0) -- (\x, {0.5+0.3*\x});
+        }
+        \node[below] at (2.5, -0.5) {\small 脉冲序列};
+    \end{tikzpicture}
+};
+
+\node[below=1.5cm of zoh, align=center] (staircase) {
+    \begin{tikzpicture}[scale=0.35]
+        \draw[->] (0,0) -- (5,0) node[right] {\tiny $t$};
+        \draw[->] (0,0) -- (0,2);
+        \draw[blue, thick] (0,0.5) -- (1,0.5) -- (1,0.8) -- (2,0.8) -- (2,1.1) -- (3,1.1) -- (3,1.4) -- (4,1.4) -- (4,1.7) -- (5,1.7);
+        \node[below] at (2.5, -0.5) {\small 阶梯波};
+    \end{tikzpicture}
+};
+
+\draw[->, dashed] (controller.south) -- (pulse.north);
+\draw[->, dashed] (zoh.south) -- (staircase.north);
+\end{tikzpicture}
+\end{center}
+
+\textbf{零阶保持器（ZOH）的关键作用：}
+
+\begin{enumerate}
+    \item \textbf{物理意义}：ZOH是\textbf{连接数字世界和物理世界的桥梁}
+    \begin{itemize}
+        \item 数字控制器输出：一串数字 $u(0), u(T), u(2T), \ldots$（离散脉冲）
+        \item 被控对象需要：连续信号 $u(t)$（物理世界没有\textquotedblleft 脉冲\textquotedblright ）
+        \item ZOH的工作：在每个周期$[kT, (k+1)T)$内保持$u(kT)$不变
+    \end{itemize}
+    
+    \item \textbf{数学模型}：ZOH不是\textquotedblleft 透明\textquotedblright 的！它有自己的传递函数
+    \begin{align*}
+    G_h(s) = \frac{1-e^{-Ts}}{s}
+    \end{align*}
+    
+    \item \textbf{关键洞察}：ZOH引入相位滞后，\textbf{改变系统动态特性}
+    \begin{itemize}
+        \item 这就是为什么离散系统不是\textquotedblleft 连续系统简单采样\textquotedblright 
+        \item 计算离散模型时\textbf{必须}包含ZOH（否则模型完全错误）
+    \end{itemize}
+\end{enumerate}
+
+\textbf{贯穿全章的示例系统：}
+
+考虑一个简单的一阶连续系统（RC电路、温度控制等）：
+\begin{align*}
+G_p(s) = \frac{1}{s+1}
+\end{align*}
+
+时间常数$\tau = 1$秒。选择采样周期$T=0.1$秒（$T=0.1\tau$，符合工程实践）。
+
+\textbf{问题}：这个系统在离散化后会变成什么样子？稳定性如何？如何设计控制器？
+
+我们将在后续章节逐步回答这些问题。
 
 \subsection{Z变换}
 
@@ -242,16 +326,38 @@ $ka^k$ & $\frac{az}{(z-a)^2}$ & $|z| > |a|$ \\
 \end{tabular}
 \end{center}
 
-\subsection{脉冲传递函数}
+\subsection{离散系统的建模与分析}
 
-\subsubsection{定义}
+\textbf{核心问题}：如何像分析连续系统一样分析离散系统？
+
+连续系统分析的\textquotedblleft 三部曲\textquotedblright：
+\begin{enumerate}
+    \item \textbf{建模}：获得传递函数$G(s)$（系统输入输出关系）
+    \item \textbf{稳定性}：判断极点位置（左半平面 vs 右半平面）
+    \item \textbf{性能}：计算瞬态（超调、调节时间）和稳态（误差）指标
+\end{enumerate}
+
+离散系统完全类似，但工具和判据不同：
+\begin{enumerate}
+    \item \textbf{建模}：脉冲传递函数$G(z)$（必须考虑ZOH！）
+    \item \textbf{稳定性}：极点在单位圆内（不是左半平面）
+    \item \textbf{性能}：Z反变换+终值定理
+\end{enumerate}
+
+\textbf{继续我们的示例}：$G_p(s) = \frac{1}{s+1}$，$T=0.1$s
+
+\subsubsection{脉冲传递函数与零阶保持器}
+
+\textbf{核心步骤}：从连续模型$G_p(s)$到离散模型$G(z)$
+
+\textbf{1. 脉冲传递函数定义}
 
 脉冲传递函数是离散系统的输出Z变换与输入Z变换之比（零初始条件）：
 \begin{align*}
 G(z) = \frac{Y(z)}{X(z)}
 \end{align*}
 
-\subsubsection{零阶保持器（ZOH）}
+\textbf{2. 零阶保持器（ZOH）的数学处理}
 
 零阶保持器在采样周期内保持采样值不变。
 
@@ -275,12 +381,14 @@ G(z) = \mathcal{Z}\left\{\frac{1-e^{-Ts}}{s} G(s)\right\} = (1-z^{-1})\mathcal{Z
 
 对于 $G(s) = \frac{1}{s+a}$：
 \begin{align*}
-G(z) = (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s(s+a)}\right\} = \frac{1-e^{-aT}}{z-e^{-aT}}
+G(z) &= (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s(s+a)}\right\} \\
+&= \frac{1-e^{-aT}}{z-e^{-aT}}
 \end{align*}
 
 对于 $G(s) = \frac{1}{s(s+a)}$：
 \begin{align*}
-G(z) = (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s^2(s+a)}\right\} = \frac{T - \frac{1-e^{-aT}}{a}}{(z-1)(z-e^{-aT})}
+G(z) &= (1-z^{-1})\mathcal{Z}\left\{\frac{1}{s^2(s+a)}\right\} \\
+&= \frac{T - \frac{1-e^{-aT}}{a}}{(z-1)(z-e^{-aT})}
 \end{align*}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.45\textwidth}
@@ -318,9 +426,25 @@ G(z) &= (1-z^{-1}) \times \text{上式} \\
 \end{align*}
 \end{minipage}
 
-\subsection{离散系统的稳定性}
+\vspace{0.5cm}
+\textbf{【贯穿例子】我们的示例系统：}$G_p(s) = \frac{1}{s+1}$，$T=0.1$s
 
-\subsubsection{稳定性判据}
+使用公式（$a=1$）：
+\begin{align*}
+G(z) &= \frac{1-e^{-aT}}{z-e^{-aT}} = \frac{1-e^{-0.1}}{z-e^{-0.1}} \\
+&= \frac{0.0952}{z-0.9048} \quad \text{（这是离散化后的系统模型）}
+\end{align*}
+
+\textbf{观察}：
+\begin{itemize}
+    \item 连续系统极点：$s=-1$（左半平面，稳定）
+    \item 离散系统极点：$z=e^{-0.1} = 0.9048$（$|z|=0.9048 < 1$，单位圆内，稳定）
+    \item 映射关系验证：$z = e^{sT} = e^{-1 \times 0.1} = 0.9048$ ✓
+\end{itemize}
+
+\subsubsection{稳定性分析}
+
+\textbf{稳定性判据}
 
 离散系统稳定的充要条件：闭环脉冲传递函数 $\Phi(z)$ 的所有极点都在 $z$ 平面单位圆内，即：
 \begin{align*}
@@ -391,9 +515,18 @@ D(1) > 0, \quad (-1)^n D(-1) > 0
 
 （详细方法略，工程中常用数值计算求根判断）
 
-\subsection{离散系统的动态性能}
+\textbf{【贯穿例子】我们的系统稳定性：}
 
-\subsubsection{稳态误差}
+假设单位负反馈，闭环传递函数：
+\begin{align*}
+\Phi(z) = \frac{G(z)}{1+G(z)} = \frac{0.0952/(z-0.9048)}{1+0.0952/(z-0.9048)} = \frac{0.0952}{z-0.81}
+\end{align*}
+
+闭环极点：$z=0.81$，$|z|=0.81 < 1$ $\implies$ \textbf{稳定} ✓
+
+\subsubsection{动态性能分析}
+
+\textbf{1. 稳态误差}
 
 \textbf{终值定理：}
 \begin{align*}
@@ -432,9 +565,69 @@ y(kT) = \mathcal{Z}^{-1}\{Y(z)\}
     \item 振荡次数
 \end{itemize}
 
-\subsection{数字PID控制}
+\textbf{【贯穿例子】我们的系统阶跃响应：}
 
-\subsubsection{连续PID的离散化}
+单位阶跃输入$R(z) = \frac{z}{z-1}$，闭环输出：
+\begin{align*}
+Y(z) = \Phi(z)R(z) = \frac{0.0952}{z-0.81} \cdot \frac{z}{z-1} = \frac{0.0952z}{(z-0.81)(z-1)}
+\end{align*}
+
+部分分式：$Y(z) = \frac{z}{z-1} - \frac{0.5z}{z-0.81}$
+
+Z反变换：$y(kT) = 1 - 0.5 \times 0.81^k$
+
+\textbf{典型值}：
+\begin{itemize}
+    \item $y(0) = 0.5$ （初值）
+    \item $y(10T) = 1 - 0.5 \times 0.81^{10} = 0.94$ （1秒后）
+    \item $y(\infty) = 1$ （终值，稳态误差为0）
+    \item 无超调（一阶系统）
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{离散阶跃响应示意：}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+\draw[->] (0,0) -- (6,0) node[right] {$t$ (秒)};
+\draw[->] (0,0) -- (0,3) node[above] {$y(t)$};
+
+% 参考线
+\draw[dashed, gray] (0,2.5) -- (6,2.5) node[right] {$r=1$};
+
+% 离散响应点
+\foreach \k in {0,1,...,20} {
+    \pgfmathsetmacro{\yval}{2.5*(1-0.5*0.81^\k)}
+    \fill[blue] (0.3*\k, \yval) circle (1.5pt);
+}
+
+% 连接线（阶梯）
+\draw[blue, thick] (0,1.25) -- (0.3,1.25) -- (0.3,1.59) -- (0.6,1.59) -- (0.6,1.86) -- (0.9,1.86) -- (0.9,2.06) -- (1.2,2.06) -- (1.2,2.22) -- (1.5,2.22) -- (1.5,2.34) -- (1.8,2.34) -- (1.8,2.43) -- (2.1,2.43) -- (2.1,2.49) -- (2.4,2.49);
+
+\node[left] at (0,2.5) {1.0};
+\node[left] at (0,1.25) {0.5};
+\node[below] at (1.5,0) {1s};
+\node[below] at (3,0) {2s};
+\end{tikzpicture}
+\end{center}
+
+\subsection{数字控制器的设计与实现}
+
+\textbf{设计目标}：为离散系统设计控制器$D(z)$，使闭环系统满足性能指标。
+
+\textbf{常用方法}：
+\begin{enumerate}
+    \item \textbf{数字PID}：最常用，从连续PID离散化或直接设计（经验调参）
+    \item \textbf{最少拍}：理论最优，在最少采样周期内达到期望输出（设计复杂）
+    \item \textbf{数字串行校正}：类似连续系统超前/滞后校正
+    \item \textbf{状态反馈}：现代控制方法（需要状态观测器）
+\end{enumerate}
+
+\textbf{实现方式}：差分方程 → C/Python代码 → 嵌入式系统运行
+
+\subsubsection{设计方法一：数字PID控制器}
+
+\textbf{1. 连续PID的离散化}
 
 连续PID控制器：
 \begin{align*}
@@ -472,9 +665,21 @@ u_d(k) = \alpha u_d(k-1) + K_d (1-\alpha) \frac{e(k) - e(k-1)}{T}
 
 其中 $\alpha = \frac{T}{T + \tau_d}$，$\tau_d$ 为滤波时间常数。
 
-\subsection{离散系统设计}
+\textbf{【贯穿例子】为我们的系统设计数字PI控制器：}
 
-\subsubsection{最少拍控制}
+目标：提高响应速度（减小调节时间）。使用位置式PI：
+\begin{align*}
+u(k) = K_p e(k) + K_i T \sum_{j=0}^k e(j)
+\end{align*}
+
+取$K_p=2$，$K_i=5$（经验值，实际需调试），$T=0.1$：
+\begin{align*}
+D(z) = K_p + K_i T \frac{z}{z-1} = 2 + 0.5\frac{z}{z-1} = \frac{2.5z - 2}{z-1}
+\end{align*}
+
+闭环传递函数（需验证稳定性）：极点需满足$|z_i|<1$
+
+\subsubsection{设计方法二：最少拍控制}
 
 \textbf{设计目标：}在最少的采样周期内使系统输出达到并保持在期望值。
 
@@ -496,22 +701,140 @@ D(z) = \frac{\Phi^*(z)}{G(z)[1-\Phi^*(z)]}
     \item 无纹波最少拍（I型系统）：$\Phi^*(z) = z^{-1}(2-z^{-1})$
 \end{itemize}
 
-\subsubsection{数字控制器的实现}
+\subsubsection{控制器的软件实现：从传递函数到代码}
 
-\textbf{直接编程法：}
+\textbf{核心步骤}：传递函数$D(z)$ → 差分方程 → 可执行代码
 
-控制器传递函数 $D(z) = \frac{U(z)}{E(z)}$ 转换为差分方程，直接编程实现。
+\textbf{方法1：直接从传递函数推导差分方程}
 
-\textbf{串行校正：}
-
-类似连续系统的超前/滞后校正，设计数字校正器：
+设控制器传递函数：
 \begin{align*}
-D(z) = K \frac{z - a}{z - b}
+D(z) = \frac{U(z)}{E(z)} = \frac{b_0 + b_1 z^{-1} + b_2 z^{-2}}{1 + a_1 z^{-1} + a_2 z^{-2}}
 \end{align*}
 
-\textbf{并行校正：}
+交叉相乘：
+\begin{align*}
+U(z)[1 + a_1 z^{-1} + a_2 z^{-2}] &= E(z)[b_0 + b_1 z^{-1} + b_2 z^{-2}] \\
+U(z) + a_1 z^{-1}U(z) + a_2 z^{-2}U(z) &= b_0 E(z) + b_1 z^{-1}E(z) + b_2 z^{-2}E(z)
+\end{align*}
 
-采用状态反馈等现代控制方法。
+Z反变换得差分方程：
+\begin{align*}
+u(k) = -a_1 u(k-1) - a_2 u(k-2) + b_0 e(k) + b_1 e(k-1) + b_2 e(k-2)
+\end{align*}
+
+\textbf{方法2：位置式PID的直接实现}
+
+位置式PID：
+\begin{align*}
+u(k) = K_p e(k) + K_i T \sum_{j=0}^k e(j) + K_d \frac{e(k) - e(k-1)}{T}
+\end{align*}
+
+递推形式（避免每次累加）：
+\begin{align*}
+\text{sum} &= \text{sum} + e(k) \\
+u(k) &= K_p e(k) + K_i T \cdot \text{sum} + K_d [e(k) - e(k-1)]/T
+\end{align*}
+
+\textbf{C语言实现示例（位置式PID）：}
+
+\begin{lstlisting}[language=C, basicstyle=\small\ttfamily]
+// 全局变量
+float Kp = 2.0, Ki = 5.0, Kd = 0.0;  // PID参数
+float T = 0.1;                         // 采样周期(秒)
+float sum = 0.0;                       // 积分累积
+float e_prev = 0.0;                    // 上一次误差
+
+// 每个采样周期调用一次
+float PID_Controller(float setpoint, float measurement) {
+    float e = setpoint - measurement;  // 当前误差
+    
+    // 积分项累加
+    sum += e;
+    
+    // PID计算
+    float u = Kp * e + Ki * T * sum + Kd * (e - e_prev) / T;
+    
+    // 积分饱和限制（可选）
+    if (sum > 100.0) sum = 100.0;
+    if (sum < -100.0) sum = -100.0;
+    
+    // 输出限幅（可选）
+    if (u > 10.0) u = 10.0;
+    if (u < -10.0) u = -10.0;
+    
+    e_prev = e;  // 保存当前误差
+    return u;
+}
+\end{lstlisting}
+
+\textbf{Python实现示例（更简洁）：}
+
+\begin{lstlisting}[language=Python, basicstyle=\small\ttfamily]
+import numpy as np
+
+class DigitalPID:
+    def __init__(self, Kp, Ki, Kd, T):
+        self.Kp, self.Ki, self.Kd, self.T = Kp, Ki, Kd, T
+        self.sum = 0.0
+        self.e_prev = 0.0
+    
+    def update(self, setpoint, measurement):
+        e = setpoint - measurement
+        self.sum += e
+        u = self.Kp * e + self.Ki * self.T * self.sum + \
+            self.Kd * (e - self.e_prev) / self.T
+        self.e_prev = e
+        return np.clip(u, -10, 10)  # 输出限幅
+
+# 使用
+pid = DigitalPID(Kp=2.0, Ki=5.0, Kd=0.0, T=0.1)
+control_signal = pid.update(setpoint=1.0, measurement=0.5)
+\end{lstlisting}
+
+\textbf{【贯穿例子】我们的PI控制器实现：}
+
+$D(z) = \frac{2.5z - 2}{z-1}$ 转差分方程：
+\begin{align*}
+U(z)(z-1) &= E(z)(2.5z - 2) \\
+zU(z) - U(z) &= 2.5zE(z) - 2E(z) \\
+u(k+1) - u(k) &= 2.5e(k+1) - 2e(k)
+\end{align*}
+
+递推形式：$u(k) = u(k-1) + 2.5e(k) - 2e(k-1)$
+
+\begin{lstlisting}[language=C, basicstyle=\small\ttfamily]
+float u_prev = 0.0, e_prev = 0.0;
+
+float PI_Controller(float e) {
+    float u = u_prev + 2.5*e - 2.0*e_prev;
+    u_prev = u;
+    e_prev = e;
+    return u;
+}
+\end{lstlisting}
+
+\textbf{实际嵌入式系统集成：}
+
+\begin{lstlisting}[language=C, basicstyle=\small\ttfamily]
+// 主循环（每10ms执行一次，定时器中断触发）
+void Timer_ISR(void) {
+    float setpoint = 1.0;
+    float measurement = ADC_Read();  // 从ADC读取传感器值
+    
+    float control = PID_Controller(setpoint, measurement);
+    
+    PWM_Set(control);  // 设置PWM占空比
+}
+\end{lstlisting}
+
+\textbf{关键实现要点：}
+\begin{itemize}
+    \item \textbf{定时精度}：必须严格按$T$周期执行（用硬件定时器，不要用软件延迟）
+    \item \textbf{数值精度}：用\texttt{float}（32位）通常够用，高精度系统用\texttt{double}
+    \item \textbf{初始化}：所有历史变量（\texttt{sum}, \texttt{e\_prev}）初始化为0
+    \item \textbf{抗饱和}：积分项和输出都需要限幅
+\end{itemize}
 
 \subsection*{本章总结}
 
@@ -798,7 +1121,7 @@ $G(z)$（z域）
 \begin{itemize}
     \item \textbf{第\ref{sec:transfer-function}章（传递函数）}：$G(z)$是$G(s)$的离散类比，物理意义相同
     \item \textbf{第\ref{sec:state-space}章（状态空间）}：离散状态方程$x(k+1)=Ax(k)+Bu(k)$结构相同
-    \item \textbf{第\ref{sec:stability}章（稳定性）}：稳定性判据从左半平面改为单位圆内，但\textbf{本质}（衰减vs发散）不变
+    \item \textbf{第\ref{sec:stability-analysis}章（稳定性）}：稳定性判据从左半平面改为单位圆内，但\textbf{本质}（衰减vs发散）不变
     \item \textbf{第\ref{sec:controllability-observability}章}：能控能观判据在离散系统中\textbf{完全适用}（只需替换$A,B,C$）
 \end{itemize}
 

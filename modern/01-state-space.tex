@@ -1,35 +1,512 @@
 \section{状态空间表达式及其建立}
 
-\subsection{状态空间的基本概念}
+\subsection*{引言：从输入输出到内部状态}
+
+当你使用手机时，你只关心按下按钮后屏幕的响应——这是\textbf{输入输出关系}。但手机内部CPU有数十亿晶体管，每个晶体管的状态（开或关）共同决定了系统的行为。这些内部状态对用户不可见，却是理解和设计系统的关键。
+
+\textbf{经典控制理论的局限：}传统的频域方法（传递函数、频率响应）只关注系统的\textbf{外部行为}——输入如何影响输出。这种方法对于简单的单输入单输出（SISO）系统非常有效，但面对现代工程中的复杂系统时遇到了困难：
+
 \begin{itemize}
-    \item \textbf{状态}：系统在某一时刻的状态是指确定系统该时刻以后行为所必需的最少信息
-    \item \textbf{状态变量}：描述系统状态的一组变量
-    \item \textbf{状态向量}：由状态变量组成的向量
-    \item \textbf{状态空间}：以状态变量为坐标的n维空间
+    \item \textbf{多变量系统}：飞机有多个控制面（副翼、升降舵、方向舵），如何协调控制？
+    \item \textbf{初始条件}：火箭发射时的初始状态（位置、速度）如何影响轨迹？传递函数假设初始条件为零，无法处理这类问题。
+    \item \textbf{时变与非线性}：卫星轨道随时间变化，机器人关节有摩擦非线性，传递函数方法难以适用。
 \end{itemize}
 
-\subsection{状态空间表达式}
-线性定常系统的状态空间表达式：
-\begin{align}
-\dot{x}(t) &= Ax(t) + Bu(t) \\
-\dot{y}(t) &= Cx(t) + Du(t)
-\end{align}
+\textbf{现代控制理论的突破：}20世纪60年代，\textbf{卡尔曼（Kalman）}等学者提出了\textbf{状态空间方法}（State Space Approach），将系统的\textbf{内部状态}显式地纳入描述。这种方法不仅能处理多变量系统，还为最优控制、自适应控制等高级主题奠定了基础。
 
-其中：
+\textbf{本章的核心目标：}
 \begin{itemize}
-    \item $x(t) \in \mathbb{R}^n$：状态向量
-    \item $u(t) \in \mathbb{R}^p$：输入向量
-    \item $y(t) \in \mathbb{R}^q$：输出向量
-    \item $A \in \mathbb{R}^{n \times n}$：系统矩阵
-    \item $B \in \mathbb{R}^{n \times p}$：输入矩阵
-    \item $C \in \mathbb{R}^{q \times n}$：输出矩阵
-    \item $D \in \mathbb{R}^{q \times p}$：前馈矩阵
+    \item 理解\textbf{状态}的概念：为什么需要它？它代表什么？
+    \item 掌握\textbf{状态空间表达式}：现代控制理论的标准数学语言
+    \item 学会\textbf{建立状态空间模型}：从物理系统到数学描述
+    \item 认识\textbf{状态选择的非唯一性}：同一系统可以有不同的状态描述
+\end{itemize}
+
+\textbf{章节路线图：}
+\begin{enumerate}
+    \item 状态的基本概念（什么是状态？为什么需要状态？）
+    \item 状态空间表达式的标准形式（数学框架）
+    \item 建立方法与实例（从物理规律到状态方程）
+    \item 状态选择的多样性（同一系统的不同描述）
+\end{enumerate}
+
+\subsection{状态空间的基本概念}
+
+\subsubsection*{本节目的}
+在引入严格的数学定义之前，我们需要建立对「状态」的直观理解：它是什么？为什么需要它？如何选择它？
+
+\subsubsection{状态的定义与物理意义}
+
+\textbf{状态的严格定义：}
+
+\textbf{状态（State）}是系统在某一时刻的\textbf{最少信息集合}，它能够与输入一起，\textbf{唯一确定}系统未来的行为。
+
+\textbf{通俗解释：}
+\begin{itemize}
+    \item \textbf{最少信息}：不多不少，恰好够用。比如描述单摆运动，需要角度和角速度两个量，缺一不可。
+    \item \textbf{唯一确定未来}：给定当前状态 $x(t_0)$ 和未来的输入 $u(t)$，就能计算出任意未来时刻 $t > t_0$ 的状态 $x(t)$。
+    \item \textbf{与历史无关}：只要知道当前状态，就不需要知道系统过去的轨迹。这是\textbf{马尔可夫性质}。
+\end{itemize}
+
+\textbf{相关概念：}
+
+\begin{itemize}
+    \item \textbf{状态变量（State Variables）}：描述系统状态的一组变量，记为 $x_1, x_2, \ldots, x_n$。
+    \item \textbf{状态向量（State Vector）}：由状态变量组成的列向量：
+    \[
+    x(t) = \begin{bmatrix} x_1(t) \\ x_2(t) \\ \vdots \\ x_n(t) \end{bmatrix} \in \mathbb{R}^n
+    \]
+    \item \textbf{状态空间（State Space）}：以状态变量为坐标轴的 $n$ 维欧几里得空间 $\mathbb{R}^n$。系统在某时刻的状态对应状态空间中的一个点，系统的演化对应状态空间中的一条轨迹。
+\end{itemize}
+
+\subsubsection{状态的物理意义：能量存储的视角}
+
+\textbf{核心洞察：}在物理系统中，\textbf{状态变量通常与能量存储元件相关}。
+
+\begin{itemize}
+    \item \textbf{电路系统}：
+    \begin{itemize}
+        \item 电容电压 $v_C$：存储电场能量 $E = \frac{1}{2}CV_C^2$
+        \item 电感电流 $i_L$：存储磁场能量 $E = \frac{1}{2}LI_L^2$
+    \end{itemize}
+    \item \textbf{机械系统}：
+    \begin{itemize}
+        \item 位置 $x$：存储势能（如弹簧）$E = \frac{1}{2}kx^2$
+        \item 速度 $v$：存储动能 $E = \frac{1}{2}mv^2$
+    \end{itemize}
+    \item \textbf{热力学系统}：温度、压力（存储热能）
+    \item \textbf{化学系统}：浓度（存储化学能）
+\end{itemize}
+
+\textbf{为什么能量存储很重要？}因为能量不能瞬间改变——电容电压不能突变（需要充电时间），质量速度不能突变（需要加速度）。正是这些\textbf{能量存储机制}使得系统具有\textbf{动态特性}，而状态变量就是描述这些动态的数学工具。
+
+\textbf{实用原则：}
+\begin{quote}
+    \textit{系统的状态变量个数} $n$ = \textit{独立能量存储元件个数}
+\end{quote}
+
+例如，一个包含 2 个电容和 3 个电感的电路，通常有 $n = 5$ 个状态变量。
+
+\subsection{状态空间表达式的标准形式}
+
+\subsubsection*{本节目的}
+建立状态空间方法的数学框架——这是现代控制理论的标准语言。
+
+\subsubsection{线性定常系统的状态空间表达式}
+
+\textbf{标准形式：}
+
+对于线性时不变（LTI, Linear Time-Invariant）系统，状态空间表达式由两个方程组成：
+
+\begin{empheq}[box=\fbox]{align}
+\dot{x}(t) &= Ax(t) + Bu(t) \quad \text{（状态方程）} \label{eq:ss:state} \\
+y(t) &= Cx(t) + Du(t) \quad \text{（输出方程）} \label{eq:ss:output}
+\end{empheq}
+
+\textbf{各变量的含义：}
+
+\begin{itemize}
+    \item $x(t) \in \mathbb{R}^n$：\textbf{状态向量}（$n$ 个状态变量）
+    \item $u(t) \in \mathbb{R}^p$：\textbf{输入向量}（$p$ 个控制输入）
+    \item $y(t) \in \mathbb{R}^q$：\textbf{输出向量}（$q$ 个可测量输出）
+    \item $A \in \mathbb{R}^{n \times n}$：\textbf{系统矩阵}（描述系统自身动态）
+    \item $B \in \mathbb{R}^{n \times p}$：\textbf{输入矩阵}（描述输入如何影响状态）
+    \item $C \in \mathbb{R}^{q \times n}$：\textbf{输出矩阵}（描述哪些状态可测量）
+    \item $D \in \mathbb{R}^{q \times p}$：\textbf{前馈矩阵}（描述输入到输出的直接传递）
+\end{itemize}
+
+\textbf{方程的物理意义：}
+
+\begin{itemize}
+    \item \textbf{状态方程} \eqref{eq:ss:state}：描述\textbf{状态如何随时间演化}。$\dot{x}$ 是状态的变化率，由当前状态 $x$ 和输入 $u$ 共同决定。
+    \begin{quote}
+        \textit{状态方程回答：「系统下一时刻会变成什么样？」}
+    \end{quote}
+    
+    \item \textbf{输出方程} \eqref{eq:ss:output}：描述\textbf{哪些量是可观测的}。并非所有状态都能直接测量（如电机内部温度），输出方程告诉我们能测到什么。
+    \begin{quote}
+        \textit{输出方程回答：「我们能看到什么？」}
+    \end{quote}
+\end{itemize}
+
+\textbf{关键特性：}
+
+\begin{itemize}
+    \item \textbf{线性}：方程右边是 $x$ 和 $u$ 的线性组合（没有 $x^2$, $\sin(x)$ 等非线性项）
+    \item \textbf{定常}：矩阵 $A, B, C, D$ 不随时间变化（系统参数恒定）
+    \item \textbf{因果性}：当前输出只依赖于当前状态和输入，不依赖未来
+\end{itemize}
+
+\subsubsection{系统矩阵的作用分解}
+
+为了更深入理解，我们可以将状态方程 $\dot{x} = Ax + Bu$ 写成分量形式：
+
+\[
+\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \\ \vdots \\ \dot{x}_n \end{bmatrix}
+= \begin{bmatrix} 
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{n1} & a_{n2} & \cdots & a_{nn}
+\end{bmatrix}
+\begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}
++ \begin{bmatrix} 
+b_{11} & \cdots & b_{1p} \\
+b_{21} & \cdots & b_{2p} \\
+\vdots & \ddots & \vdots \\
+b_{n1} & \cdots & b_{np}
+\end{bmatrix}
+\begin{bmatrix} u_1 \\ u_2 \\ \vdots \\ u_p \end{bmatrix}
+\]
+
+\textbf{矩阵元素的物理意义：}
+
+\begin{itemize}
+    \item $a_{ij}$：状态 $x_j$ 对状态 $x_i$ 变化率的影响系数（\textbf{状态耦合}）
+    \item $b_{ij}$：输入 $u_j$ 对状态 $x_i$ 变化率的影响系数（\textbf{控制增益}）
+    \item $c_{ij}$：状态 $x_j$ 对输出 $y_i$ 的贡献系数（\textbf{观测增益}）
+    \item $d_{ij}$：输入 $u_j$ 对输出 $y_i$ 的直接影响（\textbf{前馈项}，物理系统中常为零）
+\end{itemize}
+
+\textbf{直观理解：}
+\begin{itemize}
+    \item $A$ 矩阵的\textbf{对角元} $a_{ii}$ 描述状态 $x_i$ 自身的衰减或增长
+    \item $A$ 矩阵的\textbf{非对角元} $a_{ij}$ 描述状态之间的相互作用
+    \item $B$ 矩阵的第 $i$ 行描述哪些输入能影响状态 $x_i$
+    \item $C$ 矩阵的第 $i$ 行描述输出 $y_i$ 由哪些状态组成
 \end{itemize}
 
 \subsection{状态空间表达式的建立方法}
+
+\subsubsection*{本节目的}
+将物理系统转化为状态空间描述的系统性方法——从牛顿定律、基尔霍夫定律到状态方程。
+
+\subsubsection{建立步骤}
+
+\textbf{标准流程：}
+
 \begin{enumerate}
-    \item 根据物理规律建立微分方程组
-    \item 选择状态变量（通常选择能量存储元件的变量）
-    \item 将高阶微分方程化为一阶微分方程组
-    \item 写出输出方程
+    \item \textbf{根据物理规律建立系统的微分方程}
+    \begin{itemize}
+        \item 机械系统：牛顿第二定律 $F = ma$
+        \item 电路系统：基尔霍夫电压定律（KVL）、电流定律（KCL）
+        \item 热力学系统：能量守恒定律
+    \end{itemize}
+    
+    \item \textbf{选择状态变量}
+    \begin{itemize}
+        \item \textbf{原则}：选择独立能量存储元件的相关变量
+        \item 电路：电容电压、电感电流
+        \item 机械：位置、速度（对于二阶系统）
+        \item \textbf{注意}：状态变量必须\textbf{线性独立}
+    \end{itemize}
+    
+    \item \textbf{将高阶微分方程化为一阶微分方程组}
+    \begin{itemize}
+        \item 引入中间变量降阶
+        \item 整理成 $\dot{x} = Ax + Bu$ 的形式
+    \end{itemize}
+    
+    \item \textbf{写出输出方程}
+    \begin{itemize}
+        \item 确定哪些量是可测量的
+        \item 用状态变量表示输出：$y = Cx + Du$
+    \end{itemize}
 \end{enumerate}
+
+\subsubsection{范例1：RLC串联电路}
+
+\textbf{系统描述：}
+
+考虑如图所示的RLC串联电路，输入为电压源 $u(t)$，输出为电容电压 $y(t) = v_C(t)$。
+
+\begin{center}
+\begin{circuitikz}
+    \draw (0,0) to[V, v=$u(t)$] (0,3)
+    to[R, l=$R$] (3,3)
+    to[L, l=$L$, i=$i(t)$] (6,3)
+    to[C, l=$C$, v=$v_C(t)$] (6,0) -- (0,0);
+\end{circuitikz}
+\end{center}
+
+\textbf{步骤1：建立微分方程}
+
+根据基尔霍夫电压定律（KVL）：
+\[
+u(t) = R i(t) + L \frac{di(t)}{dt} + v_C(t)
+\]
+
+根据电容的伏安关系：
+\[
+i(t) = C \frac{dv_C(t)}{dt}
+\]
+
+\textbf{步骤2：选择状态变量}
+
+系统有两个能量存储元件（电感和电容），因此选择 $n=2$ 个状态变量：
+\[
+x_1(t) = v_C(t) \quad \text{（电容电压）}, \quad x_2(t) = i(t) \quad \text{（电感电流）}
+\]
+
+\textbf{步骤3：建立状态方程}
+
+对电容电压求导：
+\[
+\dot{x}_1 = \frac{dv_C}{dt} = \frac{i}{C} = \frac{1}{C} x_2
+\]
+
+对电感电流求导，从KVL方程得：
+\[
+\dot{x}_2 = \frac{di}{dt} = \frac{1}{L}(u - Ri - v_C) = -\frac{1}{L}x_1 - \frac{R}{L}x_2 + \frac{1}{L}u
+\]
+
+写成矩阵形式：
+\[
+\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \end{bmatrix}
+= \begin{bmatrix} 0 & \frac{1}{C} \\ -\frac{1}{L} & -\frac{R}{L} \end{bmatrix}
+\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}
++ \begin{bmatrix} 0 \\ \frac{1}{L} \end{bmatrix} u
+\]
+
+\textbf{步骤4：输出方程}
+
+输出为电容电压：
+\[
+y = v_C = x_1 = \begin{bmatrix} 1 & 0 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix}
+\]
+
+\textbf{最终结果：}
+\[
+A = \begin{bmatrix} 0 & \frac{1}{C} \\ -\frac{1}{L} & -\frac{R}{L} \end{bmatrix}, \quad
+B = \begin{bmatrix} 0 \\ \frac{1}{L} \end{bmatrix}, \quad
+C = \begin{bmatrix} 1 & 0 \end{bmatrix}, \quad
+D = 0
+\]
+
+\textbf{物理意义解读：}
+\begin{itemize}
+    \item $a_{12} = \frac{1}{C}$：电感电流增大使电容电压上升（充电）
+    \item $a_{21} = -\frac{1}{L}$：电容电压增大使电感电流减小（反向电动势）
+    \item $a_{22} = -\frac{R}{L}$：电阻导致电流自然衰减
+    \item $b_2 = \frac{1}{L}$：输入电压直接驱动电感电流变化
+\end{itemize}
+
+\subsubsection{范例2：质量-弹簧-阻尼系统}
+
+\textbf{系统描述：}
+
+质量 $m$ 通过弹簧（刚度 $k$）和阻尼器（阻尼系数 $c$）连接到固定端，外力 $u(t)$ 作用在质量上。
+
+\textbf{步骤1：建立微分方程}
+
+根据牛顿第二定律：
+\[
+m \ddot{x} + c \dot{x} + k x = u(t)
+\]
+
+\textbf{步骤2：选择状态变量}
+
+这是二阶系统，选择位置和速度作为状态：
+\[
+x_1 = x \quad \text{（位置）}, \quad x_2 = \dot{x} \quad \text{（速度）}
+\]
+
+\textbf{步骤3：降阶为一阶方程组}
+
+\[
+\begin{cases}
+\dot{x}_1 = x_2 \\
+\dot{x}_2 = \ddot{x} = \frac{1}{m}(u - cx_2 - kx_1) = -\frac{k}{m}x_1 - \frac{c}{m}x_2 + \frac{1}{m}u
+\end{cases}
+\]
+
+矩阵形式：
+\[
+\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \end{bmatrix}
+= \begin{bmatrix} 0 & 1 \\ -\frac{k}{m} & -\frac{c}{m} \end{bmatrix}
+\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}
++ \begin{bmatrix} 0 \\ \frac{1}{m} \end{bmatrix} u
+\]
+
+\textbf{步骤4：输出方程}
+
+假设输出为位置：
+\[
+y = x_1 = \begin{bmatrix} 1 & 0 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix}
+\]
+
+\textbf{观察：二阶系统的标准模式}
+
+注意到 $A$ 矩阵的结构：
+\[
+A = \begin{bmatrix} 0 & 1 \\ -\omega_n^2 & -2\zeta\omega_n \end{bmatrix}
+\]
+其中 $\omega_n = \sqrt{k/m}$ 是固有频率，$\zeta = c/(2\sqrt{km})$ 是阻尼比。这是\textbf{二阶系统的能控标准型}。
+
+\subsection{状态选择的非唯一性}
+
+\subsubsection*{本节目的}
+认识到同一系统可以有无穷多种状态空间描述——理解这种非唯一性及其影响。
+
+\subsubsection{核心问题}
+
+\textbf{关键洞察：}对于同一物理系统，状态变量的选择\textbf{不是唯一的}。不同的状态选择会导致不同的矩阵 $(A, B, C, D)$，但它们描述的是\textbf{同一系统}。
+
+\textbf{为什么会有非唯一性？}
+
+状态是描述系统的\textbf{坐标系}，就像地理位置可以用经纬度、也可以用直角坐标描述一样。数学上，不同的状态选择通过\textbf{线性变换}联系：
+\[
+\bar{x} = Tx, \quad T \text{ 为可逆矩阵}
+\]
+
+\textbf{什么保持不变？}
+
+虽然矩阵 $(A, B, C, D)$ 会变，但系统的本质特性不变：
+\begin{itemize}
+    \item \textbf{特征值}（极点）：决定稳定性和响应速度
+    \item \textbf{能控性}：能否通过输入控制所有状态
+    \item \textbf{能观性}：能否从输出推断所有状态
+    \item \textbf{传递函数}：输入输出关系
+\end{itemize}
+
+\subsubsection{范例：同一RLC电路的不同状态选择}
+
+回到前面的RLC电路，我们还可以做不同的状态选择。
+
+\textbf{方案1（前面已用）}：$x_1 = v_C$, $x_2 = i$
+
+\[
+A_1 = \begin{bmatrix} 0 & \frac{1}{C} \\ -\frac{1}{L} & -\frac{R}{L} \end{bmatrix}
+\]
+
+\textbf{方案2}：引入电感磁链 $\lambda = Li$ 作为状态
+
+选择 $\bar{x}_1 = v_C$, $\bar{x}_2 = \lambda = Li$，则：
+\[
+\begin{cases}
+\dot{\bar{x}}_1 = \frac{i}{C} = \frac{1}{LC}\bar{x}_2 \\
+\dot{\bar{x}}_2 = L\dot{i} = u - Ri - v_C = -\bar{x}_1 - \frac{R}{L}\bar{x}_2 + u
+\end{cases}
+\]
+
+得到新的系统矩阵：
+\[
+A_2 = \begin{bmatrix} 0 & \frac{1}{LC} \\ -1 & -\frac{R}{L} \end{bmatrix}
+\]
+
+\textbf{方案3}：能量坐标（高级）
+
+选择 $z_1 = \sqrt{\frac{C}{L}}v_C$, $z_2 = \sqrt{L}i$，这是归一化的能量坐标。
+
+\textbf{三种方案的比较：}
+
+\begin{center}
+\begin{tabular}{lccc}
+\hline
+特性 & 方案1 & 方案2 & 方案3 \\
+\hline
+物理直观 & ✓✓ & ✓ & △ \\
+数值稳定性 & 依赖参数 & 依赖参数 & ✓ \\
+特征值 & \multicolumn{3}{c}{相同} \\
+传递函数 & \multicolumn{3}{c}{相同} \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{实际选择原则：}
+
+\begin{itemize}
+    \item \textbf{物理意义清晰}：便于理解和调试（工程首选）
+    \item \textbf{数值稳定性}：矩阵元素量级相近，避免病态问题
+    \item \textbf{标准型}：便于分析和控制器设计（理论分析首选）
+    \item \textbf{测量可行性}：选择可直接或间接测量的变量
+\end{itemize}
+
+\subsection*{本章总结}
+
+\subsubsection*{核心要点}
+
+\begin{enumerate}
+    \item \textbf{状态的本质}：系统在某时刻确定未来行为所需的最少信息，通常与能量存储相关。
+    
+    \item \textbf{状态空间表达式}：现代控制理论的标准语言
+    \[
+    \dot{x} = Ax + Bu, \quad y = Cx + Du
+    \]
+    
+    \item \textbf{建立方法}：物理规律 → 微分方程 → 状态选择 → 一阶方程组 → 输出方程
+    
+    \item \textbf{非唯一性}：状态选择不唯一，但系统本质特性（特征值、能控性、能观性、传递函数）不变。
+\end{enumerate}
+
+\subsubsection*{与其他章节的联系}
+
+\begin{itemize}
+    \item \textbf{第2章}：如何从状态空间表达式求传递函数？两种描述方法如何转换？
+    \item \textbf{第3章}：线性变换如何联系不同的状态描述？
+    \item \textbf{第4章}：如何求解状态方程，得到系统的时间响应？
+    \item \textbf{第5章}：能控性和能观性——系统可控和可观测的充要条件
+    \item \textbf{第10章}：状态反馈控制——如何设计反馈增益 $K$ 使 $u = -Kx$ 达到期望性能？
+\end{itemize}
+
+\subsubsection*{常见误区与澄清}
+
+\begin{enumerate}
+    \item \textbf{误区}：状态就是输出。\\
+    \textbf{澄清}：状态是内部变量，输出是可测量的外部变量。例如，电机的内部温度是状态，但不一定是输出。
+    
+    \item \textbf{误区}：状态变量个数等于微分方程阶数。\\
+    \textbf{澄清}：通常是这样，但要注意约束条件。如果变量间有代数约束（如 $x_1 + x_2 = 0$），实际自由度会减少。
+    
+    \item \textbf{误区}：矩阵 $D$ 总是零。\\
+    \textbf{澄清}：多数物理系统 $D = 0$（输入不直接影响输出），但某些系统（如带前馈的控制系统）$D \neq 0$。
+    
+    \item \textbf{误区}：不同的状态选择导致不同的系统。\\
+    \textbf{澄清}：它们描述的是\textbf{同一系统}，只是坐标系不同。就像同一个向量用不同基表示，向量本身没变。
+\end{enumerate}
+
+\subsubsection*{MATLAB工具箱}
+
+\begin{lstlisting}[style=Matlab-editor, caption={状态空间模型的创建与操作}]
+% 创建状态空间模型
+A = [0 1; -2 -3];
+B = [0; 1];
+C = [1 0];
+D = 0;
+sys = ss(A, B, C, D);
+
+% 查看系统属性
+pole(sys)          % 系统极点
+tzero(sys)         % 系统零点
+dcgain(sys)        % 直流增益
+
+% 时域仿真
+t = 0:0.01:10;
+u = ones(size(t));   % 阶跃输入
+x0 = [1; 0];         % 初始状态
+[y, t, x] = lsim(sys, u, t, x0);
+
+% 绘制状态轨迹
+figure;
+plot(x(:,1), x(:,2));
+xlabel('x_1'); ylabel('x_2');
+title('State Trajectory');
+grid on;
+\end{lstlisting}
+
+\subsubsection*{学习检查清单}
+
+完成本章学习后，你应该能够：
+
+\begin{itemize}
+    \item[$\square$] 解释状态的概念，并说明为什么需要状态空间方法
+    \item[$\square$] 写出状态空间表达式的标准形式，并解释各矩阵的物理意义
+    \item[$\square$] 给定物理系统（电路、机械），能建立其状态空间模型
+    \item[$\square$] 识别能量存储元件，并合理选择状态变量
+    \item[$\square$] 理解状态选择的非唯一性，并判断不同描述是否等价
+    \item[$\square$] 使用MATLAB创建和操作状态空间模型
+    \item[$\square$] 区分状态、输入、输出的概念
+    \item[$\square$] 理解状态空间方法相比传递函数的优势
+\end{itemize}
+
+\textbf{下一步：}在建立了状态空间模型后，我们需要解决两个核心问题：（1）如何从状态空间得到传递函数？（2）如何求解状态方程？这将在接下来的第2、4章中讨论。

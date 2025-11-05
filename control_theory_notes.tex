@@ -1,12 +1,15 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage{ctex}
 \usepackage{amsmath,amsfonts,amssymb}
+\usepackage{mathtools}  % 扩展 amsmath，empheq 需要
+\usepackage{empheq}     % 用于带框的方程
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{tikz}
 \usepackage{caption}
 \usetikzlibrary{shapes, arrows.meta, positioning}
 \usepackage{pgfplots}
+\usepackage{circuitikz} % 用于绘制电路图
 \usepackage{enumerate}
 \usepackage{enumitem}
 \usepackage{fancyhdr}
@@ -18,6 +21,7 @@
 \usepackage{array}
 \usepackage{multirow}
 \usepackage{longtable}
+\usepackage{listings}   % 用于 MATLAB 代码
 \usepackage[pgf]{bodeplot}
 
 \pgfplotsset{compat=1.18}
@@ -40,6 +44,31 @@
 \newcommand{\laplace}{\mathcal{L}}
 \newcommand{\fourier}{\mathcal{F}}
 \newcommand{\jw}{\mathrm{j}\omega}
+
+% MATLAB 代码样式定义
+\lstdefinestyle{Matlab-editor}{
+    language=Matlab,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{purple},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    backgroundcolor=\color{gray!5},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    rulecolor=\color{gray!30},
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)},
+    morekeywords={matlab2tikz},
+}
 
 \begin{document}
 

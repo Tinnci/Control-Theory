@@ -1,4 +1,5 @@
 \section{状态观测器}
+\label{sec:state-observer}
 
 \subsection*{引言：看不见的状态，如何控制？}
 
@@ -1545,21 +1546,21 @@ step(sys);
 
 \subsubsection*{与前后章节的联系}
 
-\textbf{与第5章（能控性和能观测性）：}
+\textbf{与第\ref{sec:controllability-observability}章（能控性和能观测性）：}
 \begin{itemize}
-    \item 第5章：定义能观测性，判别准则
+    \item 第\ref{sec:controllability-observability}章：定义能观测性，判别准则
     \item 本章：\textbf{应用}能观测性——观测器设计
     \item 能观测性是任意配置观测器极点的\textbf{充要条件}
 \end{itemize}
 
-\textbf{与第10章（极点配置）：}
+\textbf{与第\ref{sec:pole-placement}章（极点配置）：}
 \begin{itemize}
-    \item 第10章：状态反馈 $u = -Kx$（假设状态可测）
+    \item 第\ref{sec:pole-placement}章：状态反馈 $u = -Kx$（假设状态可测）
     \item 本章：解决状态不可测问题——用 $\hat{x}$ 代替 $x$
     \item 分离定理：两者可以独立设计
 \end{itemize}
 
-\textbf{与后续章节（最优控制）：}
+\textbf{与后续章节（最优控制和卡尔曼滤波）：}
 \begin{itemize}
     \item 本章：极点配置方法设计观测器（设计者指定极点）
     \item 最优控制：LQR + 卡尔曼滤波器（自动优化极点）
@@ -1653,7 +1654,7 @@ $(A, C)$ 完全能观测 $\Leftrightarrow$ 可任意配置 $A-LC$ 的极点
 
 \textbf{结语：}
 
-状态观测器是现代控制理论的\textbf{基石之一}。它将第5章的能观测性理论转化为实际的估计算法，与第10章的极点配置方法结合，通过分离定理构成了完整的状态反馈控制系统。
+状态观测器是现代控制理论的\textbf{基石之一}。它将第\ref{sec:controllability-observability}章的能观测性理论转化为实际的估计算法，与第\ref{sec:pole-placement}章的极点配置方法结合，通过分离定理构成了完整的状态反馈控制系统。
 
 观测器的核心思想——\textbf{利用输出误差动态校正模型估计}——不仅在控制理论中至关重要，在信号处理、机器学习、导航定位等众多领域也有广泛应用。
 

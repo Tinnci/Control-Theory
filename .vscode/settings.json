@@ -69,8 +69,8 @@
         }
     ],
     // 自动编译配置
-    "latex-workshop.latex.autoBuild.run": "onSave",
-    "latex-workshop.latex.autoBuild.cleanAndRetry.enabled": true,
+    "latex-workshop.latex.autoBuild.run": "never",
+    "latex-workshop.latex.autoBuild.cleanAndRetry.enabled": false,
     
     // 清理辅助文件
     "latex-workshop.latex.autoClean.run": "onBuilt",

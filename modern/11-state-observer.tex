@@ -1,29 +1,1660 @@
 \section{状态观测器}
 
-\subsection{状态观测器的概念}
-当系统的状态不能直接测量时，需要根据系统的输入输出信息来估计状态变量，这种估计装置称为状态观测器。
+\subsection*{引言：看不见的状态，如何控制？}
 
-\subsection{全维状态观测器}
-全维状态观测器的方程：
-\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})\]
-
-其中 $\hat{x}$ 为状态估计值，$L$ 为观测器增益矩阵。
-
-\subsection{观测器的设计}
-观测误差：$e = x - \hat{x}$
-
-观测误差动态方程：
-\[\dot{e} = (A - LC)e\]
-
-观测器设计就是选择 $L$，使得 $A - LC$ 的特征值位于左半平面。
-
-\textbf{观测器设计定理}：若 $(A, C)$ 完全能观测，则可任意配置观测器的极点。
-
-\subsection{分离定理}
-状态反馈与状态观测器可以分别独立设计，即：
+想象你站在一个密闭房间外，房间里有一个人在活动。你\textbf{看不见}房间内部（状态不可测），但你可以：
 \begin{itemize}
-    \item 先设计状态反馈增益 $K$，配置闭环系统的极点
-    \item 再设计观测器增益 $L$，配置观测器的极点
+    \item \textbf{听见}声音从门缝传出（输出 $y$）
+    \item \textbf{敲门}与里面的人互动（输入 $u$）
 \end{itemize}
 
-基于观测器的状态反馈系统的特征多项式等于控制器特征多项式与观测器特征多项式的乘积。
+你能推断出房间里那个人的位置和动作吗？答案是：\textbf{可以！}通过声音的方向、强度、时间，结合你的敲门动作，你可以\textbf{估计}他的状态。
+
+这正是\textbf{状态观测器}（State Observer）要做的事情：
+
+\begin{quote}
+\textbf{当系统的内部状态无法直接测量时，利用可测的输入和输出信息，动态地估计出系统的状态。}
+\end{quote}
+
+\subsubsection*{为什么需要状态观测器？}
+
+在上一章（极点配置），我们学会了通过状态反馈 $u = -Kx$ 任意配置极点。但有一个\textbf{关键前提}：
+\begin{center}
+\textit{所有状态变量 $x$ 都必须是可测的！}
+\end{center}
+
+\textbf{实际问题：}
+\begin{itemize}
+    \item \textbf{传感器成本高}：为每个状态变量安装传感器不现实
+    \item \textbf{物理上不可测}：某些状态本质上无法直接测量
+    \begin{itemize}
+        \item 电机内部的磁通量
+        \item 飞行器的侧滑角
+        \item 化学反应的中间浓度
+    \end{itemize}
+    \item \textbf{测量噪声大}：某些传感器信号质量差
+    \item \textbf{维护困难}：传感器可能失效或精度下降
+\end{itemize}
+
+\textbf{具体例子：}
+
+考虑一个二阶机械系统（如倒立摆）：
+\[x = \begin{bmatrix} \theta \\ \dot{\theta} \end{bmatrix}\]
+
+\begin{itemize}
+    \item $\theta$（角度）：容易测量（编码器）
+    \item $\dot{\theta}$（角速度）：直接测量需要昂贵的陀螺仪，或者对角度\textbf{数值微分}（噪声放大严重）
+\end{itemize}
+
+\textbf{观测器的解决方案：}只测量 $\theta$，通过观测器\textbf{估计} $\dot{\theta}$！
+
+\subsubsection*{观测器的核心思想}
+
+状态观测器是一个\textbf{动态系统}，它：
+\begin{enumerate}
+    \item \textbf{模拟}真实系统的动态：$\dot{\hat{x}} = A\hat{x} + Bu$（与真实系统相同的模型）
+    \item \textbf{校正}估计误差：利用输出误差 $y - \hat{y} = y - C\hat{x}$ 进行反馈校正
+    \item \textbf{收敛}到真实状态：通过设计增益 $L$，使估计误差 $e = x - \hat{x} \to 0$
+\end{enumerate}
+
+\textbf{直观类比：}
+\begin{itemize}
+    \item 真实系统：房间里的人（看不见）
+    \item 观测器：你的大脑中的\textit{心理模型}（模拟他的行为）
+    \item 输出误差：你预测的声音 vs 实际听到的声音
+    \item 校正增益 $L$：你根据误差调整心理模型的速度
+\end{itemize}
+
+\subsubsection*{观测器与极点配置的对偶性}
+
+\textbf{极点配置}（上一章）：
+\begin{itemize}
+    \item 控制律：$u = -Kx$
+    \item 目标：通过反馈改变系统矩阵 $A \to A - BK$
+    \item 前提：系统\textbf{能控}
+    \item 设计：配置闭环极点
+\end{itemize}
+
+\textbf{状态观测器}（本章）：
+\begin{itemize}
+    \item 观测器：$\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})$
+    \item 目标：通过校正改变误差动态 $A \to A - LC$
+    \item 前提：系统\textbf{能观测}
+    \item 设计：配置观测器极点
+\end{itemize}
+
+两者是\textbf{对偶}的！能控性 $\leftrightarrow$ 能观测性，$K \leftrightarrow L$，$B \leftrightarrow C^T$。
+
+\subsubsection*{实际应用场景}
+
+\begin{itemize}
+    \item \textbf{航天器姿态控制}：只测量姿态角，估计角速度和角加速度
+    \item \textbf{电机控制}：测量转速，估计负载转矩和磁通量
+    \item \textbf{机器人}：测量关节位置，估计速度和加速度
+    \item \textbf{自动驾驶}：传感器融合，估计车辆的侧向速度
+    \item \textbf{电力系统}：测量电压电流，估计系统内部状态
+\end{itemize}
+
+\subsubsection*{本章内容路线图}
+
+\begin{enumerate}
+    \item \textbf{观测器的概念}：观测器的数学形式和工作原理
+    \item \textbf{全维状态观测器设计}：如何选择增益 $L$ 配置观测器极点
+    \item \textbf{观测器极点选择}：多快才合适？平衡收敛速度与噪声敏感性
+    \item \textbf{分离定理}：控制器和观测器可以独立设计！
+    \item \textbf{基于观测器的控制}：$u = -K\hat{x}$ 的完整设计
+    \item \textbf{设计范例}：从头到尾的实际例子
+\end{enumerate}
+
+\textbf{学习目标：}
+\begin{itemize}
+    \item 理解观测器的必要性和工作原理
+    \item 掌握观测器增益矩阵 $L$ 的设计方法
+    \item 理解分离定理，学会设计完整的控制系统
+    \item 能够解决实际的状态估计问题
+\end{itemize}
+
+让我们开始探索\textbf{状态估计}的奇妙世界！
+
+\subsection{状态观测器的概念}
+
+\subsubsection*{本节目的}
+建立观测器的数学模型，理解观测器的基本结构和工作原理。
+
+\subsubsection{问题的提出}
+
+考虑线性时不变系统：
+\begin{align*}
+\dot{x} &= Ax + Bu \\
+y &= Cx
+\end{align*}
+
+\textbf{已知信息：}
+\begin{itemize}
+    \item 系统矩阵 $A, B, C$（系统模型）
+    \item 输入 $u(t)$（我们施加的控制）
+    \item 输出 $y(t)$（传感器测量值）
+\end{itemize}
+
+\textbf{未知信息：}
+\begin{itemize}
+    \item 状态 $x(t)$（部分或全部不可测）
+\end{itemize}
+
+\textbf{目标：}构造一个\textbf{估计器}，输出状态的估计值 $\hat{x}(t)$，使得：
+\[\hat{x}(t) \to x(t) \quad \text{as } t \to \infty\]
+
+\subsubsection{观测器的基本结构}
+
+\textbf{朴素想法（开环观测器）：}
+
+既然我们知道系统模型，为什么不直接模拟它？
+\[\dot{\hat{x}} = A\hat{x} + Bu\]
+
+\textbf{问题：}
+\begin{itemize}
+    \item 初值误差：$\hat{x}(0) \neq x(0)$ 会永远存在
+    \item 模型误差：$A, B$ 不准确会导致估计偏差累积
+    \item 没有利用输出信息 $y$！
+\end{itemize}
+
+\textbf{改进想法（闭环观测器）：}
+
+利用输出误差 $y - \hat{y}$ 进行\textbf{校正}：
+\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - \hat{y})\]
+
+其中 $\hat{y} = C\hat{x}$ 是估计输出。
+
+\textbf{最终形式：}
+\[\boxed{\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})}\]
+
+\textbf{各项的物理意义：}
+\begin{itemize}
+    \item $A\hat{x} + Bu$：\textbf{预测项}（根据模型预测下一状态）
+    \item $y - C\hat{x}$：\textbf{创新}（innovation）或\textbf{输出误差}（实际与预测的差异）
+    \item $L$：\textbf{观测器增益矩阵}（校正力度，类似控制器的 $K$）
+\end{itemize}
+
+\textbf{直观理解：}
+\begin{itemize}
+    \item 如果 $y > C\hat{x}$（实际输出大于估计）：说明我们低估了状态，应该\textbf{上调} $\hat{x}$
+    \item $L$ 决定调整的速度：$L$ 大 $\to$ 快速校正，$L$ 小 $\to$ 缓慢校正
+\end{itemize}
+
+\subsubsection{观测器 vs 传感器}
+
+\textbf{观测器不是传感器！}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|p{5cm}|p{5cm}|}
+\hline
+\rowcolor[gray]{0.9}
+& \textbf{传感器} & \textbf{观测器} \\
+\hline
+\textbf{本质} & 物理设备 & 算法/软件 \\
+\hline
+\textbf{输入} & 物理信号（温度、位移等） & $u, y$（数据） \\
+\hline
+\textbf{输出} & 测量值（可能有噪声） & 状态估计 $\hat{x}$ \\
+\hline
+\textbf{成本} & 硬件成本 & 计算成本 \\
+\hline
+\textbf{优势} & 直接测量 & 减少传感器数量，滤波效果 \\
+\hline
+\textbf{劣势} & 昂贵，可能失效 & 依赖模型准确性 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{实际应用中：}
+\begin{itemize}
+    \item 少量传感器（测量部分状态）+ 观测器（估计其余状态）
+    \item 传感器提供 $y$，观测器利用 $y$ 和模型重构完整的 $x$
+\end{itemize}
+
+\subsection{全维状态观测器}
+
+\subsubsection*{本节目的}
+深入理解观测器的数学原理：误差动态、收敛条件、极点配置方法。
+
+\subsubsection{观测器方程}
+
+\textbf{全维状态观测器的标准形式：}
+\[\boxed{\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})}\]
+
+改写为：
+\[\dot{\hat{x}} = (A - LC)\hat{x} + Bu + Ly\]
+
+\textbf{方程结构分析：}
+\begin{itemize}
+    \item 输入：$u$（控制输入）和 $y$（系统输出）
+    \item 输出：$\hat{x}$（状态估计）
+    \item 观测器矩阵：$A - LC$（类比闭环控制中的 $A - BK$）
+    \item 待设计参数：$L \in \mathbb{R}^{n \times p}$
+\end{itemize}
+
+\textbf{为什么叫\textbf{全维}？}
+\begin{itemize}
+    \item 全维观测器：估计\textbf{所有} $n$ 个状态变量
+    \item 降维观测器：只估计\textbf{不可测}的状态（利用 $y$ 已包含部分状态信息）
+    \item 全维观测器更简单，是入门的首选
+\end{itemize}
+
+\subsubsection{误差动态分析}
+
+定义\textbf{估计误差}：
+\[e(t) = x(t) - \hat{x}(t)\]
+
+\textbf{目标：}设计 $L$ 使 $e(t) \to 0$。
+
+\textbf{推导误差动态方程：}
+
+真实系统：
+\[\dot{x} = Ax + Bu\]
+
+观测器：
+\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x}) = A\hat{x} + Bu + LC(x - \hat{x})\]
+
+两式相减：
+\begin{align*}
+\dot{e} &= \dot{x} - \dot{\hat{x}} \\
+&= Ax + Bu - [A\hat{x} + Bu + LC(x - \hat{x})] \\
+&= Ax - A\hat{x} - LCx + LC\hat{x} \\
+&= A(x - \hat{x}) - LC(x - \hat{x}) \\
+&= (A - LC)e
+\end{align*}
+
+\textbf{关键结果：}
+\[\boxed{\dot{e} = (A - LC)e}\]
+
+\textbf{重要观察：}
+\begin{itemize}
+    \item 误差动态与输入 $u$ \textbf{无关}！（控制不影响估计误差）
+    \item 误差是\textbf{齐次方程}，只依赖于初始误差 $e(0) = x(0) - \hat{x}(0)$
+    \item 收敛性完全由 $A - LC$ 的特征值决定
+\end{itemize}
+
+\subsubsection{观测器收敛条件}
+
+要使 $e(t) \to 0$，需要 $A - LC$ 的所有特征值在\textbf{左半平面}。
+
+\textbf{如何选择 $L$？}
+
+这与极点配置\textbf{完全类似}：
+\begin{itemize}
+    \item 极点配置：选择 $K$ 使 $A - BK$ 的特征值在期望位置
+    \item 观测器设计：选择 $L$ 使 $A - LC$ 的特征值在期望位置
+\end{itemize}
+
+\textbf{对偶性（Duality）：}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|c|c|}
+\hline
+\rowcolor[gray]{0.9}
+& \textbf{控制器设计} & \textbf{观测器设计} \\
+\hline
+\textbf{目标} & 配置 $A - BK$ 的极点 & 配置 $A - LC$ 的极点 \\
+\hline
+\textbf{前提条件} & $(A, B)$ 能控 & $(A, C)$ 能观测 \\
+\hline
+\textbf{对偶变换} & --- & $(A, C) \leftrightarrow (A^T, C^T)$ \\
+\hline
+\textbf{增益计算} & $K$ 通过阿克曼公式 & $L^T$ 通过对偶系统 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{利用对偶性设计 $L$：}
+
+\begin{enumerate}
+    \item 检查 $(A, C)$ 的能观测性
+    \item 将问题转化为对偶系统 $(A^T, C^T)$ 的能控性问题
+    \item 为对偶系统设计 $K^T$（使 $A^T - C^T K^T$ 有期望极点）
+    \item 取 $L = K^T$（或直接 $L^T = K$）
+\end{enumerate}
+
+\textbf{实际计算（MATLAB）：}
+\begin{verbatim}
+% 方法1：直接使用place函数
+L = place(A', C', desired_poles)';
+
+% 方法2：利用对偶性
+K_dual = acker(A', C', desired_poles);
+L = K_dual';
+\end{verbatim}
+
+\subsubsection{观测器增益的物理意义}
+
+$L$ 是 $n \times p$ 矩阵，其中：
+\begin{itemize}
+    \item $n$：状态变量个数
+    \item $p$：输出变量个数
+\end{itemize}
+
+\textbf{增益元素的含义：}
+
+$L_{ij}$：当第 $j$ 个输出有单位误差时，对第 $i$ 个状态估计的校正强度。
+
+\textbf{极端情况分析：}
+
+\begin{itemize}
+    \item \textbf{$L = 0$}：开环观测器
+    \begin{itemize}
+        \item 完全忽略输出误差
+        \item 误差动态：$\dot{e} = Ae$（不稳定或缓慢收敛）
+        \item 适用场景：模型极其准确，无需校正
+    \end{itemize}
+    
+    \item \textbf{$L$ 很大}：高增益观测器
+    \begin{itemize}
+        \item 强烈依赖输出信息
+        \item 误差快速收敛
+        \item 代价：对测量噪声\textbf{极度敏感}
+    \end{itemize}
+    
+    \item \textbf{$L$ 适中}：平衡设计
+    \begin{itemize}
+        \item 收敛速度与噪声抑制的折中
+        \item 实际工程的典型选择
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{观测器设计定理}
+
+\textbf{全维状态观测器设计定理：}
+
+若系统 $(A, C)$ \textbf{完全能观测}，则对于任意给定的 $n$ 个复数 $\mu_1, \mu_2, \ldots, \mu_n$（复数成对共轭），\textbf{存在}观测器增益矩阵 $L$，使得误差矩阵 $A - LC$ 的特征值恰好为 $\mu_1, \mu_2, \ldots, \mu_n$。
+
+\textbf{定理的意义：}
+\begin{itemize}
+    \item 能观测性是任意配置观测器极点的\textbf{充要条件}
+    \item 这与极点配置定理\textbf{完全对偶}
+    \item 设计方法可以直接套用极点配置的算法
+\end{itemize}
+
+\textbf{与极点配置的对比：}
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\rowcolor[gray]{0.9}
+& \textbf{极点配置} & \textbf{观测器设计} \\
+\hline
+系统 & $\dot{x} = Ax + Bu$ & $\dot{e} = (A - LC)e$ \\
+\hline
+配置目标 & $A - BK$ 的极点 & $A - LC$ 的极点 \\
+\hline
+条件 & $(A, B)$ 能控 & $(A, C)$ 能观测 \\
+\hline
+增益 & $K$ & $L$ \\
+\hline
+对偶关系 & $B \leftrightarrow C^T$ & $K \leftrightarrow L^T$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{观测器的设计}
+
+\subsubsection*{本节目的}
+掌握观测器增益 $L$ 的具体计算步骤，以及观测器极点的选择原则。
+
+\subsubsection{设计步骤}
+
+\textbf{观测器设计的标准流程：}
+
+\begin{enumerate}
+    \item \textbf{验证能观测性}
+    \begin{itemize}
+        \item 计算能观测性矩阵：$W_o = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix}$
+        \item 检查：$\text{rank}(W_o) = n$
+        \item 若不能观测，则\textbf{无法}任意配置观测器极点
+    \end{itemize}
+    
+    \item \textbf{选择观测器极点} $\mu_1, \mu_2, \ldots, \mu_n$
+    \begin{itemize}
+        \item 必须在左半平面（保证误差收敛）
+        \item 通常比控制器极点\textbf{更靠左}（收敛更快）
+        \item 经验法则：观测器极点实部 = 控制器极点实部的 $2 \sim 5$ 倍
+    \end{itemize}
+    
+    \item \textbf{计算观测器增益 $L$}
+    \begin{itemize}
+        \item 方法1：直接使用 MATLAB \texttt{place(A', C', poles)'}
+        \item 方法2：利用对偶性，设计 $(A^T, C^T)$ 的控制器增益
+        \item 方法3：手算低阶系统（$n \leq 3$）
+    \end{itemize}
+    
+    \item \textbf{验证设计}
+    \begin{itemize}
+        \item 检查 $A - LC$ 的特征值是否为期望值
+        \item 仿真误差动态 $\dot{e} = (A - LC)e$
+        \item 评估对测量噪声的敏感性
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{观测器极点选择准则}
+
+\textbf{1. 为什么观测器极点要比控制器极点快？}
+
+\textbf{原因：}
+\begin{itemize}
+    \item 控制器需要\textbf{真实状态} $x$ 才能发挥作用
+    \item 如果估计误差 $e$ 收敛太慢，控制器会\textit{误用}错误的状态信息
+    \item 让观测器先收敛，控制器才能基于准确的 $\hat{x}$ 工作
+\end{itemize}
+
+\textbf{经验法则：}
+
+设控制器主导极点为 $s_c = -\sigma_c \pm j\omega_c$，则观测器极点选择为：
+\[s_o = -(2\sim 5)\sigma_c \pm j\omega_o\]
+
+\textbf{典型选择：}
+\begin{itemize}
+    \item \textbf{保守设计}：观测器极点 = 2倍控制器极点
+    \item \textbf{中等设计}：3-4倍
+    \item \textbf{激进设计}：5倍（快速收敛，但噪声敏感）
+\end{itemize}
+
+\textbf{2. 观测器极点配置的实际限制}
+
+\begin{itemize}
+    \item \textbf{测量噪声}
+    \begin{itemize}
+        \item 观测器极点越靠左，增益 $L$ 越大
+        \item $L$ 大 $\to$ 对 $y$ 的噪声放大严重
+        \item 平衡：收敛速度 vs 噪声抑制
+    \end{itemize}
+    
+    \item \textbf{计算负担}
+    \begin{itemize}
+        \item 观测器需要实时运行
+        \item 极点太快 $\to$ 需要更小的采样周期（数字实现时）
+        \item 嵌入式系统可能无法承受
+    \end{itemize}
+    
+    \item \textbf{模型误差}
+    \begin{itemize}
+        \item 观测器依赖准确的 $A, B, C$ 矩阵
+        \item 高增益观测器对模型误差\textbf{不鲁棒}
+        \item 实际系统建模总有偏差
+    \end{itemize}
+    
+    \item \textbf{执行器饱和}
+    \begin{itemize}
+        \item 观测器初始误差大时，可能导致 $\hat{x}$ 剧烈变化
+        \item 基于 $\hat{x}$ 的控制律 $u = -K\hat{x}$ 可能饱和
+        \item 需要考虑\textit{抗饱和}设计
+    \end{itemize}
+\end{itemize}
+
+\textbf{3. 观测器极点的典型配置模式}
+
+\textbf{实极点配置（无超调）：}
+\begin{itemize}
+    \item 适用于噪声较大的系统
+    \item 避免振荡放大噪声
+    \item 例：控制器极点 $-3, -4$，观测器极点 $-10, -12$
+\end{itemize}
+
+\textbf{Bessel型配置（最优延迟）：}
+\begin{itemize}
+    \item 最小化估计延迟
+    \item 适合快速跟踪应用
+\end{itemize}
+
+\textbf{经验公式（二阶系统）：}
+
+控制器：$s_{c} = -\zeta_c\omega_{nc} \pm j\omega_{nc}\sqrt{1-\zeta_c^2}$
+
+观测器：$s_o = -\alpha\zeta_c\omega_{nc} \pm j\alpha\omega_{nc}\sqrt{1-\zeta_c^2}$
+
+其中 $\alpha = 3 \sim 5$（加速因子）。
+
+\subsubsection{对偶性的具体应用}
+
+\textbf{利用极点配置工具设计观测器：}
+
+\textbf{步骤：}
+\begin{enumerate}
+    \item 构造对偶系统：$(A^T, C^T, B^T)$
+    \item 用极点配置方法（如阿克曼公式）为对偶系统设计控制器增益：
+    \[K_{\text{dual}} = [0 \quad \cdots \quad 0 \quad 1] W_o^{-1} \alpha_o(A^T)\]
+    其中 $W_o = [C^T \quad A^TC^T \quad \cdots \quad (A^T)^{n-1}C^T]$
+    \item 转换回观测器增益：
+    \[L = K_{\text{dual}}^T\]
+\end{enumerate}
+
+\textbf{MATLAB实现：}
+\begin{verbatim}
+% 方法1：直接设计观测器
+L = place(A', C', observer_poles)';
+
+% 方法2：利用对偶性
+K_dual = acker(A', C', observer_poles);
+L = K_dual';
+
+% 验证
+eig(A - L*C)  % 应等于 observer_poles
+\end{verbatim}
+
+\textbf{为什么对偶性如此重要？}
+\begin{itemize}
+    \item 所有极点配置的算法（直接法、变换法、阿克曼公式）都可以\textbf{直接用于}观测器设计
+    \item 理论统一：能控性理论 $\leftrightarrow$ 能观测性理论
+    \item 工具复用：同一套代码，只需转置矩阵
+\end{itemize}
+
+\subsubsection{观测器增益计算范例：倒立摆系统}
+
+\paragraph*{范例说明}
+通过一个经典的倒立摆系统，详细展示观测器增益 $L$ 的计算步骤，并深入分析其物理意义及对实际问题的考量。
+
+\paragraph{1. 问题背景与系统模型}
+
+考虑一个线性化的倒立摆系统：
+\begin{itemize}
+    \item 状态变量：$x_1 = \theta$（摆角），$x_2 = \dot{\theta}$（角速度）
+    \item 控制输入：$u$（施加在底座上的水平力）
+    \item 测量输出：$y = \theta$（\textbf{只能}通过编码器测量摆角）
+\end{itemize}
+
+系统模型如下：
+\begin{align*}
+\dot{x} &= \begin{bmatrix} 0 & 1 \\ 2 & 0 \end{bmatrix} x + \begin{bmatrix} 0 \\ 1 \end{bmatrix} u \\
+y &= \begin{bmatrix} 1 & 0 \end{bmatrix} x
+\end{align*}
+
+\textbf{系统特性分析：}
+
+计算开环极点：
+\[\det(sI - A) = \det\begin{bmatrix} s & -1 \\ -2 & s \end{bmatrix} = s^2 - 2 = 0\]
+
+极点：$s = \pm\sqrt{2} \approx \pm 1.414$
+
+\textbf{关键观察：}
+\begin{itemize}
+    \item 存在一个\textbf{正实部极点} $+\sqrt{2}$，说明系统开环\textbf{不稳定}
+    \item 物理意义：倒立摆在没有控制时会倾倒
+    \item 角速度 $\dot{\theta}$ 无法直接测量（需要昂贵的陀螺仪或噪声敏感的数值微分）
+\end{itemize}
+
+\paragraph{2. 设计任务与系统分析}
+
+\textbf{任务：}设计一个状态观测器，用于估计不可直接测量的角速度 $x_2 = \dot{\theta}$。
+
+\textbf{能观测性检查：}
+\[W_o = \begin{bmatrix} C \\ CA \end{bmatrix} = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}\]
+
+$\det(W_o) = 1 \neq 0$，系统\textbf{完全能观测}，因此可以任意配置观测器极点。
+
+\textbf{能观测性的物理意义：}
+\begin{itemize}
+    \item 从摆角 $\theta$ 的测量值可以推断角速度 $\dot{\theta}$
+    \item 第一个状态直接可测：$y = x_1$
+    \item 第二个状态可从 $y$ 的变化率推断：$\dot{y} = Cx_2$
+\end{itemize}
+
+\paragraph{3. 选择观测器极点}
+
+\textbf{设计考虑：}
+\begin{itemize}
+    \item 由于原系统\textbf{不稳定}（极点 $+\sqrt{2}$），估计误差必须\textbf{快速收敛}
+    \item 观测器要为控制器提供可靠的状态估计
+    \item 同时要避免增益过大，以抑制测量噪声
+\end{itemize}
+
+\textbf{极点选择策略：}
+
+我们选择一对位于实轴上且比系统不稳定极点快得多的极点：
+\[\mu_1 = -6, \quad \mu_2 = -8\]
+
+\textbf{选择理由：}
+\begin{itemize}
+    \item \textbf{实极点}：避免振荡，减少噪声放大
+    \item \textbf{足够快}：$|-6| \gg |\sqrt{2}|$，保证估计误差快速收敛
+    \item \textbf{不过度激进}：不是 -20, -30 这样的极端值，平衡收敛速度与噪声抑制
+\end{itemize}
+
+\textbf{收敛时间估算：}
+\[t_s \approx \frac{4}{|\text{Re}(\mu_{\min})|} = \frac{4}{6} \approx 0.67 \text{ 秒}\]
+
+误差在不到 1 秒内收敛到 2\% 以内。
+
+\textbf{期望特征多项式：}
+\[\alpha_o(s) = (s + 6)(s + 8) = s^2 + 14s + 48\]
+
+\paragraph{4. 计算观测器增益 L}
+
+\textbf{方法：直接法}
+
+设 $L = \begin{bmatrix} l_1 \\ l_2 \end{bmatrix}$，计算误差动态矩阵 $A - LC$：
+\begin{align*}
+A - LC &= \begin{bmatrix} 0 & 1 \\ 2 & 0 \end{bmatrix} - \begin{bmatrix} l_1 \\ l_2 \end{bmatrix} \begin{bmatrix} 1 & 0 \end{bmatrix} \\
+&= \begin{bmatrix} 0 & 1 \\ 2 & 0 \end{bmatrix} - \begin{bmatrix} l_1 & 0 \\ l_2 & 0 \end{bmatrix} \\
+&= \begin{bmatrix} -l_1 & 1 \\ 2 - l_2 & 0 \end{bmatrix}
+\end{align*}
+
+其特征方程为：
+\begin{align*}
+\det(sI - (A - LC)) &= \det\begin{bmatrix} s + l_1 & -1 \\ l_2 - 2 & s \end{bmatrix} \\
+&= (s + l_1) \cdot s - (-1) \cdot (l_2 - 2) \\
+&= s^2 + l_1 s + l_2 - 2
+\end{align*}
+
+将此多项式与期望的 $\alpha_o(s)$ 进行系数匹配：
+\[s^2 + l_1 s + l_2 - 2 = s^2 + 14s + 48\]
+
+比较系数可得：
+\begin{align*}
+l_1 &= 14 \\
+l_2 - 2 &= 48 \quad \Rightarrow \quad l_2 = 50
+\end{align*}
+
+\textbf{结果：}
+\[\boxed{L = \begin{bmatrix} 14 \\ 50 \end{bmatrix}}\]
+
+\paragraph{5. 验证设计}
+
+\textbf{检查闭环极点：}
+\[A - LC = \begin{bmatrix} -14 & 1 \\ -48 & 0 \end{bmatrix}\]
+
+特征值计算：
+\[\det(sI - (A-LC)) = s^2 + 14s + 48 = (s+6)(s+8)\]
+
+极点：$s = -6, -8$ ✓（与设计目标一致）
+
+\paragraph{6. 结果分析与讨论}
+
+\textbf{观测器增益的物理意义：}
+
+观测器方程为：
+\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})\]
+
+展开为：
+\begin{align*}
+\dot{\hat{x}}_1 &= \hat{x}_2 + 14(y - \hat{x}_1) \\
+\dot{\hat{x}}_2 &= 2\hat{x}_1 + u + 50(y - \hat{x}_1)
+\end{align*}
+
+增益 $L = [14, 50]^T$ 的含义：
+\begin{itemize}
+    \item $l_1 = 14$：当测量角度 $y$ 与估计角度 $\hat{x}_1$ 存在误差时，该误差会以 \textbf{14 倍}的增益来校正角度估计的变化率 $\dot{\hat{x}}_1$
+    \item $l_2 = 50$：同时，该角度误差会以 \textbf{50 倍}的更大增益来校正角速度估计的变化率 $\dot{\hat{x}}_2$
+    \item \textbf{角速度估计更依赖校正}：因为 $x_2$ 不可测，需要更强的校正力度
+\end{itemize}
+
+\textbf{噪声敏感性分析：}
+
+假设测量值 $y$ 存在一个幅值为 $w$ 的高频噪声：$y = \theta + w$。
+
+这个噪声会通过增益 $L$ 被放大并影响状态估计：
+\begin{itemize}
+    \item 对 $\dot{\hat{x}}_1$ 的影响：$14w$
+    \item 对 $\dot{\hat{x}}_2$ 的影响：$50w$（\textbf{放大 50 倍}！）
+\end{itemize}
+
+\textbf{实际权衡：}
+
+如果测量噪声 $w$ 的标准差为 0.01 弧度（约 0.57°），则：
+\begin{itemize}
+    \item 角速度估计的噪声：$50 \times 0.01 = 0.5$ rad/s
+    \item 这可能导致控制输入抖动
+\end{itemize}
+
+\textbf{调整策略：}
+
+如果实际噪声过大，可以考虑：
+\begin{enumerate}
+    \item \textbf{放慢观测器极点}：如选择 $-4, -5$（代价：收敛变慢）
+    \item \textbf{增加滤波器}：对测量信号 $y$ 预先滤波
+    \item \textbf{使用卡尔曼滤波器}：在随机噪声存在时的最优观测器
+\end{enumerate}
+
+\textbf{对比不同极点选择：}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\rowcolor[gray]{0.9}
+\textbf{观测器极点} & \textbf{$L$} & \textbf{收敛时间} & \textbf{噪声放大} \\
+\hline
+$-4, -5$ & $[9, 17]^T$ & 1.0 s & 低 \\
+\hline
+$-6, -8$ & $[14, 50]^T$ & 0.67 s & 中等 \\
+\hline
+$-10, -12$ & $[22, 118]^T$ & 0.4 s & 高 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{范例总结：}
+
+这个倒立摆例子展示了：
+\begin{itemize}
+    \item 观测器设计的\textbf{完整流程}：能观测性检查 → 极点选择 → 增益计算 → 验证
+    \item 增益矩阵的\textbf{物理意义}：校正力度与状态的可测性相关
+    \item \textbf{实际权衡}：收敛速度 vs 噪声敏感性
+    \item 不同极点选择的\textbf{对比分析}
+\end{itemize}
+
+\subsection{分离定理}
+
+\subsubsection*{本节目的}
+理解现代控制理论的\textbf{核心定理}之一：控制器和观测器可以独立设计，且联合系统的性能可以预测。
+
+\subsubsection{基于观测器的状态反馈}
+
+\textbf{问题背景：}
+
+\begin{itemize}
+    \item 极点配置需要：$u = -Kx$（需要完整状态 $x$）
+    \item 实际情况：$x$ 不可测，只有估计值 $\hat{x}$
+\end{itemize}
+
+\textbf{实际控制律：}
+\[\boxed{u = -K\hat{x} + v}\]
+
+用\textbf{估计状态}代替\textbf{真实状态}！
+
+\textbf{直观担忧：}
+\begin{itemize}
+    \item 用 $\hat{x}$ 代替 $x$ 会破坏闭环极点吗？
+    \item 控制器和观测器的极点会相互干扰吗？
+    \item 我们需要重新设计 $K$ 和 $L$ 吗？
+\end{itemize}
+
+\textbf{分离定理的答案：}
+\begin{quote}
+\textit{不用担心！控制器和观测器可以\textbf{完全独立}设计，就像 $x$ 真的可测一样。}
+\end{quote}
+
+\subsubsection{分离定理（Separation Principle）}
+
+\textbf{定理陈述：}
+
+对于系统：
+\begin{align*}
+\dot{x} &= Ax + Bu \\
+y &= Cx
+\end{align*}
+
+采用基于观测器的状态反馈：
+\begin{align*}
+u &= -K\hat{x} + v \\
+\dot{\hat{x}} &= A\hat{x} + Bu + L(y - C\hat{x})
+\end{align*}
+
+闭环系统的特征多项式等于：
+\[\boxed{\det(sI - A + BK) \cdot \det(sI - A + LC)}\]
+
+即：\textbf{控制器特征多项式 × 观测器特征多项式}
+
+\textbf{定理的深刻含义：}
+
+\begin{enumerate}
+    \item \textbf{极点分离}：闭环系统的极点 = 控制器极点 + 观测器极点
+    \begin{itemize}
+        \item 控制器极点：由 $K$ 单独决定（如上一章设计）
+        \item 观测器极点：由 $L$ 单独决定（本章设计）
+        \item 两者\textbf{不相互影响}
+    \end{itemize}
+    
+    \item \textbf{独立设计}：可以分两步设计
+    \begin{itemize}
+        \item 步骤1：假设 $x$ 可测，设计 $K$（极点配置）
+        \item 步骤2：设计观测器，配置 $L$（观测器设计）
+        \item 无需迭代或联合优化
+    \end{itemize}
+    
+    \item \textbf{性能保证}：闭环稳定性由两者的\textit{最慢}极点决定
+    \begin{itemize}
+        \item 若控制器和观测器都稳定 $\to$ 整体系统稳定
+        \item 响应速度由两者的\textit{瓶颈}决定
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{分离定理的证明（思路）}
+
+\textbf{定义增广状态向量：}
+\[\xi = \begin{bmatrix} x \\ e \end{bmatrix}, \quad e = x - \hat{x}\]
+
+\textbf{推导增广系统：}
+
+真实系统：
+\[\dot{x} = Ax + Bu = Ax + B(-K\hat{x}) = Ax - BK(x - e) = (A - BK)x + BKe\]
+
+误差动态（与 $u$ 无关）：
+\[\dot{e} = (A - LC)e\]
+
+\textbf{增广形式：}
+\[\begin{bmatrix} \dot{x} \\ \dot{e} \end{bmatrix} = \begin{bmatrix} A - BK & BK \\ 0 & A - LC \end{bmatrix} \begin{bmatrix} x \\ e \end{bmatrix}\]
+
+\textbf{关键观察：}矩阵是\textbf{块上三角}形式！
+
+特征多项式：
+\[\det(sI - \begin{bmatrix} A - BK & BK \\ 0 & A - LC \end{bmatrix}) = \det(sI - A + BK) \cdot \det(sI - A + LC)\]
+
+$\square$（证毕）
+
+\textbf{块上三角的意义：}
+\begin{itemize}
+    \item $e$ 的动态\textbf{不依赖} $x$（误差自己演化）
+    \item $x$ 的动态受 $e$ 影响（但不改变极点位置）
+    \item 极点 = 对角块的极点之并集
+\end{itemize}
+
+\subsubsection{分离定理的实际意义}
+
+\textbf{1. 简化设计流程}
+
+\textbf{无需分离定理的情况：}
+\begin{itemize}
+    \item 联合设计 $K$ 和 $L$
+    \item 求解耦合的非线性方程
+    \item 计算量巨大，难以直观理解
+\end{itemize}
+
+\textbf{有分离定理：}
+\begin{itemize}
+    \item 步骤1：设计 $K$（假设状态可测）
+    \item 步骤2：设计 $L$（配置观测器极点）
+    \item 两步独立，清晰明了
+\end{itemize}
+
+\textbf{2. 设计自由度}
+
+\begin{itemize}
+    \item $K$：根据\textbf{性能要求}选择（响应速度、超调量）
+    \item $L$：根据\textbf{估计需求}选择（收敛速度、噪声抑制）
+    \item 两者有不同的设计准则，互不干扰
+\end{itemize}
+
+\textbf{3. 鲁棒性考虑}
+
+\textbf{理想情况：}
+\begin{itemize}
+    \item 模型准确：$A, B, C$ 完全已知
+    \item 无噪声：测量 $y$ 无误差
+    \item 分离定理\textbf{严格成立}
+\end{itemize}
+
+\textbf{实际情况：}
+\begin{itemize}
+    \item 模型误差：$\Delta A, \Delta B$
+    \item 测量噪声：$y = Cx + w$
+    \item 分离定理\textbf{近似成立}（鲁棒性分析需要额外工具）
+\end{itemize}
+
+\textbf{启示：}
+\begin{itemize}
+    \item 观测器极点不宜过快（对模型误差敏感）
+    \item 需要在收敛速度与鲁棒性间折中
+    \item 可能需要\textit{鲁棒观测器}设计（如 $H_\infty$ 观测器）
+\end{itemize}
+
+\subsubsection{完整系统的设计流程}
+
+\textbf{标准设计程序：}
+
+\begin{enumerate}
+    \item \textbf{系统分析}
+    \begin{itemize}
+        \item 建立状态空间模型 $(A, B, C)$
+        \item 验证能控性：$\text{rank}([B \quad AB \quad \cdots \quad A^{n-1}B]) = n$
+        \item 验证能观测性：$\text{rank}(\begin{bmatrix} C \\ CA \\ \vdots \\ CA^{n-1} \end{bmatrix}) = n$
+    \end{itemize}
+    
+    \item \textbf{控制器设计}
+    \begin{itemize}
+        \item 根据性能要求选择期望闭环极点 $\lambda_1, \ldots, \lambda_n$
+        \item 使用极点配置方法计算 $K$
+        \item 验证：$\det(sI - A + BK) = \prod (s - \lambda_i)$
+    \end{itemize}
+    
+    \item \textbf{观测器设计}
+    \begin{itemize}
+        \item 选择观测器极点 $\mu_1, \ldots, \mu_n$（通常比 $\lambda_i$ 快2-5倍）
+        \item 利用对偶性计算 $L$
+        \item 验证：$\det(sI - A + LC) = \prod (s - \mu_i)$
+    \end{itemize}
+    
+    \item \textbf{实现控制律}
+    \begin{itemize}
+        \item 观测器：$\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})$
+        \item 控制律：$u = -K\hat{x} + v$
+        \item 数字实现时需要离散化
+    \end{itemize}
+    
+    \item \textbf{验证与调试}
+    \begin{itemize}
+        \item 仿真增广系统：$2n$ 个状态（$x$ 和 $e$）
+        \item 检查瞬态响应（初始误差、阶跃输入）
+        \item 评估对噪声和扰动的敏感性
+        \item 必要时调整极点位置
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{分离定理的局限性}
+
+\textbf{定理成立的前提：}
+\begin{itemize}
+    \item \textbf{线性系统}（非线性系统不适用）
+    \item \textbf{确定性系统}（无随机干扰）
+    \item \textbf{模型准确}（$A, B, C$ 已知且精确）
+\end{itemize}
+
+\textbf{实际中的挑战：}
+\begin{itemize}
+    \item 模型误差导致性能下降
+    \item 测量噪声被高增益观测器放大
+    \item 非线性和饱和效应
+    \item 计算延迟（数字实现）
+\end{itemize}
+
+\textbf{扩展方向：}
+\begin{itemize}
+    \item \textbf{卡尔曼滤波器}（随机噪声情况）
+    \item \textbf{鲁棒观测器}（模型不确定性）
+    \item \textbf{非线性观测器}（扩展卡尔曼滤波、UKF）
+    \item \textbf{自适应观测器}（在线参数估计）
+\end{itemize}
+
+\subsection{综合设计范例：直流电机位置控制}
+
+\subsubsection*{本节目的}
+将本章所学的所有概念——\textbf{控制器设计、观测器设计、分离定理}——应用于一个具体的物理系统，完整地走一遍从问题分析到系统验证的全过程。
+
+\subsubsection{1. 问题描述与系统建模}
+
+\textbf{场景：}为一个直流电机设计高精度位置控制器。
+
+\textbf{控制目标：}
+\begin{itemize}
+    \item 使电机角度 $\theta(t)$ 快速、准确地跟踪参考角度 $\theta_{\text{ref}}$
+    \item 调节时间 $T_s \approx 1.5$ 秒
+    \item 超调量 $M_p \leq 5\%$
+\end{itemize}
+
+\textbf{系统变量：}
+\begin{itemize}
+    \item \textbf{输入} $u(t)$：电枢电压 (V)
+    \item \textbf{状态变量} $x(t)$：$x_1 = \theta(t)$ (角度, rad)，$x_2 = \dot{\theta}(t)$ (角速度, rad/s)
+    \item \textbf{输出} $y(t)$：$y = \theta(t)$ (仅能测量角度)
+\end{itemize}
+
+\textbf{关键约束：}
+\begin{center}
+\textit{角速度 $\dot{\theta}(t)$ 无法直接测量（传感器成本高或不可用）}
+\end{center}
+
+\textbf{状态空间模型}（参数已简化）：
+\[A = \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix}, \quad B = \begin{bmatrix} 0 \\ 1 \end{bmatrix}, \quad C = \begin{bmatrix} 1 & 0 \end{bmatrix}\]
+
+\textbf{物理意义：}
+\begin{itemize}
+    \item $\dot{x}_1 = x_2$：角度的变化率是角速度（运动学）
+    \item $\dot{x}_2 = -x_2 + u$：角速度受摩擦阻尼（$-x_2$）和电压驱动（$u$）影响
+    \item $y = x_1$：只测量角度
+\end{itemize}
+
+\subsubsection{2. 系统分析与性能指标}
+
+\textbf{开环特性分析：}
+
+特征方程：
+\[\det(sI - A) = \det\begin{bmatrix} s & -1 \\ 0 & s+1 \end{bmatrix} = s(s+1) = 0\]
+
+开环极点：$s = 0, -1$
+
+\textbf{系统特性：}
+\begin{itemize}
+    \item 极点 $s=0$：\textbf{临界稳定}（积分器特性）
+    \item 极点 $s=-1$：稳定的阻尼项
+    \item 开环系统无法自动回到期望位置，需要闭环控制
+\end{itemize}
+
+\textbf{能控性检查：}
+\[W_c = [B \quad AB] = \begin{bmatrix} 0 & 1 \\ 1 & -1 \end{bmatrix}\]
+
+$\det(W_c) = -1 \neq 0$，系统\textbf{完全能控} ✓
+
+\textbf{能观测性检查：}
+\[W_o = \begin{bmatrix} C \\ CA \end{bmatrix} = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}\]
+
+$\det(W_o) = 1 \neq 0$，系统\textbf{完全能观测} ✓
+
+\textbf{结论：}可以独立设计控制器和观测器！
+
+\textbf{性能指标转化为极点位置：}
+
+根据二阶系统理论，要求 $T_s \approx 1.5$s，$M_p \leq 5\%$：
+\begin{itemize}
+    \item 超调量 $M_p = 5\%$ $\Rightarrow$ 阻尼比 $\zeta \approx 0.69$
+    \item 调节时间 $T_s = \frac{4}{\zeta\omega_n} = 1.5$ $\Rightarrow$ $\omega_n \approx 3.86$ rad/s
+\end{itemize}
+
+期望的\textbf{控制器主导极点}：
+\[\lambda_{1,2} = -\zeta\omega_n \pm j\omega_n\sqrt{1-\zeta^2} \approx -2.67 \pm j2.77\]
+
+为了计算简便，我们选择接近的极点：
+\[\boxed{\lambda_{1,2} = -2.5 \pm j2.5}\]
+
+\subsubsection{3. 控制器设计（基于分离定理的第一步）}
+
+我们首先\textbf{假设所有状态均可测量}，设计状态反馈增益 $K$。
+
+\textbf{控制律：}$u = -Kx + v = -[k_1 \quad k_2]x + v$
+
+\textbf{目标：}使 $A-BK$ 的特征值为 $-2.5 \pm j2.5$。
+
+\textbf{期望特征多项式：}
+\[\alpha_c(s) = (s+2.5-j2.5)(s+2.5+j2.5) = s^2 + 5s + 12.5\]
+
+\textbf{计算 $K$（直接法）：}
+
+\[A - BK = \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} 0 \\ 1 \end{bmatrix} [k_1 \quad k_2] = \begin{bmatrix} 0 & 1 \\ -k_1 & -1-k_2 \end{bmatrix}\]
+
+特征方程：
+\[\det(sI - (A-BK)) = s(s+1+k_2) + k_1 = s^2 + (1+k_2)s + k_1\]
+
+令其等于 $s^2 + 5s + 12.5$：
+\begin{align*}
+1 + k_2 &= 5 \quad \Rightarrow \quad k_2 = 4 \\
+k_1 &= 12.5
+\end{align*}
+
+\textbf{结果：}
+\[\boxed{K = \begin{bmatrix} 12.5 & 4 \end{bmatrix}}\]
+
+\textbf{理想控制律：}$u = -12.5\theta - 4\dot{\theta} + v$
+
+\textbf{问题：}$\dot{\theta}$ 是未知的！这就是为什么我们需要观测器。
+
+\subsubsection{4. 观测器设计（基于分离定理的第二步）}
+
+为解决 $\dot{\theta}$ 不可测的问题，我们设计一个观测器来提供状态估计 $\hat{x}$。
+
+\textbf{选择观测器极点：}
+
+\textbf{原则：}观测器的收敛速度必须比控制器快，以保证估计误差 $e(t)$ 能迅速衰减。
+
+\textbf{经验法则：}观测器极点的实部应为控制器极点实部的 2~5 倍。
+
+控制器极点实部为 $-2.5$，我们选择 \textbf{4 倍}：$-10$。
+
+为避免振荡（减少噪声放大），选择两个\textbf{实极点}：
+\[\mu_1 = -10, \quad \mu_2 = -12\]
+
+\textbf{收敛时间：}
+\[t_s \approx \frac{4}{10} = 0.4 \text{ 秒}\]
+
+观测器误差在 0.4 秒内收敛，远快于控制器的 1.5 秒响应时间 ✓
+
+\textbf{期望误差动态特征多项式：}
+\[\alpha_o(s) = (s+10)(s+12) = s^2 + 22s + 120\]
+
+\textbf{计算观测器增益 $L$（直接法）：}
+
+设 $L = \begin{bmatrix} l_1 \\ l_2 \end{bmatrix}$：
+
+\[A - LC = \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} l_1 \\ l_2 \end{bmatrix} [1 \quad 0] = \begin{bmatrix} -l_1 & 1 \\ -l_2 & -1 \end{bmatrix}\]
+
+特征方程：
+\[\det(sI - (A-LC)) = (s+l_1)(s+1) + l_2 = s^2 + (1+l_1)s + (l_1+l_2)\]
+
+令其等于 $s^2 + 22s + 120$：
+\begin{align*}
+1 + l_1 &= 22 \quad \Rightarrow \quad l_1 = 21 \\
+l_1 + l_2 &= 120 \quad \Rightarrow \quad l_2 = 120 - 21 = 99
+\end{align*}
+
+\textbf{结果：}
+\[\boxed{L = \begin{bmatrix} 21 \\ 99 \end{bmatrix}}\]
+
+\subsubsection{5. 组合系统与最终实现}
+
+根据\textbf{分离定理}，我们可以将上述独立设计的控制器和观测器安全地组合起来。
+
+\textbf{观测器方程（实现）：}
+\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})\]
+
+展开为：
+\begin{align*}
+\dot{\hat{x}}_1 &= \hat{x}_2 + 21(y - \hat{x}_1) \\
+\dot{\hat{x}}_2 &= -\hat{x}_2 + u + 99(y - \hat{x}_1)
+\end{align*}
+
+\textbf{实际控制律（实现）：}
+\[u = -K\hat{x} + v = -12.5\hat{x}_1 - 4\hat{x}_2 + v\]
+
+其中 $v = 12.5\theta_{\text{ref}}$ 是参考输入（使稳态误差为零）。
+
+\textbf{完整控制系统框图：}
+
+\begin{center}
+\begin{tikzpicture}[auto, node distance=2cm, >=latex']
+    \node [draw, circle] (sum1) {$+$};
+    \node [draw, rectangle, right of=sum1, node distance=2cm] (K) {$-K$};
+    \node [draw, rectangle, right of=K, node distance=2.5cm] (plant) {系统 $(A,B,C)$};
+    \node [draw, rectangle, below of=plant, node distance=2cm] (obs) {观测器};
+    \node [coordinate, right of=plant, node distance=2cm] (output) {};
+    \node [coordinate, left of=sum1, node distance=2cm] (input) {};
+    
+    \draw [->] (input) -- node {$v$} (sum1);
+    \draw [->] (sum1) -- node {$u$} (K);
+    \draw [->] (K) -- (plant);
+    \draw [->] (plant) -- node [name=y] {$y$} (output);
+    \draw [->] (y) |- (obs);
+    \draw [->] (obs) -| node [pos=0.9] {$\hat{x}$} (K);
+    \draw [->] (K) |- (obs);
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{6. 系统整体特性分析}
+
+\textbf{系统阶数：}
+
+最终的闭环系统是一个 \textbf{4 阶系统}（2个物理状态 + 2个观测器状态）。
+
+\textbf{系统总极点}（根据分离定理）：
+\[\text{极点} = \{ \underbrace{-2.5 \pm j2.5}_{\text{控制器极点，决定系统响应}}, \underbrace{-10, -12}_{\text{观测器极点，决定估计误差收敛}} \}\]
+
+\textbf{定性分析：}
+
+\begin{enumerate}
+    \item \textbf{初始阶段}（$t < 0.4$s）：
+    \begin{itemize}
+        \item 观测器快速收敛（由 $-10, -12$ 决定）
+        \item 估计状态 $\hat{x}$ 迅速逼近真实状态 $x$
+        \item 此时控制效果还未完全发挥
+    \end{itemize}
+    
+    \item \textbf{主导阶段}（$t > 0.4$s）：
+    \begin{itemize}
+        \item 观测器误差 $e \approx 0$，即 $\hat{x} \approx x$
+        \item 系统动态主要由控制器极点（$-2.5 \pm j2.5$）主导
+        \item 展现设计的响应性能：$T_s \approx 1.5$s，$M_p \leq 5\%$
+    \end{itemize}
+\end{enumerate}
+
+\textbf{稳定性分析：}
+
+所有极点均在左半平面 $\Rightarrow$ 系统\textbf{渐近稳定}！
+
+\textbf{响应速度：}
+
+\begin{itemize}
+    \item 观测器误差收敛：$t_s^{(o)} \approx 0.4$s（非常快）
+    \item 系统输出响应：$t_s^{(c)} \approx 1.5$s（符合设计目标）
+\end{itemize}
+
+由于观测器远快于控制器，系统整体响应由控制器主导 ✓
+
+\subsubsection{7. 设计验证与性能评估}
+
+\textbf{验证步骤：}
+
+\begin{enumerate}
+    \item \textbf{极点验证}
+    \begin{itemize}
+        \item 控制器闭环极点：$\det(sI - A + BK) = s^2 + 5s + 12.5$ ✓
+        \item 观测器极点：$\det(sI - A + LC) = s^2 + 22s + 120$ ✓
+    \end{itemize}
+    
+    \item \textbf{仿真测试}
+    \begin{itemize}
+        \item 初始条件：$x(0) = [0, 0]^T$，$\hat{x}(0) = [0.5, 0]^T$（初始估计误差）
+        \item 参考输入：$\theta_{\text{ref}} = 1$ rad（阶跃信号）
+        \item 观察：估计误差 $e(t)$、系统输出 $\theta(t)$、控制输入 $u(t)$
+    \end{itemize}
+\end{enumerate}
+
+\textbf{预期结果：}
+
+\begin{itemize}
+    \item 估计误差 $e(t)$ 在 0.4s 内衰减到零
+    \item 系统输出 $\theta(t)$ 在 1.5s 内到达 1 rad，超调量 $< 5\%$
+    \item 控制输入 $u(t)$ 无剧烈抖动（观测器增益适中）
+\end{itemize}
+
+\textbf{MATLAB实现代码：}
+\begin{verbatim}
+% 系统矩阵
+A = [0 1; 0 -1]; B = [0; 1]; C = [1 0];
+
+% 控制器设计
+K = [12.5 4];
+eig(A - B*K)  % 验证: -2.5±2.5j
+
+% 观测器设计
+L = [21; 99];
+eig(A - L*C)  % 验证: -10, -12
+
+% 增广系统仿真（4阶）
+A_aug = [A-B*K, B*K; zeros(2), A-L*C];
+B_aug = [B; zeros(2,1)];
+C_aug = [C, zeros(1,2)];
+
+sys = ss(A_aug, B_aug, C_aug, 0);
+step(sys * 12.5);  % 阶跃响应
+\end{verbatim}
+
+\subsubsection{8. 实际考虑与改进方向}
+
+\textbf{实际问题：}
+
+\begin{enumerate}
+    \item \textbf{测量噪声}
+    \begin{itemize}
+        \item 编码器可能有噪声（$\pm 0.01$ rad）
+        \item 观测器增益 $L = [21, 99]^T$ 会放大噪声
+        \item 角速度估计可能抖动
+    \end{itemize}
+    \textbf{解决：}增加低通滤波器或使用卡尔曼滤波器
+    
+    \item \textbf{执行器饱和}
+    \begin{itemize}
+        \item 电压限制：$|u| \leq u_{\max}$
+        \item 初始阶段控制输入可能饱和
+    \end{itemize}
+    \textbf{解决：}抗饱和设计，限制参考输入变化率
+    
+    \item \textbf{模型误差}
+    \begin{itemize}
+        \item 实际摩擦系数可能不是精确的 $-1$
+        \item 可能存在未建模动态
+    \end{itemize}
+    \textbf{解决：}鲁棒控制方法，增加积分项消除稳态误差
+\end{enumerate}
+
+\textbf{改进方向：}
+
+\begin{itemize}
+    \item \textbf{LQR控制}：用最优控制理论自动选择 $K$
+    \item \textbf{卡尔曼滤波器}：在噪声环境下的最优观测器
+    \item \textbf{降维观测器}：只估计 $\dot{\theta}$，减少计算量
+    \item \textbf{自适应控制}：在线估计参数变化
+\end{itemize}
+
+\subsubsection*{范例总结}
+
+这个直流电机例子完美展示了\textbf{分离定理}的威力：
+
+\begin{enumerate}
+    \item \textbf{模块化设计}：
+    \begin{itemize}
+        \item 步骤1：独立设计控制器 $K$（假设状态可测）
+        \item 步骤2：独立设计观测器 $L$（配置快速极点）
+        \item 步骤3：直接组合，无需重新设计
+    \end{itemize}
+    
+    \item \textbf{性能可预测}：
+    \begin{itemize}
+        \item 系统极点 = 控制器极点 + 观测器极点
+        \item 响应特性由控制器主导（观测器足够快）
+    \end{itemize}
+    
+    \item \textbf{实际可行}：
+    \begin{itemize}
+        \item 减少了传感器需求（只测角度）
+        \item 降低了硬件成本
+        \item 通过软件实现状态估计
+    \end{itemize}
+\end{enumerate}
+
+\textbf{关键经验：}
+\begin{itemize}
+    \item 观测器极点选择为控制器的 3-5 倍，平衡收敛与噪声
+    \item 验证能控性和能观测性是设计的前提
+    \item 实际系统需要考虑噪声、饱和等非理想因素
+    \item 分离定理简化了复杂控制系统的设计流程
+\end{itemize}
+
+这个例子从\textbf{问题分析}到\textbf{系统建模}，从\textbf{独立设计}到\textbf{系统集成}，从\textbf{理论验证}到\textbf{实际考虑}，完整展示了现代控制理论在实际工程中的应用！
+
+\subsection*{本章总结}
+
+\subsubsection*{核心要点回顾}
+
+\textbf{1. 状态观测器的本质}
+
+\begin{itemize}
+    \item 观测器是一个\textbf{动态系统}，通过模拟真实系统并利用输出误差校正来估计状态
+    \item 观测器方程：$\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})$
+    \item 关键创新：利用\textbf{创新}（innovation）$y - C\hat{x}$ 进行闭环校正
+    \item 与传感器的区别：算法/软件 vs 物理设备
+\end{itemize}
+
+\textbf{2. 误差动态与收敛}
+
+\begin{itemize}
+    \item 估计误差：$e = x - \hat{x}$
+    \item 误差动态：$\dot{e} = (A - LC)e$（\textbf{与控制输入 $u$ 无关}）
+    \item 收敛条件：$A - LC$ 的所有特征值在左半平面
+    \item 设计目标：选择 $L$ 配置观测器极点
+\end{itemize}
+
+\textbf{3. 对偶性（Duality）}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|c|c|}
+\hline
+\rowcolor[gray]{0.9}
+& \textbf{极点配置} & \textbf{观测器设计} \\
+\hline
+目标矩阵 & $A - BK$ & $A - LC$ \\
+\hline
+前提条件 & $(A, B)$ 能控 & $(A, C)$ 能观测 \\
+\hline
+增益设计 & $K$ & $L$ \\
+\hline
+对偶关系 & --- & $(A, C) \leftrightarrow (A^T, C^T)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{利用对偶性：}所有极点配置算法（直接法、变换法、阿克曼公式）都可直接用于观测器设计！
+
+\textbf{4. 分离定理（Separation Principle）}
+
+\textbf{定理陈述：}
+
+基于观测器的状态反馈系统特征多项式 = 控制器特征多项式 × 观测器特征多项式
+
+\[\det(sI - A + BK) \cdot \det(sI - A + LC)\]
+
+\textbf{定理意义：}
+\begin{itemize}
+    \item 控制器和观测器可以\textbf{完全独立}设计
+    \item 闭环极点 = 控制器极点 + 观测器极点
+    \item 无需联合优化，大大简化设计流程
+\end{itemize}
+
+\subsubsection*{设计流程总结}
+
+\textbf{完整的基于观测器的控制系统设计：}
+
+\begin{enumerate}
+    \item \textbf{系统分析}
+    \begin{itemize}
+        \item 建立状态空间模型 $(A, B, C)$
+        \item 验证能控性：$\text{rank}(W_c) = n$
+        \item 验证能观测性：$\text{rank}(W_o) = n$
+    \end{itemize}
+    
+    \item \textbf{控制器设计}（假设状态可测）
+    \begin{itemize}
+        \item 根据性能要求选择期望极点 $\lambda_1, \ldots, \lambda_n$
+        \item 计算反馈增益 $K$（如阿克曼公式）
+        \item 验证闭环极点
+    \end{itemize}
+    
+    \item \textbf{观测器设计}
+    \begin{itemize}
+        \item 选择观测器极点 $\mu_1, \ldots, \mu_n$（通常比控制器快 2-5 倍）
+        \item 利用对偶性计算 $L$
+        \item 验证观测器极点
+    \end{itemize}
+    
+    \item \textbf{系统实现}
+    \begin{itemize}
+        \item 观测器：$\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})$
+        \item 控制律：$u = -K\hat{x} + v$
+        \item 数字实现时需要离散化
+    \end{itemize}
+    
+    \item \textbf{验证与调试}
+    \begin{itemize}
+        \item 仿真增广系统（$2n$ 阶）
+        \item 检查瞬态响应和稳态性能
+        \item 评估噪声敏感性
+        \item 必要时调整极点位置
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{观测器极点选择准则}
+
+\textbf{经验法则：}
+
+\[\text{观测器极点实部} = (2 \sim 5) \times \text{控制器极点实部}\]
+
+\textbf{选择考虑：}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|p{5cm}|p{5cm}|}
+\hline
+\rowcolor[gray]{0.9}
+\textbf{因素} & \textbf{快速极点（5倍）} & \textbf{保守极点（2倍）} \\
+\hline
+收敛速度 & 非常快 & 较慢 \\
+\hline
+噪声敏感性 & 高（大增益） & 低（小增益） \\
+\hline
+计算负担 & 高（小采样周期） & 低 \\
+\hline
+鲁棒性 & 对模型误差敏感 & 较鲁棒 \\
+\hline
+适用场景 & 低噪声、准确模型 & 高噪声、模型不确定 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{实用建议：}
+\begin{itemize}
+    \item 初次设计：选择 3-4 倍（中庸之道）
+    \item 实际调试：根据噪声水平和响应速度权衡调整
+    \item 实极点：适合噪声环境（避免振荡）
+    \item 复数极点：适合快速跟踪应用
+\end{itemize}
+
+\subsubsection*{重要概念辨析}
+
+\textbf{1. 观测器 vs 滤波器}
+
+\begin{itemize}
+    \item \textbf{观测器}：基于系统模型的状态估计（需要知道 $A, B, C$）
+    \item \textbf{卡尔曼滤波器}：在随机噪声环境下的最优观测器（需要噪声统计特性）
+    \item \textbf{低通滤波器}：简单的信号平滑（不利用系统模型）
+\end{itemize}
+
+\textbf{2. 全维观测器 vs 降维观测器}
+
+\begin{itemize}
+    \item \textbf{全维}：估计所有 $n$ 个状态（简单，本章重点）
+    \item \textbf{降维}：只估计不可测的 $(n-p)$ 个状态（计算量更小）
+    \item 当 $y = Cx$ 中部分状态直接可测时，降维观测器更高效
+\end{itemize}
+
+\textbf{3. 确定性观测器 vs 随机观测器}
+
+\begin{itemize}
+    \item \textbf{确定性}（本章）：无随机噪声，极点配置方法
+    \item \textbf{随机}（卡尔曼滤波）：考虑过程噪声和测量噪声，最小化估计方差
+\end{itemize}
+
+\subsubsection*{常见误区与正确做法}
+
+\begin{itemize}
+    \item ✗ \textbf{观测器极点配置过快}
+    \begin{itemize}
+        \item 后果：对噪声极度敏感，控制输入抖动
+        \item ✓ 正确：平衡收敛速度与噪声抑制，选择 2-5 倍控制器极点
+    \end{itemize}
+    
+    \item ✗ \textbf{忽略能观测性检查}
+    \begin{itemize}
+        \item 后果：无法任意配置极点，观测器可能发散
+        \item ✓ 正确：设计前必须验证 $\text{rank}(W_o) = n$
+    \end{itemize}
+    
+    \item ✗ \textbf{认为分离定理对非线性系统成立}
+    \begin{itemize}
+        \item 后果：非线性系统中分离定理\textbf{不成立}，需要联合设计
+        \item ✓ 正确：线性系统才能独立设计控制器和观测器
+    \end{itemize}
+    
+    \item ✗ \textbf{用数值微分代替观测器}
+    \begin{itemize}
+        \item 后果：噪声严重放大（如 $\dot{\theta}$ 从 $\theta$ 微分）
+        \item ✓ 正确：使用观测器估计导数，自带滤波效果
+    \end{itemize}
+    
+    \item ✗ \textbf{观测器初值随意设置}
+    \begin{itemize}
+        \item 后果：初始误差过大可能导致控制饱和
+        \item ✓ 正确：尽量根据先验知识设置接近真实值的初值
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{MATLAB工具箱}
+
+\textbf{能观测性检查：}
+\begin{verbatim}
+Wo = obsv(A, C);
+rank(Wo)  % 应等于 n
+\end{verbatim}
+
+\textbf{观测器设计：}
+\begin{verbatim}
+% 方法1：直接设计
+L = place(A', C', poles)';
+
+% 方法2：利用对偶性
+L = acker(A', C', poles)';
+
+% 验证
+eig(A - L*C)  % 应等于期望极点
+\end{verbatim}
+
+\textbf{基于观测器的控制系统仿真：}
+\begin{verbatim}
+% 增广系统 [x; e]
+A_aug = [A-B*K, B*K; zeros(n), A-L*C];
+B_aug = [B; zeros(n,1)];
+C_aug = [C, zeros(1,n)];
+
+sys = ss(A_aug, B_aug, C_aug, 0);
+step(sys);
+\end{verbatim}
+
+\subsubsection*{与前后章节的联系}
+
+\textbf{与第5章（能控性和能观测性）：}
+\begin{itemize}
+    \item 第5章：定义能观测性，判别准则
+    \item 本章：\textbf{应用}能观测性——观测器设计
+    \item 能观测性是任意配置观测器极点的\textbf{充要条件}
+\end{itemize}
+
+\textbf{与第10章（极点配置）：}
+\begin{itemize}
+    \item 第10章：状态反馈 $u = -Kx$（假设状态可测）
+    \item 本章：解决状态不可测问题——用 $\hat{x}$ 代替 $x$
+    \item 分离定理：两者可以独立设计
+\end{itemize}
+
+\textbf{与后续章节（最优控制）：}
+\begin{itemize}
+    \item 本章：极点配置方法设计观测器（设计者指定极点）
+    \item 最优控制：LQR + 卡尔曼滤波器（自动优化极点）
+    \item 线性二次高斯（LQG）：随机环境下的最优设计
+\end{itemize}
+
+\subsubsection*{实际应用场景}
+
+\textbf{1. 航空航天}
+\begin{itemize}
+    \item 飞行器姿态控制：测量姿态角，估计角速度
+    \item 火箭导航：GPS + 惯性测量单元（IMU）融合
+\end{itemize}
+
+\textbf{2. 机器人}
+\begin{itemize}
+    \item 关节控制：编码器测位置，观测器估计速度和加速度
+    \item 减少陀螺仪和加速度计数量
+\end{itemize}
+
+\textbf{3. 电机驱动}
+\begin{itemize}
+    \item 无传感器控制：只测电流和电压，估计转速和转矩
+    \item 降低成本，提高可靠性
+\end{itemize}
+
+\textbf{4. 自动驾驶}
+\begin{itemize}
+    \item 车辆状态估计：GPS + 轮速传感器 + 观测器
+    \item 估计侧向速度、横摆角速度等难以直接测量的状态
+\end{itemize}
+
+\subsubsection*{学习检查清单}
+
+\textbf{理论理解：}
+\begin{itemize}
+    \item ☐ 能解释观测器的工作原理和校正机制
+    \item ☐ 能推导误差动态方程 $\dot{e} = (A-LC)e$
+    \item ☐ 理解对偶性：$(A, C)$ 能观测 $\leftrightarrow$ $(A^T, C^T)$ 能控
+    \item ☐ 理解分离定理及其适用条件
+\end{itemize}
+
+\textbf{设计能力：}
+\begin{itemize}
+    \item ☐ 能验证系统的能观测性
+    \item ☐ 能根据性能要求选择观测器极点
+    \item ☐ 能计算观测器增益矩阵 $L$
+    \item ☐ 能设计完整的控制器+观测器系统
+\end{itemize}
+
+\textbf{实践技能：}
+\begin{itemize}
+    \item ☐ 会使用 MATLAB 的 \texttt{place}, \texttt{acker} 设计观测器
+    \item ☐ 能仿真和验证观测器性能
+    \item ☐ 能分析噪声对观测器的影响
+    \item ☐ 能调试和优化实际系统
+\end{itemize}
+
+\subsubsection*{延伸阅读}
+
+\begin{itemize}
+    \item \textbf{卡尔曼滤波}：随机环境下的最优观测器
+    \item \textbf{滑模观测器}：对模型不确定性鲁棒的观测器
+    \item \textbf{高增益观测器}：非线性系统的观测器设计
+    \item \textbf{扩展卡尔曼滤波（EKF）}：非线性系统的状态估计
+    \item \textbf{无迹卡尔曼滤波（UKF）}：更精确的非线性状态估计
+\end{itemize}
+
+\subsubsection*{本章核心公式}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=状态观测器核心公式]
+
+\textbf{观测器方程：}
+\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})\]
+
+\textbf{误差动态：}
+\[\dot{e} = (A - LC)e, \quad e = x - \hat{x}\]
+
+\textbf{观测器设计定理：}
+
+$(A, C)$ 完全能观测 $\Leftrightarrow$ 可任意配置 $A-LC$ 的极点
+
+\textbf{分离定理：}
+
+闭环特征多项式 = $\det(sI - A + BK) \cdot \det(sI - A + LC)$
+
+\textbf{基于观测器的控制：}
+\[u = -K\hat{x} + v\]
+
+\end{tcolorbox}
+
+\textbf{结语：}
+
+状态观测器是现代控制理论的\textbf{基石之一}。它将第5章的能观测性理论转化为实际的估计算法，与第10章的极点配置方法结合，通过分离定理构成了完整的状态反馈控制系统。
+
+观测器的核心思想——\textbf{利用输出误差动态校正模型估计}——不仅在控制理论中至关重要，在信号处理、机器学习、导航定位等众多领域也有广泛应用。
+
+掌握观测器设计，就掌握了从\textbf{部分信息重构完整状态}的强大工具！

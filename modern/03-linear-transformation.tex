@@ -1,19 +1,86 @@
 \section{线性变换}
 \label{sec:linear-transformation}
 
+\subsection*{引言：为什么需要更换 \textquotedblleft 坐标系  \textquotedblright ？}
+
+想象你站在一个房间里观察一个旋转的陀螺。如果你从正面看，陀螺的运动可能非常复杂；但如果你沿着陀螺的旋转轴观察，运动就变得简单——只是一个圆周运动。\textbf{这就是线性变换的核心思想：通过选择合适的\textquotedblleft 观察角度 \textquotedblright（坐标系），让复杂的系统变得简单。}
+
+\subsubsection*{为什么状态不唯一？}
+
+在\ref{sec:state-space}节中，我们知道状态空间表达式的形式为 $\dot{x} = Ax + Bu$。但问题是：\textbf{状态变量的选择不是唯一的！}
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{物理角度}：描述同一个系统，可以选择不同的物理量作为状态（例如位置-速度 vs 动量-能量）
+    \item \textbf{数学角度}：即使选择相同的物理量，也可以用不同的坐标系表示（直角坐标 vs 极坐标）
+    \item \textbf{工程角度}：某些坐标系下，系统矩阵 $A$ 的结构更简单，便于分析和设计
+\end{itemize}
+
+\subsubsection*{线性变换的作用}
+
+线性变换（也称\textbf{坐标变换}或\textbf{相似变换}）允许我们在不改变系统本质特性的前提下，\textbf{切换到更方便的坐标系}。关键性质：
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=线性变换的不变量]
+无论如何变换坐标系，以下系统特性保持不变：
+\begin{itemize}
+    \item \textbf{特征值}（系统的固有频率和稳定性）
+    \item \textbf{传递函数}（输入输出关系）
+    \item \textbf{能控性和能观性}（系统的结构性质）
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection*{本章路线图}
+
+\begin{enumerate}
+    \item \textbf{数学框架}：线性变换的定义和推导
+    \item \textbf{相似变换性质}：哪些量变、哪些量不变
+    \item \textbf{实用例题}：如何选择变换矩阵 $P$
+    \item \textbf{几何直观}：坐标变换的可视化理解
+    \item \textbf{通向标准型}：为\ref{sec:standard-forms}节的标准型做准备
+\end{enumerate}
+
 \subsection{线性变换的定义}
-设 $x$ 和 $z$ 是两组状态变量，如果存在非奇异矩阵 $P$，使得：
-\[x = Pz\]
-则称此变换为线性变换或坐标变换。
+
+设 $x \in \mathbb{R}^n$ 和 $z \in \mathbb{R}^n$ 是描述同一系统的两组状态变量。如果存在\textbf{非奇异矩阵} $P \in \mathbb{R}^{n \times n}$（即 $\det(P) \neq 0$，$P$ 可逆），使得：
+\begin{empheq}[box=\fbox]{equation}
+x = Pz
+\end{empheq}
+
+则称此变换为\textbf{线性变换}（Linear Transformation）或\textbf{坐标变换}（Coordinate Transformation）。
+
+\subsubsection*{关键理解}
+
+\begin{itemize}
+    \item $P$ 称为\textbf{变换矩阵}，它的列向量构成新坐标系的基
+    \item $x$ 是原坐标系下的状态，$z$ 是新坐标系下的状态
+    \item 非奇异条件 $\det(P) \neq 0$ 保证变换可逆：$z = P^{-1}x$
+    \item 同一个物理系统，不同坐标下的\textquotedblleft 坐标值 \textquotedblright 不同，但描述的是同一个 \textquotedblleft 点 \textquotedblright
+\end{itemize}
 
 \subsection{变换后的状态方程}
-原系统：
+
+原系统的状态空间表达式为：
 \begin{align}
-\dot{x} &= Ax + Bu \\
-y &= Cx + Du
+\dot{x} &= Ax + Bu \label{eq:original-system} \\
+y &= Cx + Du \nonumber
 \end{align}
 
-变换后的系统：
+应用线性变换 $x = Pz$，求导得 $\dot{x} = P\dot{z}$，代入方程 \eqref{eq:original-system}：
+\begin{align*}
+P\dot{z} &= APz + Bu \\
+\dot{z} &= P^{-1}APz + P^{-1}Bu
+\end{align*}
+
+同理，输出方程变为：
+\[y = CPz + Du\]
+
+定义变换后的系统矩阵：
+\begin{empheq}[box=\fbox]{align}
+\bar{A} &= P^{-1}AP \quad \text{（相似变换）} \label{eq:A-transform} \\
+\bar{B} &= P^{-1}B \quad \text{（输入矩阵变换）} \nonumber \\
+\bar{C} &= CP \quad \text{（输出矩阵变换）} \nonumber
+\end{align}
+
+则变换后的系统为：
 \begin{align}
 \dot{z} &= \bar{A}z + \bar{B}u \\
 y &= \bar{C}z + Du
@@ -25,4 +92,204 @@ y &= \bar{C}z + Du
 \bar{B} &= P^{-1}B \\
 \bar{C} &= CP
 \end{align}
+
+\subsection{相似变换的性质}
+
+式 \eqref{eq:A-transform} 中的 $\bar{A} = P^{-1}AP$ 称为矩阵 $A$ 的\textbf{相似变换}。相似矩阵具有以下重要性质：
+
+\subsubsection*{不变量（Invariants）}
+
+\begin{enumerate}
+    \item \textbf{特征值不变}：$\det(\lambda I - \bar{A}) = \det(\lambda I - A)$，因此 $A$ 和 $\bar{A}$ 有相同的特征值
+    \item \textbf{迹不变}：$\text{tr}(\bar{A}) = \text{tr}(A)$（对角线元素之和）
+    \item \textbf{行列式不变}：$\det(\bar{A}) = \det(A)$
+    \item \textbf{秩不变}：$\text{rank}(\bar{A}) = \text{rank}(A)$
+\end{enumerate}
+
+\subsubsection*{传递函数不变}
+
+根据\ref{sec:transfer-function}节的公式，传递函数为：
+\begin{align*}
+G(s) &= C(sI - A)^{-1}B + D \\
+\bar{G}(s) &= \bar{C}(sI - \bar{A})^{-1}\bar{B} + D \\
+&= CP(sI - P^{-1}AP)^{-1}P^{-1}B + D \\
+&= CP \cdot P^{-1}(sI - A)^{-1}P \cdot P^{-1}B + D \\
+&= C(sI - A)^{-1}B + D = G(s)
+\end{align*}
+
+因此，\textbf{线性变换不改变系统的输入输出关系}。
+
+\subsection{如何选择变换矩阵 $P$？}
+
+变换矩阵 $P$ 的选择取决于我们想要达到的目标：
+
+\begin{table}[h]
+\centering
+\caption{常见的变换矩阵选择策略}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{gray!20}
+\textbf{目标} & \textbf{变换矩阵 $P$} & \textbf{结果 $\bar{A}$} \\
+\hline
+对角化（最简形式） & 特征向量矩阵 & 对角矩阵 $\Lambda$ \\
+\hline
+能控标准型 & 能控性矩阵的变换 & 能控标准形式 \\
+\hline
+能观标准型 & 能观性矩阵的变换 & 能观标准形式 \\
+\hline
+约当标准型 & 广义特征向量矩阵 & 约当矩阵 $J$ \\
+\hline
+\end{tabular}
+\end{table}
+
+下面通过两个例题说明具体应用。
+
+\subsection{例题1：对角化变换}
+
+\textbf{问题}：给定系统矩阵
+\[A = \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix}\]
+将其对角化。
+
+\textbf{解}：
+
+\textbf{步骤1}：求特征值
+\[\det(\lambda I - A) = \det \begin{bmatrix} \lambda & -1 \\ 2 & \lambda + 3 \end{bmatrix} = \lambda(\lambda + 3) + 2 = \lambda^2 + 3\lambda + 2 = (\lambda + 1)(\lambda + 2) = 0\]
+
+特征值：$\lambda_1 = -1$，$\lambda_2 = -2$
+
+\textbf{步骤2}：求特征向量
+
+对于 $\lambda_1 = -1$：
+\[(\lambda_1 I - A)v_1 = \begin{bmatrix} -1 & -1 \\ 2 & 2 \end{bmatrix} \begin{bmatrix} v_{11} \\ v_{12} \end{bmatrix} = 0 \quad \Rightarrow \quad v_1 = \begin{bmatrix} 1 \\ -1 \end{bmatrix}\]
+
+对于 $\lambda_2 = -2$：
+\[(\lambda_2 I - A)v_2 = \begin{bmatrix} -2 & -1 \\ 2 & 1 \end{bmatrix} \begin{bmatrix} v_{21} \\ v_{22} \end{bmatrix} = 0 \quad \Rightarrow \quad v_2 = \begin{bmatrix} 1 \\ -2 \end{bmatrix}\]
+
+\textbf{步骤3}：构造变换矩阵
+\[P = \begin{bmatrix} v_1 & v_2 \end{bmatrix} = \begin{bmatrix} 1 & 1 \\ -1 & -2 \end{bmatrix}, \quad P^{-1} = \begin{bmatrix} 2 & 1 \\ -1 & -1 \end{bmatrix}\]
+
+\textbf{步骤4}：验证对角化
+\[\bar{A} = P^{-1}AP = \begin{bmatrix} 2 & 1 \\ -1 & -1 \end{bmatrix} \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} \begin{bmatrix} 1 & 1 \\ -1 & -2 \end{bmatrix} = \begin{bmatrix} -1 & 0 \\ 0 & -2 \end{bmatrix}\]
+
+\textbf{结果}：在新坐标系 $z$ 下，系统矩阵变为对角矩阵，两个状态完全解耦！
+
+\subsection{例题2：传递函数不变性验证}
+
+\textbf{问题}：对于例题1的系统，设 $B = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$，$C = \begin{bmatrix} 1 & 0 \end{bmatrix}$，验证变换前后传递函数相同。
+
+\textbf{解}：
+
+\textbf{原系统传递函数}：
+\begin{align*}
+G(s) &= C(sI - A)^{-1}B \\
+&= \begin{bmatrix} 1 & 0 \end{bmatrix} \begin{bmatrix} s & -1 \\ 2 & s+3 \end{bmatrix}^{-1} \begin{bmatrix} 0 \\ 1 \end{bmatrix} \\
+&= \begin{bmatrix} 1 & 0 \end{bmatrix} \frac{1}{s^2 + 3s + 2} \begin{bmatrix} s+3 & 1 \\ -2 & s \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} \\
+&= \frac{1}{s^2 + 3s + 2}
+\end{align*}
+
+\textbf{变换后的系统}：
+\[\bar{B} = P^{-1}B = \begin{bmatrix} 2 & 1 \\ -1 & -1 \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ -1 \end{bmatrix}, \quad \bar{C} = CP = \begin{bmatrix} 1 & 0 \end{bmatrix} \begin{bmatrix} 1 & 1 \\ -1 & -2 \end{bmatrix} = \begin{bmatrix} 1 & 1 \end{bmatrix}\]
+
+\textbf{新系统传递函数}（利用对角矩阵的简单形式）：
+\begin{align*}
+\bar{G}(s) &= \bar{C}(sI - \bar{A})^{-1}\bar{B} \\
+&= \begin{bmatrix} 1 & 1 \end{bmatrix} \begin{bmatrix} s+1 & 0 \\ 0 & s+2 \end{bmatrix}^{-1} \begin{bmatrix} 1 \\ -1 \end{bmatrix} \\
+&= \begin{bmatrix} 1 & 1 \end{bmatrix} \begin{bmatrix} \frac{1}{s+1} & 0 \\ 0 & \frac{1}{s+2} \end{bmatrix} \begin{bmatrix} 1 \\ -1 \end{bmatrix} \\
+&= \frac{1}{s+1} - \frac{1}{s+2} = \frac{(s+2) - (s+1)}{(s+1)(s+2)} = \frac{1}{s^2 + 3s + 2}
+\end{align*}
+
+\textbf{验证}：$G(s) = \bar{G}(s)$ ✓
+
+\subsection{MATLAB实现}
+
+\begin{lstlisting}[style=Matlab-editor, caption=线性变换的MATLAB实现]
+% 定义原系统
+A = [0 1; -2 -3];
+B = [0; 1];
+C = [1 0];
+D = 0;
+
+% 方法1：使用特征向量对角化
+[P, Lambda] = eig(A);  % P是特征向量矩阵，Lambda是对角矩阵
+A_bar = inv(P) * A * P;  % 应该等于Lambda
+B_bar = inv(P) * B;
+C_bar = C * P;
+
+% 方法2：验证传递函数不变
+sys_original = ss(A, B, C, D);
+sys_transformed = ss(A_bar, B_bar, C_bar, D);
+[num1, den1] = ss2tf(A, B, C, D);
+[num2, den2] = ss2tf(A_bar, B_bar, C_bar, D);
+fprintf('原系统传递函数: '); tf(num1, den1)
+fprintf('变换后传递函数: '); tf(num2, den2)
+
+% 方法3：验证特征值不变
+eig_A = eig(A);
+eig_A_bar = eig(A_bar);
+fprintf('特征值对比:\n原矩阵: %.4f, %.4f\n变换后: %.4f, %.4f\n', ...
+    eig_A(1), eig_A(2), eig_A_bar(1), eig_A_bar(2));
+\end{lstlisting}
+
+\subsection*{本章小结}
+
+\subsubsection*{核心要点}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=线性变换的核心公式]
+\textbf{变换关系}：$x = Pz$（$P$ 非奇异）
+
+\textbf{系统矩阵变换}：
+\begin{align*}
+\bar{A} &= P^{-1}AP \quad \text{（相似变换）} \\
+\bar{B} &= P^{-1}B, \quad \bar{C} = CP
+\end{align*}
+
+\textbf{不变量}：特征值、迹、行列式、传递函数、能控性、能观性
+\end{tcolorbox}
+
+\subsubsection*{常见变换类型对比}
+
+\begin{table}[h]
+\centering
+\caption{常见线性变换及其应用}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\rowcolor{gray!20}
+\textbf{变换类型} & \textbf{$P$ 的构成} & \textbf{$\bar{A}$ 的形式} & \textbf{主要用途} \\
+\hline
+对角化 & 特征向量 & 对角矩阵 & 系统解耦、稳定性分析 \\
+\hline
+能控标准型 & 能控矩阵变换 & 伴随矩阵 & 极点配置设计 \\
+\hline
+能观标准型 & 能观矩阵变换 & 转置伴随矩阵 & 状态观测器设计 \\
+\hline
+约当标准型 & 广义特征向量 & 约当块 & 处理重特征值情况 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{与其他章节的联系}
+
+\begin{itemize}
+    \item \textbf{向后链接}：
+    \begin{itemize}
+        \item \ref{sec:state-space}节：状态空间表达式的基础
+        \item \ref{sec:transfer-function}节：传递函数不变性的应用
+    \end{itemize}
+    \item \textbf{向前链接}：
+    \begin{itemize}
+        \item \ref{sec:standard-forms}节：利用线性变换得到各种标准型
+        \item \ref{sec:jordan-form}节：重特征值情况下的约当标准型
+        \item \ref{sec:controllability-observability}节：能控性和能观性在变换下的不变性
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{学习检查清单}
+
+\begin{itemize}
+    \item[$\square$] 理解线性变换的几何意义（坐标系旋转/缩放）
+    \item[$\square$] 掌握相似变换的计算：$\bar{A} = P^{-1}AP$
+    \item[$\square$] 能够求解特征向量并构造对角化矩阵
+    \item[$\square$] 理解哪些量在变换下不变（特征值、传递函数）
+    \item[$\square$] 知道如何根据目标选择合适的变换矩阵
+\end{itemize}
 

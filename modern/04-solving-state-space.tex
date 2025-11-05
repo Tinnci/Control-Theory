@@ -1,28 +1,405 @@
 \section{线性控制系统状态空间表达式的求解}
 \label{sec:solving-state-space}
 
-\subsection{齐次状态方程的解}
-齐次状态方程 $\dot{x} = Ax$ 的解为：
-\[x(t) = e^{At}x(0)\]
+\subsection*{引言：从 \textquotedblleft 描述系统 \textquotedblright 到 \textquotedblleft 预测行为 \textquotedblright }
 
-其中 $e^{At}$ 称为状态转移矩阵，记为 $\Phi(t)$。
+想象你是一名航天工程师，面对火箭发射的状态方程 $\dot{x} = Ax + Bu$。仅仅知道这个方程是不够的——\textbf{你需要知道：给定初始状态 $x(0)$ 和控制输入 $u(t)$，未来任意时刻 $t$ 的状态 $x(t)$ 是什么？}这就是本章的核心任务。
 
-\subsection{状态转移矩阵的性质}
+\subsubsection*{为什么要求解状态方程？}
+
+在\ref{sec:state-space}节中，我们学会了\textbf{建立}状态空间模型；现在我们要学会\textbf{求解}它。求解的目的：
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{时域响应预测}：已知初始状态和输入，计算系统的完整轨迹 $x(t)$
+    \item \textbf{稳定性分析}：观察状态是否随时间收敛到零（或有界）
+    \item \textbf{性能评估}：计算超调量、调节时间等指标
+    \item \textbf{控制器设计验证}：检验设计的控制律是否达到期望效果
+\end{itemize}
+
+\subsubsection*{求解的挑战}
+
+状态方程 $\dot{x} = Ax + Bu$ 看似简单，但实际求解有两大难点：
+
 \begin{enumerate}
-    \item $\Phi(0) = I$
-    \item $\Phi(t_1 + t_2) = \Phi(t_1)\Phi(t_2)$
-    \item $\Phi^{-1}(t) = \Phi(-t)$
-    \item $\frac{d\Phi(t)}{dt} = A\Phi(t) = \Phi(t)A$
+    \item \textbf{矩阵指数 $e^{At}$}：不是简单的标量指数，而是矩阵的无穷级数
+    \item \textbf{时变积分}：输入项 $\int_0^t e^{A(t-\tau)}Bu(\tau)d\tau$ 涉及矩阵和时间的耦合
 \end{enumerate}
 
-\subsection{状态转移矩阵的计算方法}
+好在我们有\textbf{三种强大的方法}来应对这些挑战。
+
+\subsubsection*{本章路线图}
+
 \begin{enumerate}
-    \item 级数展开法：$e^{At} = I + At + \frac{A^2t^2}{2!} + \cdots$
-    \item 拉普拉斯变换法：$e^{At} = \mathcal{L}^{-1}[(sI-A)^{-1}]$
-    \item 对角化方法：当 $A$ 可对角化时
-    \item 约当标准形方法：当 $A$ 不可对角化时
+    \item \textbf{状态转移矩阵}：核心概念 $\Phi(t) = e^{At}$ 及其性质
+    \item \textbf{求解方法对比}：拉普拉斯变换法 vs 矩阵指数法 vs 对角化法
+    \item \textbf{齐次方程求解}：初始状态响应（自由运动）
+    \item \textbf{非齐次方程求解}：完全响应（自由运动+强迫运动）
+    \item \textbf{MATLAB实现}：三种方法的代码实现和效率对比
 \end{enumerate}
 
-\subsection{非齐次状态方程的解}
-非齐次状态方程的完全解：
-\[x(t) = e^{At}x(0) + \int_0^t e^{A(t-\tau)}Bu(\tau)d\tau\]
+\subsection{状态转移矩阵}
+
+\subsubsection*{核心概念}
+
+对于齐次状态方程（无外部输入）：
+\begin{empheq}[box=\fbox]{equation}
+\dot{x} = Ax, \quad x(0) = x_0
+\end{equation}
+
+其解为：
+\begin{empheq}[box=\fbox]{equation}
+x(t) = e^{At}x_0 = \Phi(t)x_0
+\end{equation}
+
+其中 $\Phi(t) = e^{At}$ 称为\textbf{状态转移矩阵}（State Transition Matrix）。
+
+\subsubsection*{物理意义}
+
+状态转移矩阵 $\Phi(t)$ 描述了\textbf{系统从 $t=0$ 时刻的状态如何演化到 $t$ 时刻}。可以理解为：
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=状态转移矩阵的直观理解]
+$\Phi(t)$ 是一个 \textquotedblleft 时间旅行算子 \textquotedblright：
+\begin{itemize}
+    \item 输入：初始状态 $x(0)$（现在）
+    \item 输出：未来状态 $x(t)$（$t$ 秒后）
+    \item 作用：$x(t) = \Phi(t) \cdot x(0)$
+\end{itemize}
+
+例如，$\Phi(2)$ 告诉你：\textquotedblleft 2秒后的状态是初始状态的什么变换\textquotedblright。
+\end{tcolorbox}
+
+\subsubsection*{状态转移矩阵的性质}
+
+$\Phi(t)$ 具有以下重要性质（证明略）：
+
+\begin{enumerate}
+    \item \textbf{初始条件}：$\Phi(0) = I$（零时刻无变化）
+    \item \textbf{半群性质}：$\Phi(t_1 + t_2) = \Phi(t_1)\Phi(t_2)$（时间可叠加）
+    \item \textbf{可逆性}：$\Phi^{-1}(t) = \Phi(-t)$（时间可逆转）
+    \item \textbf{微分性质}：$\frac{d\Phi(t)}{dt} = A\Phi(t) = \Phi(t)A$（满足原方程）
+\end{enumerate}
+
+\subsection{方法1：拉普拉斯变换法}
+
+\subsubsection*{基本思路}
+
+将时域的微分方程转换到复频域（$s$ 域），利用代数方法求解，再反变换回时域。
+
+\subsubsection*{求解步骤}
+
+对 $\dot{x} = Ax$ 两边做拉普拉斯变换：
+\begin{align*}
+sX(s) - x(0) &= AX(s) \\
+(sI - A)X(s) &= x(0) \\
+X(s) &= (sI - A)^{-1}x(0)
+\end{align*}
+
+反变换得时域解：
+\begin{empheq}[box=\fbox]{equation}
+x(t) = \mathcal{L}^{-1}[(sI - A)^{-1}]x(0)
+\end{equation}
+
+因此，状态转移矩阵为：
+\begin{empheq}[box=\fbox]{equation}
+\Phi(t) = e^{At} = \mathcal{L}^{-1}[(sI - A)^{-1}]
+\end{equation}
+
+\subsubsection*{例题1：拉普拉斯法求解2×2系统}
+
+\textbf{问题}：求解系统 $\dot{x} = Ax$，其中
+\[A = \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix}, \quad x(0) = \begin{bmatrix} 1 \\ 0 \end{bmatrix}\]
+
+\textbf{解}：
+
+\textbf{步骤1}：计算 $(sI - A)$
+\[sI - A = \begin{bmatrix} s & -1 \\ 2 & s+3 \end{bmatrix}\]
+
+\textbf{步骤2}：求逆矩阵
+\begin{align*}
+(sI - A)^{-1} &= \frac{1}{\det(sI - A)} \text{adj}(sI - A) \\
+&= \frac{1}{s(s+3) + 2} \begin{bmatrix} s+3 & 1 \\ -2 & s \end{bmatrix} \\
+&= \frac{1}{s^2 + 3s + 2} \begin{bmatrix} s+3 & 1 \\ -2 & s \end{bmatrix} \\
+&= \frac{1}{(s+1)(s+2)} \begin{bmatrix} s+3 & 1 \\ -2 & s \end{bmatrix}
+\end{align*}
+
+\textbf{步骤3}：部分分式展开（以第一行第一列元素为例）
+\[\frac{s+3}{(s+1)(s+2)} = \frac{A}{s+1} + \frac{B}{s+2}\]
+
+求解得 $A = 2$，$B = -1$，因此：
+\[\frac{s+3}{(s+1)(s+2)} = \frac{2}{s+1} - \frac{1}{s+2}\]
+
+对所有元素类似处理后：
+\[(sI - A)^{-1} = \begin{bmatrix} \frac{2}{s+1} - \frac{1}{s+2} & \frac{1}{s+1} - \frac{1}{s+2} \\ \frac{-2}{s+1} + \frac{2}{s+2} & \frac{-1}{s+1} + \frac{2}{s+2} \end{bmatrix}\]
+
+\textbf{步骤4}：反拉普拉斯变换
+\[\Phi(t) = e^{At} = \begin{bmatrix} 2e^{-t} - e^{-2t} & e^{-t} - e^{-2t} \\ -2e^{-t} + 2e^{-2t} & -e^{-t} + 2e^{-2t} \end{bmatrix}\]
+
+\textbf{步骤5}：计算状态响应
+\begin{align*}
+x(t) &= \Phi(t)x(0) = \begin{bmatrix} 2e^{-t} - e^{-2t} & e^{-t} - e^{-2t} \\ -2e^{-t} + 2e^{-2t} & -e^{-t} + 2e^{-2t} \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} \\
+&= \begin{bmatrix} 2e^{-t} - e^{-2t} \\ -2e^{-t} + 2e^{-2t} \end{bmatrix}
+\end{align*}
+
+\subsection{方法2：矩阵指数级数展开法}
+
+\subsubsection*{基本思路}
+
+类比标量指数函数的泰勒展开 $e^{at} = 1 + at + \frac{a^2t^2}{2!} + \cdots$，定义矩阵指数：
+
+\begin{empheq}[box=\fbox]{equation}
+e^{At} = I + At + \frac{A^2t^2}{2!} + \frac{A^3t^3}{3!} + \cdots = \sum_{k=0}^{\infty} \frac{A^k t^k}{k!}
+\end{equation}
+
+\subsubsection*{适用场景}
+
+当 $A$ 的幂次有规律（例如幂零矩阵、$A^n = 0$）时，级数会在有限项截断，计算简便。
+
+\subsubsection*{例题2：幂零矩阵的矩阵指数}
+
+\textbf{问题}：求解 $e^{At}$，其中
+\[A = \begin{bmatrix} 0 & 1 & 0 \\ 0 & 0 & 1 \\ 0 & 0 & 0 \end{bmatrix}\]
+
+\textbf{解}：
+
+\textbf{步骤1}：计算 $A$ 的幂次
+\[A^2 = \begin{bmatrix} 0 & 0 & 1 \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix}, \quad A^3 = 0\]
+
+\textbf{步骤2}：级数截断
+由于 $A^3 = 0$，级数只有前三项：
+\begin{align*}
+e^{At} &= I + At + \frac{A^2t^2}{2!} \\
+&= \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} + \begin{bmatrix} 0 & t & 0 \\ 0 & 0 & t \\ 0 & 0 & 0 \end{bmatrix} + \begin{bmatrix} 0 & 0 & \frac{t^2}{2} \\ 0 & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix} \\
+&= \begin{bmatrix} 1 & t & \frac{t^2}{2} \\ 0 & 1 & t \\ 0 & 0 & 1 \end{bmatrix}
+\end{align*}
+
+\textbf{物理意义}：这是一个三重积分器系统（如位置、速度、加速度），状态转移矩阵恰好对应运动学方程！
+
+\subsection{方法3：对角化法（最常用）}
+
+\subsubsection*{基本思路}
+
+利用\ref{sec:linear-transformation}节的线性变换，将 $A$ 对角化为 $\Lambda = P^{-1}AP$，则：
+
+\begin{empheq}[box=\fbox]{equation}
+e^{At} = P e^{\Lambda t} P^{-1}
+\end{equation}
+
+其中对角矩阵的指数非常简单：
+\[e^{\Lambda t} = \begin{bmatrix} e^{\lambda_1 t} & 0 & \cdots & 0 \\ 0 & e^{\lambda_2 t} & \cdots & 0 \\ \vdots & \vdots & \ddots & \vdots \\ 0 & 0 & \cdots & e^{\lambda_n t} \end{bmatrix}\]
+
+\subsubsection*{例题3：对角化法求解（延续例题1）}
+
+\textbf{问题}：用对角化法重新求解例题1的 $e^{At}$。
+
+\textbf{解}：
+
+\textbf{步骤1}：对角化（参考\ref{sec:linear-transformation}节例题1）
+\[A = \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} = P\Lambda P^{-1}\]
+
+其中：
+\[P = \begin{bmatrix} 1 & 1 \\ -1 & -2 \end{bmatrix}, \quad \Lambda = \begin{bmatrix} -1 & 0 \\ 0 & -2 \end{bmatrix}, \quad P^{-1} = \begin{bmatrix} 2 & 1 \\ -1 & -1 \end{bmatrix}\]
+
+\textbf{步骤2}：计算对角矩阵的指数
+\[e^{\Lambda t} = \begin{bmatrix} e^{-t} & 0 \\ 0 & e^{-2t} \end{bmatrix}\]
+
+\textbf{步骤3}：合成状态转移矩阵
+\begin{align*}
+e^{At} &= P e^{\Lambda t} P^{-1} \\
+&= \begin{bmatrix} 1 & 1 \\ -1 & -2 \end{bmatrix} \begin{bmatrix} e^{-t} & 0 \\ 0 & e^{-2t} \end{bmatrix} \begin{bmatrix} 2 & 1 \\ -1 & -1 \end{bmatrix} \\
+&= \begin{bmatrix} e^{-t} & e^{-2t} \\ -e^{-t} & -2e^{-2t} \end{bmatrix} \begin{bmatrix} 2 & 1 \\ -1 & -1 \end{bmatrix} \\
+&= \begin{bmatrix} 2e^{-t} - e^{-2t} & e^{-t} - e^{-2t} \\ -2e^{-t} + 2e^{-2t} & -e^{-t} + 2e^{-2t} \end{bmatrix}
+\end{align*}
+
+\textbf{验证}：与例题1拉普拉斯法的结果完全一致！✓
+
+\subsection{非齐次状态方程的完全解}
+
+对于完整的状态方程（含输入）：
+\begin{empheq}[box=\fbox]{equation}
+\dot{x} = Ax + Bu, \quad x(0) = x_0
+\end{equation}
+
+其\textbf{完全解}由两部分组成：
+
+\begin{empheq}[box=\fbox]{equation}
+x(t) = \underbrace{e^{At}x_0}_{\text{自由响应}} + \underbrace{\int_0^t e^{A(t-\tau)}Bu(\tau)d\tau}_{\text{强迫响应}}
+\end{equation}
+
+\subsubsection*{物理解释}
+
+\begin{itemize}
+    \item \textbf{自由响应}（零输入响应）：系统在无外部输入时，仅由初始状态引起的运动
+    \item \textbf{强迫响应}（零状态响应）：系统在零初始状态下，由外部输入 $u(t)$ 驱动的运动
+\end{itemize}
+
+\subsubsection*{例题4：单位阶跃输入的完全响应}
+
+\textbf{问题}：对于系统 $A = \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix}$，$B = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$，$x(0) = \begin{bmatrix} 0 \\ 0 \end{bmatrix}$，输入 $u(t) = 1$（单位阶跃），求 $x(t)$。
+
+\textbf{解}：
+
+由于 $x(0) = 0$，只需计算强迫响应：
+\begin{align*}
+x(t) &= \int_0^t e^{A(t-\tau)}B \cdot 1 \, d\tau \\
+&= \int_0^t \begin{bmatrix} 2e^{-(t-\tau)} - e^{-2(t-\tau)} & e^{-(t-\tau)} - e^{-2(t-\tau)} \\ -2e^{-(t-\tau)} + 2e^{-2(t-\tau)} & -e^{-(t-\tau)} + 2e^{-2(t-\tau)} \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} d\tau
+\end{align*}
+
+积分后（过程略）：
+\[x(t) = \begin{bmatrix} \frac{1}{2} - 2e^{-t} + \frac{3}{2}e^{-2t} \\ -1 + 2e^{-t} - e^{-2t} \end{bmatrix}\]
+
+稳态值：$x(\infty) = \begin{bmatrix} 1/2 \\ -1 \end{bmatrix}$
+
+\subsection{三种方法的对比}
+
+\begin{table}[h]
+\centering
+\caption{状态转移矩阵计算方法对比}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\rowcolor{gray!20}
+\textbf{方法} & \textbf{适用条件} & \textbf{计算复杂度} & \textbf{优缺点} \\
+\hline
+拉普拉斯变换法 & 通用 & 中等（需要部分分式） & 系统化，适合手算 \\
+\hline
+级数展开法 & $A$ 幂零或低阶 & 低（有限项） & 简单但适用范围窄 \\
+\hline
+对角化法 & $A$ 可对角化 & 低（利用特征值） & \textbf{最常用}，效率高 \\
+\hline
+约当标准型法 & $A$ 不可对角化 & 高（需求广义特征向量） & 处理重特征值 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{MATLAB实现}
+
+\begin{lstlisting}[style=Matlab-editor, caption=状态转移矩阵的三种计算方法]
+% 定义系统矩阵
+A = [0 1; -2 -3];
+B = [0; 1];
+x0 = [1; 0];
+t = 0:0.01:5;  % 时间向量
+
+% 方法1：MATLAB内置函数 expm（最精确）
+Phi_expm = @(t) expm(A*t);
+x_expm = zeros(2, length(t));
+for i = 1:length(t)
+    x_expm(:,i) = Phi_expm(t(i)) * x0;
+end
+
+% 方法2：对角化法（手动实现）
+[P, Lambda] = eig(A);
+Phi_diag = @(t) P * diag(exp(diag(Lambda)*t)) * inv(P);
+x_diag = zeros(2, length(t));
+for i = 1:length(t)
+    x_diag(:,i) = Phi_diag(t(i)) * x0;
+end
+
+% 方法3：使用initial函数（最方便）
+sys = ss(A, B, eye(2), zeros(2,1));
+[y_initial, t_initial, x_initial] = initial(sys, x0, t);
+
+% 绘图对比
+figure;
+subplot(2,1,1);
+plot(t, x_expm(1,:), 'r-', t, x_diag(1,:), 'b--', t_initial, x_initial(:,1), 'go');
+legend('expm法', '对角化法', 'initial函数');
+ylabel('x_1(t)');
+title('状态响应对比');
+
+subplot(2,1,2);
+plot(t, x_expm(2,:), 'r-', t, x_diag(2,:), 'b--', t_initial, x_initial(:,2), 'go');
+legend('expm法', '对角化法', 'initial函数');
+ylabel('x_2(t)');
+xlabel('时间 (s)');
+
+% 验证状态转移矩阵在t=1时刻
+fprintf('t=1时的状态转移矩阵:\n');
+Phi_1 = expm(A*1)
+\end{lstlisting}
+
+\begin{lstlisting}[style=Matlab-editor, caption=非齐次方程求解（阶跃输入）]
+% 阶跃响应（零初始状态）
+sys = ss(A, B, [1 0], 0);  % 观测x1
+[y_step, t_step, x_step] = step(sys, t);
+
+% 绘制阶跃响应
+figure;
+subplot(2,1,1);
+plot(t_step, x_step(:,1), 'b-', 'LineWidth', 1.5);
+ylabel('x_1(t)');
+title('单位阶跃响应（零初始状态）');
+grid on;
+
+subplot(2,1,2);
+plot(t_step, x_step(:,2), 'r-', 'LineWidth', 1.5);
+ylabel('x_2(t)');
+xlabel('时间 (s)');
+grid on;
+
+% 输出稳态值
+fprintf('稳态值: x1_ss = %.4f, x2_ss = %.4f\n', x_step(end,1), x_step(end,2));
+\end{lstlisting}
+
+\subsection*{本章小结}
+
+\subsubsection*{核心公式}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=状态方程求解的核心公式]
+\textbf{状态转移矩阵}：$\Phi(t) = e^{At}$
+
+\textbf{计算方法}：
+\begin{itemize}
+    \item 拉普拉斯法：$e^{At} = \mathcal{L}^{-1}[(sI-A)^{-1}]$
+    \item 级数法：$e^{At} = I + At + \frac{A^2t^2}{2!} + \cdots$
+    \item 对角化法：$e^{At} = P e^{\Lambda t} P^{-1}$（\textbf{最常用}）
+\end{itemize}
+
+\textbf{完全解}：
+\[x(t) = e^{At}x_0 + \int_0^t e^{A(t-\tau)}Bu(\tau)d\tau\]
+\end{tcolorbox}
+
+\subsubsection*{方法选择指南}
+
+\begin{itemize}
+    \item \textbf{手算简单系统}：拉普拉斯变换法（系统化，步骤清晰）
+    \item \textbf{特殊结构矩阵}：级数展开法（如幂零矩阵、上三角矩阵）
+    \item \textbf{一般系统}：对角化法（效率高，适合编程）
+    \item \textbf{重特征值}：约当标准型法（参考\ref{sec:jordan-form}节）
+    \item \textbf{MATLAB仿真}：直接使用 \texttt{expm()}、\texttt{initial()}、\texttt{step()} 函数
+\end{itemize}
+
+\subsubsection*{常见误区}
+
+\begin{itemize}
+    \item ❌ \textbf{误区1}：$e^{At} \neq \begin{bmatrix} e^{a_{11}t} & e^{a_{12}t} \\ e^{a_{21}t} & e^{a_{22}t} \end{bmatrix}$（矩阵指数不是元素指数）
+    \item ❌ \textbf{误区2}：忘记对角化的前提条件（$A$ 必须有 $n$ 个线性无关的特征向量）
+    \item ❌ \textbf{误区3}：积分上下限错误（强迫响应从0到$t$积分，不是从$-\infty$）
+\end{itemize}
+
+\subsubsection*{与其他章节的联系}
+
+\begin{itemize}
+    \item \textbf{向后链接}：
+    \begin{itemize}
+        \item \ref{sec:state-space}节：状态空间表达式的建立
+        \item \ref{sec:linear-transformation}节：对角化法的理论基础
+        \item \ref{sec:transfer-function}节：$(sI-A)^{-1}$ 的应用
+    \end{itemize}
+    \item \textbf{向前链接}：
+    \begin{itemize}
+        \item \ref{sec:lyapunov-stability}节：$e^{At} \to 0$ 判定稳定性
+        \item \ref{sec:pole-placement}节：通过 $x(t)$ 验证极点配置效果
+        \item \ref{sec:jordan-form}节：不可对角化时的求解方法
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{学习检查清单}
+
+\begin{itemize}
+    \item[$\square$] 理解状态转移矩阵的物理意义（时间演化算子）
+    \item[$\square$] 掌握拉普拉斯变换法的完整步骤（$(sI-A)^{-1}$、部分分式、反变换）
+    \item[$\square$] 会用对角化法快速计算 $e^{At}$（特征值、特征向量、$Pe^{\Lambda t}P^{-1}$）
+    \item[$\square$] 理解完全解的两部分（自由响应+强迫响应）
+    \item[$\square$] 能够使用MATLAB的 \texttt{expm()}、\texttt{initial()}、\texttt{step()} 函数
+    \item[$\square$] 知道三种方法的适用场景和计算复杂度对比
+\end{itemize}

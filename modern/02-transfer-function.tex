@@ -1,12 +1,288 @@
 \section{状态空间表达式求传递函数}
 \label{sec:transfer-function}
 
-\subsection{传递函数矩阵}
-从状态空间表达式求传递函数矩阵：
-\[G(s) = C(sI - A)^{-1}B + D\]
+\subsection*{引言：搭建经典与现代的桥梁}
 
-\subsection{单输入单输出系统}
-对于单输入单输出系统：
-\[G(s) = C(sI - A)^{-1}B + D\]
+你已经掌握了两种系统描述方法：
+\begin{itemize}
+    \item \textbf{经典方法}：传递函数 $G(s)$（输入输出关系，代数）
+    \item \textbf{现代方法}：状态空间 $(A, B, C, D)$（内部状态演化，微分方程组）
+\end{itemize}
 
-其中 $(sI - A)^{-1}$ 称为系统的解析矩阵。
+\textbf{现实问题：}
+\begin{itemize}
+    \item 已有大量基于传递函数的经典设计工具（根轨迹、频域分析）
+    \item 用状态空间建模后，如何利用这些工具？
+    \item 两种描述能否互相转换？
+\end{itemize}
+
+\textbf{本章核心：}从状态空间 $(A, B, C, D)$ 推导传递函数 $G(s)$。
+
+\textbf{为什么重要？}
+\begin{enumerate}
+    \item \textbf{工具互通}：用状态空间建模，用传递函数分析
+    \item \textbf{验证模型}：两种方法得到的极点、零点应一致
+    \item \textbf{降维理解}：状态空间是 $n$ 维内部结构，传递函数是外部输入输出特性
+\end{enumerate}
+
+\textbf{本章路线：}
+\begin{itemize}
+    \item 单输入单输出（SISO）系统的转换公式
+    \item 多输入多输出（MIMO）系统的传递函数矩阵
+    \item 计算方法与实例
+    \item MATLAB实现
+\end{itemize}
+
+\subsection{从状态空间到传递函数}
+
+\subsubsection{基本推导}
+
+考虑线性时不变系统：
+\begin{align*}
+\dot{x} &= Ax + Bu \\
+y &= Cx + Du
+\end{align*}
+
+\textbf{目标：}求 $G(s) = \frac{Y(s)}{U(s)}$（零初始条件）
+
+\textbf{推导步骤：}
+
+对状态方程取拉普拉斯变换（$x(0) = 0$）：
+\[sX(s) = AX(s) + BU(s)\]
+
+解出 $X(s)$：
+\begin{align*}
+(sI - A)X(s) &= BU(s) \\
+X(s) &= (sI - A)^{-1}BU(s)
+\end{align*}
+
+代入输出方程：
+\begin{align*}
+Y(s) &= CX(s) + DU(s) \\
+&= C(sI - A)^{-1}BU(s) + DU(s) \\
+&= [C(sI - A)^{-1}B + D]U(s)
+\end{align*}
+
+\textbf{传递函数公式：}
+\[\boxed{G(s) = C(sI - A)^{-1}B + D}\]
+
+\subsubsection{公式解读}
+
+\begin{itemize}
+    \item $(sI - A)^{-1}$：称为\textbf{解析矩阵}或\textbf{状态转移矩阵}（频域）
+    \item $C(sI - A)^{-1}B$：状态空间部分的贡献
+    \item $D$：直接传输项（输入到输出的直接通路）
+    \item 通常 $D = 0$（物理系统很少有瞬时响应）
+\end{itemize}
+
+\subsubsection{计算方法}
+
+\textbf{关键步骤：}计算 $(sI - A)^{-1}$
+
+利用矩阵求逆公式：
+\[(sI - A)^{-1} = \frac{\text{adj}(sI - A)}{\det(sI - A)}\]
+
+其中：
+\begin{itemize}
+    \item $\det(sI - A)$：系统的\textbf{特征多项式}（传递函数的分母）
+    \item $\text{adj}(sI - A)$：$(sI - A)$ 的伴随矩阵
+\end{itemize}
+
+\subsection{单输入单输出（SISO）系统}
+
+\subsubsection{标准形式}
+
+对于 SISO 系统（$u, y$ 均为标量）：
+\[G(s) = C(sI - A)^{-1}B + D = \frac{b_m s^m + \cdots + b_1 s + b_0}{s^n + a_{n-1}s^{n-1} + \cdots + a_1 s + a_0}\]
+
+\textbf{关键性质：}
+\begin{itemize}
+    \item \textbf{分母}：$\det(sI - A)$，由 $A$ 矩阵决定（系统极点）
+    \item \textbf{分子}：$C \cdot \text{adj}(sI - A) \cdot B$，由 $A, B, C$ 共同决定（系统零点）
+    \item \textbf{阶数}：分母阶数 = 状态维数 $n$；分子阶数 $\leq n-1$（真分式）
+\end{itemize}
+
+\subsubsection{范例1：二阶系统}
+
+\textbf{题目：}求传递函数
+
+给定系统：
+\begin{align*}
+\dot{x} &= \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} x + \begin{bmatrix} 0 \\ 1 \end{bmatrix} u \\
+y &= \begin{bmatrix} 1 & 0 \end{bmatrix} x
+\end{align*}
+
+\textbf{解答：}
+
+\textbf{步骤1：}构造 $sI - A$
+\[sI - A = \begin{bmatrix} s & -1 \\ 2 & s+3 \end{bmatrix}\]
+
+\textbf{步骤2：}计算 $\det(sI - A)$
+\[\det(sI - A) = s(s+3) - (-1)(2) = s^2 + 3s + 2\]
+
+\textbf{步骤3：}计算 $(sI - A)^{-1}$
+\[(sI - A)^{-1} = \frac{1}{s^2+3s+2}\begin{bmatrix} s+3 & 1 \\ -2 & s \end{bmatrix}\]
+
+\textbf{步骤4：}计算 $G(s)$
+\begin{align*}
+G(s) &= C(sI - A)^{-1}B \\
+&= \begin{bmatrix} 1 & 0 \end{bmatrix} \cdot \frac{1}{s^2+3s+2}\begin{bmatrix} s+3 & 1 \\ -2 & s \end{bmatrix} \cdot \begin{bmatrix} 0 \\ 1 \end{bmatrix} \\
+&= \frac{1}{s^2+3s+2}\begin{bmatrix} 1 & 0 \end{bmatrix}\begin{bmatrix} 1 \\ s \end{bmatrix} \\
+&= \boxed{\frac{1}{s^2+3s+2}}
+\end{align*}
+
+\textbf{验证：}极点为 $s = -1, -2$（特征值），无零点。
+
+\subsection{多输入多输出（MIMO）系统}
+
+\subsubsection{传递函数矩阵}
+
+对于 $p$ 输出、$m$ 输入系统：
+\[G(s) = C(sI - A)^{-1}B + D \in \mathbb{R}^{p \times m}(s)\]
+
+\textbf{矩阵元素：}
+\[G_{ij}(s) = \frac{Y_i(s)}{U_j(s)}\Big|_{\text{其他输入为0}}\]
+
+表示第 $j$ 个输入到第 $i$ 个输出的传递函数。
+
+\subsubsection{范例2：MIMO系统}
+
+\textbf{题目：}双输入双输出系统
+
+\begin{align*}
+A = \begin{bmatrix} -1 & 0 \\ 0 & -2 \end{bmatrix}, \quad
+B = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}, \quad
+C = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix}, \quad
+D = 0
+\end{align*}
+
+\textbf{解答：}
+
+\textbf{步骤1：}$(sI - A)^{-1}$ 对角矩阵
+\[(sI - A)^{-1} = \begin{bmatrix} \frac{1}{s+1} & 0 \\ 0 & \frac{1}{s+2} \end{bmatrix}\]
+
+\textbf{步骤2：}计算 $G(s)$
+\begin{align*}
+G(s) &= C(sI - A)^{-1}B \\
+&= \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} \frac{1}{s+1} & 0 \\ 0 & \frac{1}{s+2} \end{bmatrix} \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \\
+&= \boxed{\begin{bmatrix} \frac{1}{s+1} & \frac{1}{s+2} \\ 0 & \frac{1}{s+2} \end{bmatrix}}
+\end{align*}
+
+\textbf{解释：}
+\begin{itemize}
+    \item $G_{11}(s) = \frac{1}{s+1}$：输入1 → 输出1
+    \item $G_{12}(s) = \frac{1}{s+2}$：输入2 → 输出1
+    \item $G_{21}(s) = 0$：输入1对输出2无影响
+    \item $G_{22}(s) = \frac{1}{s+2}$：输入2 → 输出2
+\end{itemize}
+
+\subsection{MATLAB实现}
+
+\textbf{方法1：直接使用 \texttt{ss2tf}}
+
+\begin{lstlisting}[style=Matlab-editor]
+% 定义状态空间模型
+A = [0 1; -2 -3];
+B = [0; 1];
+C = [1 0];
+D = 0;
+
+% 转换为传递函数
+[num, den] = ss2tf(A, B, C, D);
+
+% 显示结果
+G = tf(num, den)
+\end{lstlisting}
+
+\textbf{方法2：使用系统对象}
+
+\begin{lstlisting}[style=Matlab-editor]
+% 创建状态空间对象
+sys_ss = ss(A, B, C, D);
+
+% 转换为传递函数对象
+sys_tf = tf(sys_ss);
+
+% 查看传递函数
+zpk(sys_tf)  % 零极点增益形式
+\end{lstlisting}
+
+\textbf{方法3：MIMO系统}
+
+\begin{lstlisting}[style=Matlab-editor]
+% MIMO系统
+A = [-1 0; 0 -2];
+B = [1 0; 0 1];
+C = [1 1; 0 1];
+D = zeros(2,2);
+
+sys_ss = ss(A, B, C, D);
+sys_tf = tf(sys_ss);
+
+% 查看传递函数矩阵
+sys_tf
+\end{lstlisting}
+
+\subsection*{本章小结}
+
+\subsubsection*{核心公式}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=状态空间到传递函数]
+\[\boxed{G(s) = C(sI - A)^{-1}B + D}\]
+
+\textbf{关键步骤：}
+\begin{enumerate}
+    \item 构造 $sI - A$
+    \item 计算 $\det(sI - A)$（特征多项式）
+    \item 求 $(sI - A)^{-1}$（伴随矩阵法或直接求逆）
+    \item 矩阵相乘 $C \cdot (sI-A)^{-1} \cdot B + D$
+\end{enumerate}
+\end{tcolorbox}
+
+\subsubsection*{两种描述对比}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|p{5cm}|p{5cm}|}
+\hline
+\rowcolor[gray]{0.9}
+\textbf{特性} & \textbf{状态空间} & \textbf{传递函数} \\
+\hline
+描述对象 & 内部状态演化 & 输入输出关系 \\
+\hline
+维度 & $n$ 维向量微分方程 & 标量代数方程 \\
+\hline
+适用性 & MIMO、时变、非线性 & SISO、线性时不变 \\
+\hline
+信息量 & 完整（状态+输入输出） & 部分（仅输入输出） \\
+\hline
+设计方法 & 极点配置、观测器 & 根轨迹、频域 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection*{实际应用}
+
+\textbf{何时需要转换？}
+\begin{itemize}
+    \item 用状态空间建模后，想用根轨迹/伯德图分析
+    \item 验证模型：两种方法的极点应一致
+    \item 简化理解：传递函数更直观显示输入输出关系
+\end{itemize}
+
+\textbf{注意事项：}
+\begin{itemize}
+    \item 状态空间非唯一，但传递函数唯一
+    \item 不可控/不可观部分的极点会被约掉（极零对消）
+    \item MIMO系统：传递函数矩阵有 $p \times m$ 个元素
+\end{itemize}
+
+\subsubsection*{与后续章节的联系}
+
+\begin{itemize}
+    \item \textbf{第\ref{sec:linear-transformation}章}：线性变换改变状态空间表示，但传递函数不变（不变性）
+    \item \textbf{第\ref{sec:controllability-observability}章}：能控能观性与传递函数的极零点关系
+    \item \textbf{反向转换}：传递函数 → 状态空间（能控/能观标准型）将在第\ref{sec:standard-forms}章讨论
+\end{itemize}
+
+\textbf{关键启示：}传递函数是状态空间的\textbf{外部视图}，丢失了内部结构信息，但更简洁便于分析。两种描述相辅相成，需要灵活运用。

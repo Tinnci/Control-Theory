@@ -1,22 +1,672 @@
 \section{极点配置——状态反馈}
 
+\subsection*{引言：为什么我们需要极点配置？}
+
+想象你正在驾驶一辆汽车。如果车辆的动力学特性很差——转向反应迟钝、加速太慢、或者容易失控，你会怎么办？理想情况下，你希望\textbf{改造}这辆车，让它响应更快、更稳定、更好操控。
+
+在控制系统中，我们面临同样的问题：
+\begin{itemize}
+    \item 原始系统可能\textbf{不稳定}（极点在右半平面）
+    \item 即使稳定，响应可能\textbf{太慢}（极点太靠近虚轴）
+    \item 或者\textbf{振荡太大}（极点的阻尼比太小）
+\end{itemize}
+
+我们能改变系统的动态特性吗？答案是：\textbf{能！}通过\textbf{状态反馈}，我们可以\textbf{任意配置闭环系统的极点}（前提是系统能控）。
+
+\textbf{极点配置的核心思想：}
+\begin{quote}
+通过反馈控制，将不满意的开环极点\textit{搬到}我们期望的位置，从而获得理想的动态性能。
+\end{quote}
+
+\textbf{这有多强大？}
+\begin{itemize}
+    \item 不稳定系统 $\to$ 可以变成稳定的
+    \item 慢系统 $\to$ 可以变得快速响应
+    \item 振荡系统 $\to$ 可以变得平稳
+    \item 你可以\textbf{精确指定}系统的超调量、调节时间等性能指标
+\end{itemize}
+
+\textbf{但有一个重要前提：}系统必须\textbf{完全能控}！这就是为什么我们在上一章花大量篇幅讨论能控性——它是极点配置的\textbf{充要条件}。
+
+\textbf{实际应用场景：}
+\begin{itemize}
+    \item \textbf{航天器姿态控制}：配置极点以获得快速无超调的姿态调整
+    \item \textbf{机器人关节控制}：通过极点配置实现精确的轨迹跟踪
+    \item \textbf{电力系统稳定器}：将不稳定的电力系统稳定化
+    \item \textbf{汽车主动悬架}：改善舒适性和操控性
+\end{itemize}
+
+本章将介绍：
+\begin{itemize}
+    \item 状态反馈的基本原理
+    \item 极点配置定理（为什么能控性是关键）
+    \item 三种极点配置方法（直接法、变换法、阿克曼公式）
+    \item 实际设计范例
+    \item 极点选择的实用准则
+\end{itemize}
+
 \subsection{状态反馈}
-状态反馈控制律：
+
+\subsubsection*{本节目的}
+在讨论如何配置极点之前，我们需要理解\textbf{状态反馈}的概念——这是极点配置的基本工具。
+
+\subsubsection{状态反馈的基本思想}
+
+\textbf{经典反馈 vs 状态反馈：}
+
+\begin{itemize}
+    \item \textbf{经典输出反馈}：$u = -K_p y$（只反馈输出，如PID控制器）
+    \item \textbf{状态反馈}：$u = -Kx$（反馈所有状态变量）
+\end{itemize}
+
+\textbf{为什么需要状态反馈？}
+\begin{itemize}
+    \item 输出反馈只利用了部分信息（$y = Cx$，可能只是状态的一部分）
+    \item 状态反馈利用了\textbf{完整的系统信息}
+    \item 只有状态反馈才能\textbf{任意配置极点}
+\end{itemize}
+
+\subsubsection{状态反馈控制律}
+
+\textbf{基本形式：}
 \[u = -Kx + v\]
 
-其中 $K$ 为反馈增益矩阵，$v$ 为参考输入。
+其中：
+\begin{itemize}
+    \item $x \in \mathbb{R}^n$：状态向量（需要全部可测或通过观测器估计）
+    \item $K \in \mathbb{R}^{p \times n}$：\textbf{反馈增益矩阵}（待设计的参数）
+    \item $v \in \mathbb{R}^p$：\textbf{参考输入}（期望的目标值）
+    \item 负号表示\textbf{负反馈}（稳定控制的标准配置）
+\end{itemize}
 
-闭环系统：
-\[\dot{x} = (A - BK)x + Bv\]
+\textbf{直观理解：}
+\begin{itemize}
+    \item $-Kx$ 是\textbf{校正项}：根据当前状态偏差进行调整
+    \item $v$ 是\textbf{目标项}：驱动系统到期望状态
+    \item $K$ 的每个元素决定了对应状态变量的\textit{权重}
+\end{itemize}
+
+\subsubsection{闭环系统}
+
+将 $u = -Kx + v$ 代入开环系统 $\dot{x} = Ax + Bu$：
+\begin{align*}
+\dot{x} &= Ax + B(-Kx + v) \\
+&= Ax - BKx + Bv \\
+&= (A - BK)x + Bv
+\end{align*}
+
+\textbf{闭环系统：}
+\[\boxed{\dot{x} = (A - BK)x + Bv}\]
+
+\textbf{关键观察：}
+\begin{itemize}
+    \item 开环系统矩阵：$A$
+    \item 闭环系统矩阵：$A_{\text{cl}} = A - BK$
+    \item 通过选择 $K$，我们改变了系统矩阵，从而改变了极点！
+\end{itemize}
+
+\textbf{极点的变化：}
+\begin{itemize}
+    \item 开环极点：$\det(\lambda I - A) = 0$ 的根
+    \item 闭环极点：$\det(\lambda I - A + BK) = 0$ 的根
+    \item $K$ 是我们的\textit{旋钮}，可以调节极点位置
+\end{itemize}
+
+\textbf{重要提醒：}
+\begin{itemize}
+    \item 状态反馈\textbf{不改变系统的能控性和能观测性}
+    \item 状态反馈\textbf{不改变系统的零点}（只改变极点）
+    \item 状态反馈要求状态\textbf{可测}或\textbf{可估计}（这就是为什么需要观测器）
+\end{itemize}
 
 \subsection{极点配置定理}
-对于单输入系统，若 $(A, B)$ 完全能控，则对于任意给定的 $n$ 个复数 $\lambda_1, \lambda_2, \ldots, \lambda_n$（复数成对共轭出现），存在反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值恰好为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
 
-\subsection{极点配置的方法}
+\subsubsection*{本节目的}
+这是本章的\textbf{核心定理}，它回答了一个关键问题：我们能把极点配置到任意位置吗？答案是：\textbf{能控就能配！}
+
+\subsubsection{定理陈述}
+
+\textbf{极点配置定理（Pole Placement Theorem）：}
+
+对于单输入系统 $(A, B)$，若系统\textbf{完全能控}，则对于任意给定的 $n$ 个复数 $\lambda_1, \lambda_2, \ldots, \lambda_n$（复数必须成对共轭出现），\textbf{存在}反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值恰好为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
+
+\textbf{定理的含义：}
+\begin{itemize}
+    \item \textbf{充要条件}：完全能控 $\Leftrightarrow$ 可任意配置极点
+    \item \textbf{任意性}：极点位置完全由你决定（只要满足共轭对要求）
+    \item \textbf{构造性}：不仅说存在，还有具体的计算方法
+\end{itemize}
+
+\subsubsection{定理的深刻意义}
+
+\textbf{1. 能控性是充要条件}
+
+\begin{itemize}
+    \item \textbf{充分性}：能控 $\Rightarrow$ 可任意配置极点（定理保证）
+    \item \textbf{必要性}：可任意配置极点 $\Rightarrow$ 能控（反证法：不能控意味着某些模态不受控制影响，无法移动）
+\end{itemize}
+
+\textbf{为什么能控性如此关键？}
+\begin{itemize}
+    \item 能控性保证 $B, AB, \ldots, A^{n-1}B$ 张成整个状态空间
+    \item 这意味着通过 $BK$ 可以在所有方向上施加影响
+    \item 从而可以将 $A$ 的特征值\textit{推到}任意位置
+\end{itemize}
+
+\textbf{2. 复数共轭对要求}
+
+由于系统矩阵 $A, B, K$ 都是\textbf{实矩阵}，闭环矩阵 $A - BK$ 的特征多项式的系数也是实数。因此：
+\begin{itemize}
+    \item 实数极点：可以单独指定
+    \item 复数极点：必须成对共轭出现（如 $-2 \pm 3j$）
+\end{itemize}
+
+\textbf{物理意义：}实系统不能产生单个复数极点，这会导致非物理的复数状态轨迹。
+
+\textbf{3. 多输入系统的推广}
+
+定理对多输入系统（$p > 1$）也成立，但：
+\begin{itemize}
+    \item $K$ 不是唯一的（有更多自由度）
+    \item 可以利用额外自由度优化其他性能指标（如鲁棒性、输入能量）
+    \item 这是\textbf{最优控制}理论的起点
+\end{itemize}
+
+\subsubsection{设计步骤概览}
+
+使用极点配置定理设计控制器的典型流程：
+
 \begin{enumerate}
-    \item \textbf{直接方法}：解特征方程 $\det(sI - A + BK) = 0$
-    \item \textbf{变换方法}：将系统化为能控标准型后配置极点
-    \item \textbf{阿克曼公式}：$K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)$
+    \item \textbf{验证能控性}：计算 $\text{rank}(W_c)$，确保 $= n$
+    \item \textbf{选择期望极点}：根据性能要求确定 $\lambda_1, \ldots, \lambda_n$
+    \item \textbf{计算反馈增益}：使用直接法、变换法或阿克曼公式求 $K$
+    \item \textbf{验证设计}：检查闭环极点是否正确，分析性能
 \end{enumerate}
 
-其中 $\alpha_c(s)$ 为期望的特征多项式，$W_c$ 为能控性矩阵。
+\textbf{定理的局限性：}
+\begin{itemize}
+    \item 只适用于\textbf{能控}系统（这是硬性要求）
+    \item 没有告诉你\textbf{如何选择}期望极点（需要经验和性能分析）
+    \item 假设状态\textbf{完全可测}（实际中可能需要观测器）
+    \item 可能导致很大的控制输入（\textbf{饱和问题}）
+\end{itemize}
+
+\subsection{极点配置的方法}
+
+\subsubsection*{本节目的}
+定理告诉我们极点\textbf{可以}任意配置，但\textbf{怎么}计算反馈增益矩阵 $K$ 呢？本节介绍三种实用方法。
+
+\subsubsection{方法概览}
+
+\begin{enumerate}
+    \item \textbf{直接方法}：解特征方程 $\det(sI - A + BK) = 0$
+    \begin{itemize}
+        \item 适用于低阶系统（$n \leq 3$）
+        \item 直观但计算繁琐
+    \end{itemize}
+    
+    \item \textbf{变换方法}：将系统化为能控标准型后配置极点
+    \begin{itemize}
+        \item 适用于任意阶次
+        \item 需要坐标变换
+    \end{itemize}
+    
+    \item \textbf{阿克曼公式}：$K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)$
+    \begin{itemize}
+        \item 单输入系统的显式公式
+        \item 最简洁，适合程序实现
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{方法1：直接方法}
+
+\textbf{基本思路：}直接让闭环特征多项式等于期望特征多项式。
+
+\textbf{步骤：}
+\begin{enumerate}
+    \item 写出期望特征多项式：
+    \[\alpha_d(s) = (s - \lambda_1)(s - \lambda_2) \cdots (s - \lambda_n) = s^n + a_1 s^{n-1} + \cdots + a_n\]
+    
+    \item 计算闭环特征多项式：
+    \[\det(sI - A + BK) = s^n + b_1(K) s^{n-1} + \cdots + b_n(K)\]
+    
+    \item 令两者相等：
+    \[b_i(K) = a_i, \quad i = 1, 2, \ldots, n\]
+    
+    \item 解方程组得到 $K$
+\end{enumerate}
+
+\textbf{优点：}
+\begin{itemize}
+    \item 概念直接，容易理解
+    \item 适合手算低阶系统
+\end{itemize}
+
+\textbf{缺点：}
+\begin{itemize}
+    \item 高阶系统计算量大
+    \item 展开 $\det(sI - A + BK)$ 很繁琐
+\end{itemize}
+
+\subsubsection{方法2：变换方法}
+
+\textbf{核心思想：}在能控标准型下，极点配置变得非常简单。
+
+\textbf{能控标准型的特殊性质：}
+
+对于能控标准型系统：
+\[\bar{A} = \begin{bmatrix}
+0 & 1 & 0 & \cdots & 0 \\
+0 & 0 & 1 & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & 1 \\
+-a_0 & -a_1 & -a_2 & \cdots & -a_{n-1}
+\end{bmatrix}, \quad \bar{B} = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}\]
+
+特征多项式直接从最后一行读出：
+\[\det(sI - \bar{A}) = s^n + a_{n-1}s^{n-1} + \cdots + a_1s + a_0\]
+
+\textbf{设计步骤：}
+\begin{enumerate}
+    \item 找到变换矩阵 $T$，使原系统变为能控标准型
+    \[\bar{A} = TAT^{-1}, \quad \bar{B} = TB\]
+    
+    \item 在标准型下设计反馈增益 $\bar{K}$（非常简单！）：
+    \[\bar{K} = [\alpha_0 - a_0 \quad \alpha_1 - a_1 \quad \cdots \quad \alpha_{n-1} - a_{n-1}]\]
+    其中 $\alpha_i$ 是期望特征多项式的系数
+    
+    \item 变换回原坐标：
+    \[K = \bar{K}T\]
+\end{enumerate}
+
+\textbf{优点：}
+\begin{itemize}
+    \item 计算规范，不易出错
+    \item 适用于任意阶次
+\end{itemize}
+
+\textbf{缺点：}
+\begin{itemize}
+    \item 需要计算变换矩阵 $T$
+    \item 当系统接近不能控时，$T$ 可能数值不稳定
+\end{itemize}
+
+\subsubsection{方法3：阿克曼公式（Ackermann's Formula）}
+
+\textbf{最简洁的方法！}对于单输入系统，有显式公式：
+
+\[\boxed{K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)}\]
+
+其中：
+\begin{itemize}
+    \item $W_c = [B \quad AB \quad A^2B \quad \cdots \quad A^{n-1}B]$：能控性矩阵
+    \item $\alpha_c(s) = s^n + \alpha_1 s^{n-1} + \cdots + \alpha_n$：期望特征多项式
+    \item $\alpha_c(A) = A^n + \alpha_1 A^{n-1} + \cdots + \alpha_n I$：矩阵多项式
+\end{itemize}
+
+\textbf{注意：}$\alpha_c(A)$ 是将多项式中的 $s$ 替换为矩阵 $A$！
+
+\textbf{优点：}
+\begin{itemize}
+    \item \textbf{最简洁}：一个公式搞定
+    \item 易于编程实现
+    \item 不需要坐标变换
+\end{itemize}
+
+\textbf{缺点：}
+\begin{itemize}
+    \item 仅适用于\textbf{单输入系统}
+    \item 需要求逆 $W_c^{-1}$（能控时必可逆）
+    \item 数值稳定性依赖于 $W_c$ 的条件数
+\end{itemize}
+
+\textbf{MATLAB实现：}
+\begin{verbatim}
+K = acker(A, B, desired_poles)
+\end{verbatim}
+
+\subsubsection{三种方法的对比}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{|l|p{4cm}|p{4cm}|p{4cm}|}
+\hline
+\rowcolor[gray]{0.9}
+\textbf{方法} & \textbf{直接方法} & \textbf{变换方法} & \textbf{阿克曼公式} \\
+\hline
+\textbf{适用范围} & 低阶系统 & 任意阶次 & 单输入系统 \\
+\hline
+\textbf{计算复杂度} & 中等（需展开行列式） & 较高（需变换矩阵） & 低（一个公式） \\
+\hline
+\textbf{直观性} & 高（直接配置） & 中等 & 低（公式较抽象） \\
+\hline
+\textbf{数值稳定性} & 好 & 取决于 $T$ & 取决于 $W_c$ \\
+\hline
+\textbf{推荐场景} & 手算 $n \leq 3$ & 理论分析 & 程序实现 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{极点选择的实用准则}
+
+\subsubsection*{本节目的}
+理论上可以任意配置极点，但\textbf{实际中如何选择}期望极点？这需要平衡性能、鲁棒性和实现成本。
+
+\subsubsection{性能指标与极点位置的关系}
+
+\textbf{二阶系统的标准形式：}
+\[s^2 + 2\zeta\omega_n s + \omega_n^2 = 0\]
+
+极点位置：$s_{1,2} = -\zeta\omega_n \pm j\omega_n\sqrt{1-\zeta^2}$
+
+\begin{itemize}
+    \item $\omega_n$：自然频率（影响\textbf{响应速度}）
+    \item $\zeta$：阻尼比（影响\textbf{超调量和振荡}）
+\end{itemize}
+
+\textbf{性能指标：}
+\begin{itemize}
+    \item 调节时间：$t_s \approx \frac{4}{\zeta\omega_n}$（越小越快）
+    \item 超调量：$M_p \approx e^{-\pi\zeta/\sqrt{1-\zeta^2}}$（越小越平稳）
+    \item 峰值时间：$t_p = \frac{\pi}{\omega_n\sqrt{1-\zeta^2}}$
+\end{itemize}
+
+\subsubsection{极点配置的实用原则}
+
+\textbf{1. 稳定性要求（基本要求）}
+\begin{itemize}
+    \item 所有极点必须在\textbf{左半平面}（$\text{Re}(s_i) < 0$）
+    \item 距离虚轴越远，稳定裕度越大
+\end{itemize}
+
+\textbf{2. 响应速度要求}
+\begin{itemize}
+    \item 主导极点的实部决定响应速度
+    \item 更快响应 $\to$ 极点更靠左（但需要更大的控制能量）
+\end{itemize}
+
+\textbf{3. 超调和振荡要求}
+\begin{itemize}
+    \item 实极点：无超调，单调响应
+    \item 复数极点：有超调和振荡
+    \item 常用选择：$\zeta = 0.5 \sim 0.707$（适度阻尼）
+\end{itemize}
+
+\textbf{4. 高阶系统的极点配置}
+\begin{itemize}
+    \item \textbf{主导极点}：最靠近虚轴的极点对（决定主要动态特性）
+    \item \textbf{非主导极点}：远离虚轴（衰减快，影响小）
+    \item 典型配置：2个主导极点 + $(n-2)$ 个快衰减极点
+\end{itemize}
+
+\textbf{5. 实际限制}
+\begin{itemize}
+    \item \textbf{控制饱和}：极点太左 $\to$ 控制信号过大
+    \item \textbf{测量噪声}：极点太左 $\to$ 对噪声敏感
+    \item \textbf{模型误差}：极点太精确 $\to$ 鲁棒性差
+\end{itemize}
+
+\subsubsection{经验法则}
+
+\textbf{巴特沃斯配置（Butterworth Pattern）：}
+
+将极点均匀分布在以原点为中心的圆弧上，角度为：
+\[\theta_k = \frac{(2k+1)\pi}{2n}, \quad k = 0, 1, \ldots, n-1\]
+
+半径选择为 $r = \omega_n$（期望的响应速度）。
+
+\textbf{贝塞尔配置（Bessel Pattern）：}
+\begin{itemize}
+    \item 优化阶跃响应的延迟时间
+    \item 极点分布更集中
+    \item 适合对延迟敏感的应用
+\end{itemize}
+
+\textbf{ITAE最优配置（Integral of Time-weighted Absolute Error）：}
+\begin{itemize}
+    \item 最小化 $\int_0^\infty t|e(t)|dt$
+    \item 有标准的极点位置表（查表即可）
+\end{itemize}
+
+\subsubsection{极点配置的常见错误}
+
+\begin{itemize}
+    \item ✗ 极点配置过于激进（远离虚轴）$\to$ 控制饱和
+    \item ✗ 忽略零点的影响（系统零点不变，可能抵消部分极点效果）
+    \item ✗ 所有极点聚在同一位置 $\to$ 数值不稳定
+    \item ✓ 平衡性能和实现成本
+    \item ✓ 验证闭环系统对参数变化的鲁棒性
+\end{itemize}
+
+\subsection{实际应用范例}
+
+\subsubsection*{范例说明}
+通过具体例子展示：
+\begin{itemize}
+    \item 如何使用阿克曼公式设计控制器
+    \item 如何选择期望极点
+    \item 如何验证设计结果
+\end{itemize}
+
+\subsubsection{范例：二阶系统的极点配置}
+
+\textbf{题目：}设计状态反馈控制器，使系统具有快速无超调响应
+
+\textbf{系统描述：}
+\begin{align*}
+\dot{x} &= \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} x + \begin{bmatrix} 0 \\ 1 \end{bmatrix} u \\
+y &= \begin{bmatrix} 1 & 0 \end{bmatrix} x
+\end{align*}
+
+\textbf{性能要求：}
+\begin{itemize}
+    \item 调节时间 $t_s < 2$s
+    \item 无超调（实极点）
+\end{itemize}
+
+\textbf{解答：}
+
+\paragraph{第一步：验证能控性}
+
+\[W_c = [B \quad AB] = \begin{bmatrix} 0 & 1 \\ 1 & -3 \end{bmatrix}\]
+
+$\det(W_c) = -1 \neq 0$，系统\textbf{完全能控}，可以任意配置极点。
+
+\paragraph{第二步：选择期望极点}
+
+要求无超调 $\to$ 选择\textbf{实极点}
+
+要求 $t_s < 2$s，由 $t_s \approx \frac{4}{|\text{Re}(s)|}$ 得：
+\[|\text{Re}(s)| > \frac{4}{2} = 2\]
+
+选择两个快速实极点：$s_1 = -3, s_2 = -4$
+
+期望特征多项式：
+\[\alpha_d(s) = (s+3)(s+4) = s^2 + 7s + 12\]
+
+\paragraph{第三步：使用阿克曼公式}
+
+计算 $\alpha_d(A)$：
+\begin{align*}
+\alpha_d(A) &= A^2 + 7A + 12I \\
+&= \begin{bmatrix} -2 & -3 \\ 6 & 7 \end{bmatrix} + 7\begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} + 12\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \\
+&= \begin{bmatrix} -2 & -3 \\ 6 & 7 \end{bmatrix} + \begin{bmatrix} 0 & 7 \\ -14 & -21 \end{bmatrix} + \begin{bmatrix} 12 & 0 \\ 0 & 12 \end{bmatrix} \\
+&= \begin{bmatrix} 10 & 4 \\ -8 & -2 \end{bmatrix}
+\end{align*}
+
+计算 $W_c^{-1}$：
+\[W_c^{-1} = \frac{1}{-1}\begin{bmatrix} -3 & -1 \\ -1 & 0 \end{bmatrix} = \begin{bmatrix} 3 & 1 \\ 1 & 0 \end{bmatrix}\]
+
+应用阿克曼公式：
+\begin{align*}
+K &= [0 \quad 1] W_c^{-1} \alpha_d(A) \\
+&= [0 \quad 1] \begin{bmatrix} 3 & 1 \\ 1 & 0 \end{bmatrix} \begin{bmatrix} 10 & 4 \\ -8 & -2 \end{bmatrix} \\
+&= [1 \quad 0] \begin{bmatrix} 10 & 4 \\ -8 & -2 \end{bmatrix} \\
+&= [10 \quad 4]
+\end{align*}
+
+因此，反馈增益：$\boxed{K = [10 \quad 4]}$
+
+\paragraph{第四步：验证设计}
+
+闭环系统矩阵：
+\[A - BK = \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} - \begin{bmatrix} 0 \\ 1 \end{bmatrix} [10 \quad 4] = \begin{bmatrix} 0 & 1 \\ -12 & -7 \end{bmatrix}\]
+
+特征方程：
+\[\det(sI - (A-BK)) = s^2 + 7s + 12 = (s+3)(s+4)\]
+
+极点确实为 $-3, -4$，\textbf{设计成功}！
+
+\paragraph{性能分析}
+
+\begin{itemize}
+    \item 调节时间：$t_s \approx \frac{4}{3} \approx 1.33$s（满足 $< 2$s）
+    \item 无超调（实极点）
+    \item 控制律：$u = -10x_1 - 4x_2 + v$
+\end{itemize}
+
+\subsubsection*{范例总结}
+
+\textbf{关键步骤回顾：}
+\begin{enumerate}
+    \item 验证能控性（必须满足）
+    \item 根据性能要求选择极点（平衡速度和成本）
+    \item 计算反馈增益（阿克曼公式最简洁）
+    \item 验证闭环极点（检查计算正确性）
+\end{enumerate}
+
+\textbf{实际考虑：}
+\begin{itemize}
+    \item 如果状态不可测，需要设计观测器（下一章）
+    \item 极点位置影响控制能量（$K$ 越大，$u$ 越大）
+    \item 实际系统需要考虑执行器饱和限制
+\end{itemize}
+
+\subsection*{本章总结}
+
+\subsubsection*{核心要点回顾}
+
+\textbf{1. 极点配置的本质}
+\begin{itemize}
+    \item 通过状态反馈 $u = -Kx + v$ 改变系统矩阵
+    \item 开环 $A$ $\to$ 闭环 $A - BK$
+    \item 从而改变系统的动态特性（极点位置）
+\end{itemize}
+
+\textbf{2. 极点配置定理（核心）}
+\begin{itemize}
+    \item \textbf{完全能控} $\Leftrightarrow$ \textbf{可任意配置极点}
+    \item 这是能控性概念的直接应用
+    \item 复数极点必须成对共轭出现
+\end{itemize}
+
+\textbf{3. 三种计算方法}
+\begin{itemize}
+    \item \textbf{直接法}：展开特征方程，适合低阶手算
+    \item \textbf{变换法}：转为能控标准型，适合理论分析
+    \item \textbf{阿克曼公式}：$K = [0 \cdots 0 \quad 1] W_c^{-1} \alpha_d(A)$，\textbf{最实用}
+\end{itemize}
+
+\textbf{4. 极点选择原则}
+\begin{itemize}
+    \item 所有极点在左半平面（稳定性）
+    \item 实部大小决定响应速度（$t_s \approx 4/|\text{Re}(s)|$）
+    \item 虚部/实部比决定超调量（$\zeta$）
+    \item 平衡性能、鲁棒性和实现成本
+\end{itemize}
+
+\subsubsection*{设计流程总结}
+
+\textbf{标准极点配置流程：}
+\begin{enumerate}
+    \item \textbf{系统分析}
+    \begin{itemize}
+        \item 写出系统方程 $\dot{x} = Ax + Bu$
+        \item 计算开环极点（了解原始特性）
+        \item 验证能控性 $\text{rank}(W_c) = n$
+    \end{itemize}
+    
+    \item \textbf{性能要求转化}
+    \begin{itemize}
+        \item 调节时间 $t_s$ $\to$ 极点实部
+        \item 超调量 $M_p$ $\to$ 阻尼比 $\zeta$
+        \item 确定期望极点 $\lambda_1, \ldots, \lambda_n$
+    \end{itemize}
+    
+    \item \textbf{控制器计算}
+    \begin{itemize}
+        \item 选择计算方法（推荐阿克曼公式）
+        \item 计算反馈增益 $K$
+        \item 控制律 $u = -Kx + v$
+    \end{itemize}
+    
+    \item \textbf{验证与调整}
+    \begin{itemize}
+        \item 验证闭环极点位置
+        \item 仿真闭环响应
+        \item 检查控制信号幅值（是否饱和）
+        \item 必要时调整极点位置
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{重要概念辨析}
+
+\textbf{极点配置 vs 最优控制：}
+\begin{itemize}
+    \item \textbf{极点配置}：直接指定极点位置（设计者经验）
+    \item \textbf{最优控制（LQR）}：优化性能指标得到极点（自动平衡）
+    \item 极点配置更直观，LQR更系统化
+\end{itemize}
+
+\textbf{状态反馈 vs 输出反馈：}
+\begin{itemize}
+    \item 状态反馈需要所有状态（可能需要观测器）
+    \item 输出反馈只用输出（但不能任意配置极点）
+    \item 实际常用：状态观测器 + 状态反馈
+\end{itemize}
+
+\subsubsection*{常见误区}
+
+\begin{itemize}
+    \item ✗ 认为能控性不重要（能控性是极点配置的\textbf{充要条件}）
+    \item ✗ 极点配置得越快越好（要考虑控制饱和和噪声）
+    \item ✗ 忽略系统零点（零点不变，会影响实际响应）
+    \item ✗ 期望所有极点重合（数值不稳定）
+    \item ✓ 仔细选择极点位置，平衡性能和鲁棒性
+    \item ✓ 验证闭环系统对参数摄动的敏感性
+\end{itemize}
+
+\subsubsection*{实际应用建议}
+
+\textbf{工程实践：}
+\begin{itemize}
+    \item 从保守的极点位置开始（不要过于激进）
+    \item 逐步调整，观察实际系统响应
+    \item 考虑测量噪声对高增益的放大效应
+    \item 使用仿真验证非线性因素（饱和、死区等）
+\end{itemize}
+
+\textbf{MATLAB工具：}
+\begin{itemize}
+    \item \texttt{ctrb(A,B)}：计算能控性矩阵
+    \item \texttt{acker(A,B,p)}：阿克曼公式（单输入）
+    \item \texttt{place(A,B,p)}：极点配置（多输入）
+    \item \texttt{step(sys)}：阶跃响应仿真
+\end{itemize}
+
+\subsubsection*{后续章节预告}
+
+极点配置解决了\textbf{控制器设计}问题，但实际中常面临：
+\begin{itemize}
+    \item \textbf{状态不可测} $\to$ 需要状态观测器（第11章）
+    \item \textbf{性能指标优化} $\to$ 最优控制理论（LQR）
+    \item \textbf{鲁棒性要求} $\to$ 鲁棒控制方法
+\end{itemize}
+
+极点配置是现代控制理论的\textbf{第一个综合性设计方法}。它将前面学习的能控性概念转化为实际的控制器，体现了从理论到实践的完整链条：
+
+\begin{center}
+\textbf{能控性} $\to$ \textbf{极点配置} $\to$ \textbf{性能实现}
+\end{center}
+
+掌握极点配置，就掌握了状态反馈控制的核心技术！

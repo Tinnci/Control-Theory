@@ -1,7 +1,63 @@
 \section{离散系统}
 \label{sec:discrete-systems}
 
-\subsection{离散系统概述}
+\subsection*{引言：从连续到数字的控制革命}
+
+\textbf{一个真实的世界：}你的智能手机、工业机器人、飞机自动驾驶仪、医疗呼吸机——它们都在进行\textbf{数字控制}。没有一个现代控制系统运行在"连续"的世界里；所有的控制决策都是在\textbf{离散的时刻}（通常每毫秒或每微秒）计算一次。这引发了一个根本性的问题：
+
+\textbf{为什么要从连续系统转向离散系统？}
+
+\begin{enumerate}
+    \item \textbf{现实：}所有实际的控制器都是数字计算机（CPU执行代码是离散的）
+    \item \textbf{好处：}
+    \begin{itemize}
+        \item 便宜：通用芯片（ARM、DSP）比模拟电路便宜得多
+        \item 灵活：可编程，容易修改控制算法
+        \item 精确：不受模拟元器件偏差影响
+        \item 集成：易于实现复杂的多变量控制
+        \item 鲁棒：数字信号处理的抗干扰能力强
+    \end{itemize}
+    \item \textbf{代价：}离散化带来新的问题（采样失真、量化误差、计算延迟）
+\end{enumerate}
+
+\textbf{关键概念的转变：}
+\begin{itemize}
+    \item 连续→离散：函数 $f(t)$ → 序列 $f(kT)$（采样）
+    \item 拉普拉斯变换 → Z变换（分析工具）
+    \item 传递函数 $G(s)$ → 脉冲传递函数 $G(z)$（系统模型）
+    \item 极点在左半平面 → 极点在单位圆内（稳定域）
+    \item 连续PID → 数字PID（实现方式）
+\end{itemize}
+
+\textbf{本章的重点：}
+
+这一章不是简单地把连续理论"翻译"成离散版本——那样太无聊了。而是要理解：
+\begin{itemize}
+    \item \textbf{采样过程}如何影响系统行为（采样定理、信息丢失）
+    \item \textbf{Z变换}如何像拉普拉斯变换一样工作（从信号处理视角）
+    \item \textbf{零阶保持器}如何改变系统特性（离散→连续的桥梁）
+    \item \textbf{稳定性判据}为何改变（z平面的特殊形状）
+    \item \textbf{数字控制器}如何实现（从传递函数到差分方程到代码）
+    \item \textbf{采样周期的选择}如何影响整个设计（实时性vs精度的权衡）
+\end{itemize}
+
+\textbf{实际应用预告：}
+\begin{itemize}
+    \item \textbf{无人机姿态控制}：每10ms更新一次控制命令
+    \item \textbf{电动车动力管理}：每1ms采样一次电流和温度
+    \item \textbf{工业机器人}：伺服循环周期通常1-10ms
+    \item \textbf{电力系统频率调整}：采样周期从毫秒到秒级
+\end{itemize}
+
+\textbf{警告：常见误区}
+\begin{itemize}
+    \item ✗ 认为离散系统就是"连续系统采样一下"（事实：有本质区别）
+    \item ✗ 忽视采样定理（后果：信号失真、控制失效）
+    \item ✗ 采用太小的采样周期（后果：计算负担重、成本高）
+    \item ✗ 采用太大的采样周期（后果：控制性能差、可能不稳定）
+\end{itemize}
+
+\subsection{离散系统概述
 
 \subsubsection{离散系统的定义}
 
@@ -457,33 +513,356 @@ D(z) = K \frac{z - a}{z - b}
 
 采用状态反馈等现代控制方法。
 
-\subsection{总结}
+\subsection*{本章总结}
 
-\begin{center}
-\begin{tabular}{|l|c|c|}
+\subsubsection*{核心主题重申（Restated Thesis）}
+
+离散系统理论不是连续系统理论的\textquotedblleft简单翻译\textquotedblright，而是一次\textbf{范式转变}：从物理世界的连续变化到数字计算机的离散采样。这一转变带来了工程实现的革命性优势（低成本、灵活、可编程），但也引入了新的理论挑战（采样失真、稳定域变化、量化误差）。
+
+\textbf{本章的核心洞察：}
+\begin{quote}
+\textit{理解离散系统 = 理解三个映射关系}
+\begin{itemize}
+    \item \textbf{时域映射}：连续信号 $f(t)$ → 离散序列 $f(kT)$（采样定理约束）
+    \item \textbf{变换映射}：拉普拉斯$s$域 → Z变换$z$域（$z=e^{sT}$，非线性！）
+    \item \textbf{稳定域映射}：左半平面 → 单位圆内（极点位置判据改变）
+\end{itemize}
+\end{quote}
+
+掌握这三个映射，就掌握了连续理论到离散实现的\textbf{桥梁}。
+
+\subsubsection*{要点总结（Summary of Key Concepts）}
+
+\textbf{1. 理论基础（Foundation）}
+
+\begin{table}[htbp]
+\centering
+\caption{连续vs离散：核心对应关系}
+\begin{tabular}{|l|p{5.5cm}|p{5.5cm}|}
 \hline
 \textbf{特性} & \textbf{连续系统} & \textbf{离散系统} \\
 \hline
-数学描述 & 微分方程 & 差分方程 \\
+\textbf{时间描述} & 
+$t \in \mathbb{R}^+$（连续）
+\newline 信号在所有时刻定义
+& 
+$k \in \mathbb{N}$（离散）
+\newline 信号仅在$t=kT$时刻定义
+\\
 \hline
-变换工具 & 拉普拉斯变换 & Z变换 \\
+\textbf{数学模型} & 
+微分方程
+\newline $\dot{x} = Ax + Bu$
+& 
+差分方程
+\newline $x(k+1) = Ax(k) + Bu(k)$
+\\
 \hline
-频域函数 & 传递函数 $G(s)$ & 脉冲传递函数 $G(z)$ \\
+\textbf{变换工具} & 
+拉普拉斯变换
+\newline $F(s) = \int_0^\infty f(t)e^{-st}dt$
+& 
+Z变换
+\newline $F(z) = \sum_{k=0}^\infty f(k)z^{-k}$
+\\
 \hline
-稳定域 & $s$ 平面左半平面 & $z$ 平面单位圆内 \\
+\textbf{传递函数} & 
+$G(s)$（s域）
+\newline 极点零点在s平面
+& 
+$G(z)$（z域）
+\newline 极点零点在z平面
+\\
 \hline
-稳定判据 & 劳斯、奈奎斯特 & 双线性变换+劳斯、Jury \\
+\textbf{稳定域} & 
+左半平面 $\text{Re}(s) < 0$
+& 
+单位圆内 $|z| < 1$
+\\
 \hline
-控制器 & 模拟PID & 数字PID、最少拍 \\
+\textbf{稳定判据} & 
+劳斯、奈奎斯特
+& 
+双线性+劳斯、Jury
+\\
+\hline
+\textbf{控制器实现} & 
+模拟电路（RC、运放）
+& 
+数字代码（差分方程）
+\\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{2. 关键技术要素（Key Technical Elements）}
+
+\paragraph{采样定理（Nyquist-Shannon Theorem）}
+\begin{itemize}
+    \item \textbf{理论要求}：$f_s \geq 2f_{\max}$（防止走样aliasing）
+    \item \textbf{工程实践}：$f_s = (6 \sim 10) f_{\max}$（留有余量）
+    \item \textbf{采样周期选择}：$T = (0.1 \sim 0.5) \tau$（$\tau$为系统时间常数）
+    \item \textbf{物理意义}：采样频率过低 → 信息永久丢失；过高 → 计算负担、成本增加
+\end{itemize}
+
+\paragraph{零阶保持器（Zero-Order Hold, ZOH）}
+\begin{itemize}
+    \item \textbf{作用}：将离散控制信号转换为阶梯波连续信号
+    \item \textbf{传递函数}：$G_h(s) = \frac{1-e^{-Ts}}{s}$
+    \item \textbf{影响}：引入相位滞后，改变系统动态特性
+    \item \textbf{设计意义}：计算离散模型时\textbf{必须}考虑ZOH（不能直接采样！）
+\end{itemize}
+
+\paragraph{Z变换与s-z映射}
+\begin{itemize}
+    \item \textbf{映射公式}：$z = e^{sT}$（非线性映射）
+    \item \textbf{极点映射}：$s = \sigma + j\omega \to z = e^{\sigma T}e^{j\omega T}$
+    \item \textbf{稳定性映射}：左半平面 → 单位圆内（几何形状完全改变）
+    \item \textbf{频率混叠}：$\omega$和$\omega + 2\pi/T$映射到同一个$z$（采样定理的根源）
+\end{itemize}
+
+\textbf{3. 设计方法论（Design Methodology）}
+
+\textbf{数字控制器设计流程（五步法）：}
+\begin{enumerate}
+    \item \textbf{采样周期选择}
+    \begin{itemize}
+        \item 估计系统时间常数$\tau$（从阶跃响应或传递函数）
+        \item 选择$T = 0.1\tau \sim 0.5\tau$（快速系统用小值，慢速系统用大值）
+        \item 验证：$T < \frac{\pi}{\omega_{max}}$（采样定理）
+    \end{itemize}
+    
+    \item \textbf{离散模型获取}
+    \begin{itemize}
+        \item 连续模型：已知$G_p(s)$
+        \item 加ZOH：$G(s) = \frac{1-e^{-Ts}}{s} G_p(s)$
+        \item 离散化：$G(z) = \mathcal{Z}\{G(s)\}$或用双线性变换
+    \end{itemize}
+    
+    \item \textbf{控制器设计}
+    \begin{itemize}
+        \item 数字PID：位置式或速度式（最常用）
+        \item 最少拍：性能最优但设计复杂
+        \item 根轨迹/频域：类似连续系统方法
+    \end{itemize}
+    
+    \item \textbf{稳定性验证}
+    \begin{itemize}
+        \item 计算闭环极点（求根或Jury判据）
+        \item 确认所有极点$|z_i| < 1$
+        \item 检查稳态误差（终值定理）
+    \end{itemize}
+    
+    \item \textbf{实现与调试}
+    \begin{itemize}
+        \item 写差分方程（递推关系）
+        \item 编程（C/Python）：通常2-5行代码
+        \item 硬件测试：考虑量化、延迟、中断
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{深层分析（Critical Analysis）}
+
+\textbf{为什么稳定域变成单位圆？（几何直觉）}
+
+观察映射$z = e^{sT} = e^{\sigma T} \cdot e^{j\omega T}$：
+\begin{itemize}
+    \item \textbf{模长}：$|z| = e^{\sigma T}$
+    \begin{itemize}
+        \item 若$\sigma < 0$（稳定）→ $|z| < 1$（单位圆内）
+        \item 若$\sigma = 0$（边界）→ $|z| = 1$（单位圆上）
+        \item 若$\sigma > 0$（不稳定）→ $|z| > 1$（单位圆外）
+    \end{itemize}
+    \item \textbf{相位}：$\angle z = \omega T$（频率信息）
+\end{itemize}
+
+\textbf{结论}：单位圆是左半平面的\textquotedblleft自然像\textquotedblright——稳定性判据的形式变了，但\textbf{物理意义不变}（衰减 vs 发散）。
+
+\textbf{离散化为何改变系统特性？}
+
+\textbf{例子}：连续系统$G(s) = \frac{1}{s+1}$，时间常数$\tau=1$s
+
+\begin{itemize}
+    \item \textbf{采样周期$T=0.1$s}：$G(z) = \frac{0.0952}{z-0.9048}$，极点$z=0.9048$（接近单位圆，响应快）
+    \item \textbf{采样周期$T=1$s}：$G(z) = \frac{0.632}{z-0.368}$，极点$z=0.368$（远离单位圆，响应慢）
+\end{itemize}
+
+\textbf{洞察}：$T$越大，离散系统与连续系统差异越大！采样周期选择\textbf{直接影响}控制性能。
+
+\textbf{数字PID vs 模拟PID：本质区别}
+
+\begin{center}
+\begin{tabular}{|l|p{5cm}|p{5cm}|}
+\hline
+ & \textbf{模拟PID} & \textbf{数字PID} \\
+\hline
+\textbf{积分} & 连续积分$\int e(t)dt$ & 累加求和$T\sum e(k)$ \\
+\hline
+\textbf{微分} & 瞬时导数$\frac{de}{dt}$ & 后向差分$\frac{e(k)-e(k-1)}{T}$ \\
+\hline
+\textbf{参数} & $K_p, K_i, K_d$独立 & $K_i, K_d$显式依赖$T$ \\
+\hline
+\textbf{调参} & 物理旋钮（难） & 软件修改（易） \\
+\hline
+\textbf{问题} & 器件漂移、噪声 & 量化、延迟、数值误差 \\
 \hline
 \end{tabular}
 \end{center}
 
-\textbf{离散系统设计要点：}
+\textbf{关键}：数字PID的$K_i, K_d$\textbf{不是}模拟PID参数的直接复制，需要根据$T$重新调整！
+
+\subsubsection*{常见误区与陷阱（Common Pitfalls）}
+
+\textbf{概念误区：}
+\begin{itemize}
+    \item ✗ \textbf{误区1}：\textquotedblleft离散系统=连续系统采样一下\textquotedblright
+    \item ✓ \textbf{正确}：离散系统在采样间隔内的行为由\textbf{零阶保持器}决定（阶梯波），与连续系统本质不同
+    
+    \item ✗ \textbf{误区2}：\textquotedblleft 采样定理只是理论，实践中可以违反\textquotedblright
+    \item ✓ \textbf{正确}：违反采样定理导致\textbf{不可恢复}的频谱混叠（aliasing），控制系统会看到错误的频率信息
+    
+    \item ✗ \textbf{误区3}：\textquotedblleft 提高采样频率总是更好\textquotedblright
+    \item ✓ \textbf{正确}：过高采样频率增加计算成本、功耗、电磁干扰，且收益递减（$T < 0.01\tau$几乎无意义）
+    
+    \item ✗ \textbf{误区4}：\textquotedblleft Z变换和拉普拉斯变换完全一样\textquotedblright
+    \item ✓ \textbf{正确}：形式类似但映射$z=e^{sT}$是\textbf{非线性}的，导致稳定域、频率响应都不同
+\end{itemize}
+
+\textbf{计算易错点：}
+\begin{itemize}
+    \item ✗ 直接用s平面极点判断离散系统稳定性
+    \item ✓ 正确：必须通过$z=e^{sT}$映射到z平面，或用Jury判据
+    
+    \item ✗ 计算$G(z)$时忽视零阶保持器$\frac{1-e^{-Ts}}{s}$
+    \item ✓ 正确：$G(z) = \mathcal{Z}\left\{\frac{1-e^{-Ts}}{s}G_p(s)\right\} = (1-z^{-1})\mathcal{Z}\left\{\frac{G_p(s)}{s}\right\}$
+    
+    \item ✗ 用欧拉法离散化连续PID后不重新调参
+    \item ✓ 正确：积分增益要乘$T$，微分增益要除$T$（查看差分方程）
+    
+    \item ✗ 忘记检查数字控制器的\textbf{物理可实现性}（最少拍设计常见）
+    \item ✓ 正确：$D(z)$的分子阶数不能高于分母（非因果系统无法实现）
+\end{itemize}
+
+\textbf{设计陷阱：}
+\begin{itemize}
+    \item ✗ 根据连续系统带宽选择采样周期（忽视系统时间常数）
+    \item ✓ 正确：应根据\textbf{最慢}系统模态的时间常数选择（$T \sim 0.1\tau_{max}$）
+    
+    \item ✗ 在z平面设计时忘记考虑输入信号的频率
+    \item ✓ 正确：输入频率接近Nyquist频率$\pi/T$时性能严重下降
+    
+    \item ✗ 忽视计算延迟和量化误差的累积效应
+    \item ✓ 正确：这是理论计算与实际系统性能差异的\textbf{主要来源}
+\end{itemize}
+
+\subsubsection*{学习检查清单（Self-Assessment Checklist）}
+
+\textbf{理论理解（Understanding）：}
+\begin{itemize}
+    \item[$\square$] 能用自己的话解释为什么需要离散系统（计算机的本质）
+    \item[$\square$] 理解采样定理的物理意义（信息保存vs丢失的边界）
+    \item[$\square$] 理解$z=e^{sT}$映射如何改变稳定域（左半平面→单位圆）
+    \item[$\square$] 知道零阶保持器的作用（不是简单的\textquotedblleft 采样\textquotedblright ）
+    \item[$\square$] 理解为什么离散化会改变系统特性（采样周期的影响）
+\end{itemize}
+
+\textbf{计算能力（Skills）：}
+\begin{itemize}
+    \item[$\square$] 会计算简单序列的Z变换（查表或定义）
+    \item[$\square$] 会从连续模型$G_p(s)$计算离散模型$G(z)$（考虑ZOH）
+    \item[$\square$] 会用Jury判据或求根判定离散系统稳定性
+    \item[$\square$] 会设计位置式/速度式数字PID控制器
+    \item[$\square$] 会将传递函数$D(z)$转换为差分方程（递推式）
+\end{itemize}
+
+\textbf{工程应用（Application）：}
+\begin{itemize}
+    \item[$\square$] 能根据系统时间常数选择合适的采样周期
+    \item[$\square$] 能从差分方程写出可执行的C/Python代码
+    \item[$\square$] 能分析采样周期对控制性能的影响
+    \item[$\square$] 理解实际产品中的数字控制如何工作（嵌入式系统）
+    \item[$\square$] 能解释连续设计在离散实现中为何失效
+\end{itemize}
+
+\textbf{深入思考（Critical Thinking）：}
+\begin{itemize}
+    \item[$\square$] 为什么模拟控制器在20世纪90年代几乎完全被数字控制器取代？
+    \item[$\square$] 采样和量化，哪个对控制性能影响更大？为什么？
+    \item[$\square$] 当采样频率趋于无穷大时，离散系统会怎样趋近连续系统？
+    \item[$\square$] 为什么无人机、机器人通常用1-10ms采样周期？（平衡什么？）
+\end{itemize}
+
+\subsubsection*{与课程其他章节的衔接（Course Integration）}
+
+\textbf{向后回顾（Prerequisites）：}
+\begin{itemize}
+    \item \textbf{第\ref{sec:transfer-function}章（传递函数）}：$G(z)$是$G(s)$的离散类比，物理意义相同
+    \item \textbf{第\ref{sec:state-space}章（状态空间）}：离散状态方程$x(k+1)=Ax(k)+Bu(k)$结构相同
+    \item \textbf{第\ref{sec:stability}章（稳定性）}：稳定性判据从左半平面改为单位圆内，但\textbf{本质}（衰减vs发散）不变
+    \item \textbf{第\ref{sec:controllability-observability}章}：能控能观判据在离散系统中\textbf{完全适用}（只需替换$A,B,C$）
+\end{itemize}
+
+\textbf{前向展望（Applications）：}
+\begin{itemize}
+    \item 这是现代控制理论在实际系统中的\textbf{最终形态}
+    \item 所有实际控制系统（无人机、机器人、自动驾驶）都是离散实现
+    \item 下一步深化方向：
+    \begin{itemize}
+        \item 自适应控制（参数在线调整）
+        \item 预测控制（MPC，利用模型预测未来）
+        \item 强化学习控制（数据驱动，无需模型）
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{实践建议与工程智慧（Practical Wisdom）}
+
+\textbf{采样周期选择的工程经验：}
+\begin{itemize}
+    \item \textbf{快速系统}（$\tau < 0.1$s，如伺服电机）：$T = 1$-$5$ms
+    \item \textbf{中速系统}（$\tau \sim 1$s，如温度控制）：$T = 0.1$-$0.5$s
+    \item \textbf{慢速系统}（$\tau > 10$s，如大型化工过程）：$T = 1$-$10$s
+    \item \textbf{原则}：\textquotedblleft 不要为了理论完美牺牲实用性\textquotedblright——$T$够用即可
+\end{itemize}
+
+\textbf{数字PID调参技巧：}
 \begin{enumerate}
-    \item 选择合适的采样周期（满足采样定理，通常 $T = 0.1 \sim 0.5$ 时间常数）
-    \item 考虑零阶保持器的影响
-    \item 数字控制器设计（数字PID、最少拍等）
-    \item 验证闭环稳定性（极点在单位圆内）
-    \item 评估动态性能（超调、调节时间等）
+    \item 先在连续域设计PID（用Ziegler-Nichols或频域方法）
+    \item 离散化：$K_i^{digital} = K_i^{continuous} \times T$，$K_d^{digital} = K_d^{continuous} / T$
+    \item 实际测试：通常需要微调（$\pm 20\%$）
+    \item 警惕积分饱和：离散PID更容易出现（加积分限幅）
 \end{enumerate}
+
+\textbf{调试常见问题与解决：}
+\begin{itemize}
+    \item \textbf{问题}：理论稳定但实际振荡
+    \item \textbf{原因}：计算延迟（1-2个采样周期）未考虑
+    \item \textbf{解决}：在$z$域模型中加$z^{-1}$或$z^{-2}$延迟项，重新设计
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{问题}：数字PID性能远不如模拟PID
+    \item \textbf{原因}：采样周期过大，或参数未重新调整
+    \item \textbf{解决}：减小$T$至$0.1\tau$，或使用速度式PID减小计算量
+\end{itemize}
+
+\subsubsection*{结束语（Concluding Thoughts）}
+
+离散系统理论是控制工程从\textquotedblleft 黑板\textquotedblright 走向\textquotedblleft 芯片\textquotedblright 的关键桥梁。它不仅仅是数学变换的游戏，而是深刻反映了\textbf{数字计算的本质}：
+
+\begin{quote}
+\textit{\textquotedblleft 所有的连续都是理想化的抽象；真实世界的计算都是离散的。\textquotedblright}
+\end{quote}
+
+当你理解了为什么\textbf{稳定域}从左半平面变成单位圆，为什么\textbf{采样定理}不可违反，为什么\textbf{零阶保持器}改变系统动态——你就真正理解了数字控制的精髓。
+
+\textbf{最后的提醒}：
+\begin{itemize}
+    \item 离散化\textbf{不是}连续系统的简单替代品，而是一个\textbf{新的设计空间}
+    \item 采样周期$T$是离散系统设计中\textbf{最关键的参数}——选错了，其他都白费
+    \item 传递函数只是起点；差分方程才是终点（可执行的代码）
+    \item \textbf{理论计算永远比实际乐观}——量化、延迟、干扰是不可避免的
+\end{itemize}
+
+掌握离散系统，你就掌握了现代控制工程的\textbf{实践钥匙}。从算法到芯片，从理论到产品，离散系统理论是\textbf{最后一公里}。
+
+\textbf{记住}：每一个工作的控制系统，背后都是一行行差分方程在\textbf{离散的时刻}默默执行——这就是离散系统的力量！

@@ -1,17 +1,341 @@
 \section{约当型实现}
 \label{sec:jordan-form}
 
-\subsection{约当标准型}
-当系统矩阵 $A$ 的特征值不同时，可化为对角形：
-\[J = P^{-1}AP = \text{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n)\]
+\subsection*{引言：当对角化失败时的 \textquotedblleft 备用方案 \textquotedblright}
 
-当有重根时，化为约当标准型：
-\[J = P^{-1}AP = \text{diag}(J_1, J_2, \ldots, J_k)\]
+在\ref{sec:linear-transformation}节中，我们学会了对角化：将系统矩阵 $A$ 转换为对角矩阵 $\Lambda$。但是，\textbf{并非所有矩阵都能对角化！}当系统有\textbf{重特征值}且线性无关的特征向量不足时，对角化就会失败。
 
-其中 $J_i$ 为约当块：
-\[J_i = \begin{bmatrix}
-\lambda_i & 1 & 0 & \cdots & 0 \\
-0 & \lambda_i & 1 & \cdots & 0 \\
+\subsubsection*{为什么需要约当型？}
+
+考虑一个简单的例子：
+\[A = \begin{bmatrix} 2 & 1 \\ 0 & 2 \end{bmatrix}\]
+
+它有重特征值 $\lambda = 2$（重数为2），但只有一个线性无关的特征向量 $v = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$。\textbf{无法构造2×2的特征向量矩阵来对角化！}
+
+这时就需要\textbf{约当标准型}（Jordan Canonical Form）——它是对角化的推广，能够处理所有矩阵。
+
+\subsubsection*{约当型 vs 对角型}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{gray!20}
+& \textbf{对角型} & \textbf{约当型} \\
+\hline
+矩阵形式 & $\Lambda = \text{diag}(\lambda_1, \ldots, \lambda_n)$ & 对角线+主对角线上方的1 \\
+\hline
+适用条件 & 特征值互不相同 & \textbf{所有矩阵} \\
+\hline
+特征向量 & $n$ 个线性无关特征向量 & 可能需要广义特征向量 \\
+\hline
+系统解耦 & 完全解耦 & 部分耦合（约当块内） \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{本章路线图}
+
+\begin{enumerate}
+    \item \textbf{约当块}：基本单元的定义和性质
+    \item \textbf{约当矩阵}：由约当块组成的分块对角矩阵
+    \item \textbf{广义特征向量}：构造变换矩阵的关键
+    \item \textbf{例题}：简单特征值和重特征值的两个例子
+    \item \textbf{MATLAB实现}：\texttt{jordan()} 函数的使用
+\end{enumerate}
+
+\subsection{约当块的定义}
+
+\subsubsection*{基本约当块}
+
+与特征值 $\lambda$ 对应的 $k$ 阶\textbf{约当块}（Jordan Block）定义为：
+
+\begin{empheq}[box=\fbox]{equation}
+J_k(\lambda) = \begin{bmatrix}
+\lambda & 1 & 0 & \cdots & 0 \\
+0 & \lambda & 1 & \cdots & 0 \\
+0 & 0 & \lambda & \cdots & 0 \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
-0 & 0 & 0 & \cdots & \lambda_i
-\end{bmatrix}\]
+0 & 0 & 0 & \cdots & \lambda
+\end{bmatrix}_{k \times k}
+\end{equation}
+
+\subsubsection*{约当块的特点}
+
+\begin{itemize}
+    \item \textbf{对角线}：全部为特征值 $\lambda$
+    \item \textbf{超对角线}：主对角线正上方全部为1
+    \item \textbf{其余元素}：全部为0
+    \item \textbf{阶数}：$k$ 表示该特征值的几何重数（有几个线性无关的特征向量）
+\end{itemize}
+
+\subsubsection*{特殊情况}
+
+当 $k=1$ 时，约当块退化为标量：
+\[J_1(\lambda) = [\lambda]\]
+
+这就是对角矩阵的元素！因此，\textbf{对角矩阵是约当矩阵的特殊情况}。
+
+\subsection{约当标准型}
+
+\subsubsection*{定义}
+
+任意 $n \times n$ 矩阵 $A$ 都可以通过相似变换化为\textbf{约当标准型}：
+
+\begin{empheq}[box=\fbox]{equation}
+J = P^{-1}AP = \begin{bmatrix}
+J_1 & 0 & \cdots & 0 \\
+0 & J_2 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & J_r
+\end{bmatrix}
+\end{equation}
+
+其中 $J_1, J_2, \ldots, J_r$ 是约当块。
+
+\subsubsection*{约当块的个数与大小}
+
+\begin{itemize}
+    \item 如果特征值 $\lambda_i$ 的\textbf{代数重数}为 $m_i$（特征多项式中的重数）
+    \item 几何重数为 $g_i$（线性无关特征向量的个数）
+    \item 则对应 $g_i$ 个约当块，总大小为 $m_i$
+\end{itemize}
+
+\textbf{关键关系}：$g_i \leq m_i$，当 $g_i = m_i$ 时可对角化。
+
+\subsection{广义特征向量}
+
+\subsubsection*{定义}
+
+对于特征值 $\lambda$ 和阶数为 $k$ 的约当块，需要构造 $k$ 个向量：
+
+\begin{align*}
+(A - \lambda I)v_1 &= 0 \quad \text{（特征向量）} \\
+(A - \lambda I)v_2 &= v_1 \\
+(A - \lambda I)v_3 &= v_2 \\
+&\vdots \\
+(A - \lambda I)v_k &= v_{k-1}
+\end{align*}
+
+向量 $v_1, v_2, \ldots, v_k$ 称为\textbf{广义特征向量链}。
+
+\subsubsection*{物理意义}
+
+广义特征向量 $v_2, v_3, \ldots$ 可以理解为 \textquotedblleft 次优的特征向量 \textquotedblright ——虽然不满足 $(A-\lambda I)v=0$，但能逐步逼近特征向量。
+
+\subsection{例题1：简单特征值（可对角化）}
+
+\textbf{问题}：求矩阵的约当标准型
+\[A = \begin{bmatrix} 1 & 2 \\ 3 & 2 \end{bmatrix}\]
+
+\textbf{解}：
+
+\textbf{步骤1}：求特征值
+\[\det(\lambda I - A) = \det \begin{bmatrix} \lambda - 1 & -2 \\ -3 & \lambda - 2 \end{bmatrix} = (\lambda - 1)(\lambda - 2) - 6 = \lambda^2 - 3\lambda - 4 = (\lambda - 4)(\lambda + 1)\]
+
+特征值：$\lambda_1 = 4$，$\lambda_2 = -1$（互不相同）
+
+\textbf{步骤2}：求特征向量
+
+对于 $\lambda_1 = 4$：
+\[(A - 4I)v_1 = \begin{bmatrix} -3 & 2 \\ 3 & -2 \end{bmatrix} \begin{bmatrix} v_{11} \\ v_{12} \end{bmatrix} = 0 \quad \Rightarrow \quad v_1 = \begin{bmatrix} 2 \\ 3 \end{bmatrix}\]
+
+对于 $\lambda_2 = -1$：
+\[(A + I)v_2 = \begin{bmatrix} 2 & 2 \\ 3 & 3 \end{bmatrix} \begin{bmatrix} v_{21} \\ v_{22} \end{bmatrix} = 0 \quad \Rightarrow \quad v_2 = \begin{bmatrix} 1 \\ -1 \end{bmatrix}\]
+
+\textbf{步骤3}：构造约当型
+
+由于两个特征值互不相同，约当型就是对角矩阵：
+\[J = \begin{bmatrix} 4 & 0 \\ 0 & -1 \end{bmatrix}, \quad P = \begin{bmatrix} 2 & 1 \\ 3 & -1 \end{bmatrix}\]
+
+\textbf{验证}：
+\[P^{-1}AP = \frac{1}{-5} \begin{bmatrix} -1 & -1 \\ -3 & 2 \end{bmatrix} \begin{bmatrix} 1 & 2 \\ 3 & 2 \end{bmatrix} \begin{bmatrix} 2 & 1 \\ 3 & -1 \end{bmatrix} = \begin{bmatrix} 4 & 0 \\ 0 & -1 \end{bmatrix} \quad \checkmark\]
+
+\subsection{例题2：重特征值（不可对角化）}
+
+\textbf{问题}：求矩阵的约当标准型
+\[A = \begin{bmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{bmatrix}\]
+
+\textbf{解}：
+
+\textbf{步骤1}：求特征值
+\[\det(\lambda I - A) = (\lambda - 2)^2 (\lambda - 3)\]
+
+特征值：$\lambda_1 = 2$（重数2），$\lambda_2 = 3$（重数1）
+
+\textbf{步骤2}：求 $\lambda_1 = 2$ 的特征向量
+\[(A - 2I) = \begin{bmatrix} 0 & 1 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 1 \end{bmatrix}, \quad \text{rank}(A - 2I) = 2\]
+
+零空间维数 = $3 - 2 = 1$，只有一个线性无关的特征向量：
+\[v_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}\]
+
+\textbf{步骤3}：求广义特征向量
+
+由于只有一个特征向量但重数为2，需要一个广义特征向量 $v_2$ 满足：
+\[(A - 2I)v_2 = v_1\]
+
+解方程：
+\[\begin{bmatrix} 0 & 1 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} v_{21} \\ v_{22} \\ v_{23} \end{bmatrix} = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}\]
+
+得 $v_{22} = 1$，其余自由，取：
+\[v_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}\]
+
+\textbf{步骤4}：求 $\lambda_2 = 3$ 的特征向量
+\[v_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}\]
+
+\textbf{步骤5}：构造约当型
+\[J = \begin{bmatrix} 2 & 1 & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 3 \end{bmatrix}, \quad P = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} = I\]
+
+注意：前两列对应 $\lambda_1 = 2$ 的2阶约当块，第三列对应 $\lambda_2 = 3$ 的1阶约当块。
+
+\subsection{约当型与系统动态}
+
+\subsubsection*{约当块的矩阵指数}
+
+对于约当块 $J_k(\lambda)$，其矩阵指数为：
+
+\begin{empheq}[box=\fbox]{equation}
+e^{J_k(\lambda)t} = e^{\lambda t} \begin{bmatrix}
+1 & t & \frac{t^2}{2!} & \cdots & \frac{t^{k-1}}{(k-1)!} \\
+0 & 1 & t & \cdots & \frac{t^{k-2}}{(k-2)!} \\
+0 & 0 & 1 & \cdots & \frac{t^{k-3}}{(k-3)!} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 & \cdots & 1
+\end{bmatrix}
+\end{equation}
+
+\subsubsection*{稳定性影响}
+
+\begin{itemize}
+    \item 如果 $\text{Re}(\lambda) < 0$，则 $e^{\lambda t} \to 0$，约当块对应的状态收敛
+    \item 如果 $\text{Re}(\lambda) > 0$，则 $e^{\lambda t} \to \infty$，系统不稳定
+    \item 如果 $\text{Re}(\lambda) = 0$：
+    \begin{itemize}
+        \item 1阶约当块：$e^{J_1(0)t} = 1$（临界稳定）
+        \item $k>1$ 阶约当块：包含 $t, t^2, \ldots$（不稳定！）
+    \end{itemize}
+\end{itemize}
+
+\textbf{关键结论}：纯虚特征值的重根会导致不稳定（即使特征值在虚轴上）。
+
+\subsection{MATLAB实现}
+
+\begin{lstlisting}[style=Matlab-editor, caption=约当标准型的MATLAB实现]
+% 例题1：简单特征值
+A1 = [1 2; 3 2];
+[P1, J1] = jordan(A1);
+fprintf('例题1 - 约当型（对角）:\n');
+J1
+P1
+
+% 例题2：重特征值
+A2 = [2 1 0; 0 2 0; 0 0 3];
+[P2, J2] = jordan(A2);
+fprintf('例题2 - 约当型（有约当块）:\n');
+J2
+P2
+
+% 验证变换
+A2_reconstructed = P2 * J2 * inv(P2);
+fprintf('验证: P*J*P^{-1} =\n');
+A2_reconstructed
+
+% 可视化约当块结构
+figure;
+spy(J2);
+title('约当矩阵的稀疏结构');
+xlabel('列');
+ylabel('行');
+
+% 方法2：使用eig检查对角化可能性
+[V, D] = eig(A2);
+fprintf('特征值:\n');
+diag(D)
+fprintf('特征向量矩阵的秩: %d (应为 %d 才能对角化)\n', rank(V), size(A2,1));
+\end{lstlisting}
+
+\subsection*{本章小结}
+
+\subsubsection*{核心公式}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=约当标准型的核心概念]
+\textbf{约当块}：
+\[J_k(\lambda) = \begin{bmatrix} \lambda & 1 & & \\ & \lambda & \ddots & \\ & & \ddots & 1 \\ & & & \lambda \end{bmatrix}_{k \times k}\]
+
+\textbf{约当矩阵}：
+\[J = \text{diag}(J_1, J_2, \ldots, J_r)\]
+
+\textbf{变换矩阵}：$P$ 的列由特征向量和广义特征向量组成
+
+\textbf{矩阵指数}：
+\[e^{J_k(\lambda)t} = e^{\lambda t} \begin{bmatrix} 1 & t & \frac{t^2}{2!} & \cdots \\ & 1 & t & \cdots \\ & & \ddots & \ddots \\ & & & 1 \end{bmatrix}\]
+\end{tcolorbox}
+
+\subsubsection*{约当型 vs 对角型对比}
+
+\begin{table}[h]
+\centering
+\caption{约当标准型与对角标准型对比}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{gray!20}
+\textbf{特性} & \textbf{对角型} & \textbf{约当型} \\
+\hline
+适用范围 & 特征值互不相同 & \textbf{所有矩阵} \\
+\hline
+矩阵形式 & 纯对角矩阵 & 对角+超对角线的1 \\
+\hline
+系统解耦 & 完全解耦 & 约当块内部耦合 \\
+\hline
+特征向量 & $n$ 个线性无关 & 可能需要广义特征向量 \\
+\hline
+计算复杂度 & 低 & 中等 \\
+\hline
+稳定性判定 & 直接看特征值 & 需考虑约当块大小 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{应用场景}
+
+\begin{itemize}
+    \item \textbf{不可对角化系统}：处理重特征值且几何重数<代数重数的情况
+    \item \textbf{状态方程求解}：计算 $e^{At}$ 时，约当型比原矩阵简单（参考\ref{sec:solving-state-space}节）
+    \item \textbf{稳定性分析}：判断纯虚特征值重根的稳定性（参考\ref{sec:lyapunov-stability}节）
+    \item \textbf{理论研究}：约当型是矩阵相似理论的基石
+\end{itemize}
+
+\subsubsection*{常见误区}
+
+\begin{itemize}
+    \item ❌ \textbf{误区1}：所有矩阵都能对角化（错！重特征值可能无法对角化）
+    \item ❌ \textbf{误区2}：约当块的大小等于特征值的重数（错！可能有多个小约当块）
+    \item ❌ \textbf{误区3}：纯虚特征值重根是临界稳定（错！若约当块阶数>1则不稳定）
+\end{itemize}
+
+\subsubsection*{与其他章节的联系}
+
+\begin{itemize}
+    \item \textbf{向后链接}：
+    \begin{itemize}
+        \item \ref{sec:linear-transformation}节：约当型是对角化失败时的替代方案
+        \item \ref{sec:solving-state-space}节：约当型简化 $e^{At}$ 的计算
+        \item \ref{sec:standard-forms}节：约当型是另一种重要的标准型
+    \end{itemize}
+    \item \textbf{向前链接}：
+    \begin{itemize}
+        \item \ref{sec:lyapunov-stability}节：约当块影响稳定性判定
+        \item 高级课程：约当型在泛函分析、矩阵理论中的应用
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{学习检查清单}
+
+\begin{itemize}
+    \item[$\square$] 理解约当块的定义（对角线+超对角线的1）
+    \item[$\square$] 知道什么时候需要约当型（重特征值且不可对角化）
+    \item[$\square$] 掌握广义特征向量的求解方法（$(A-\lambda I)v_k = v_{k-1}$）
+    \item[$\square$] 能够判断约当块的个数和大小（几何重数 vs 代数重数）
+    \item[$\square$] 理解约当型对系统稳定性的影响（纯虚重根的危险）
+    \item[$\square$] 能够使用MATLAB的 \texttt{jordan()} 函数
+\end{itemize}

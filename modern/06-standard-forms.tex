@@ -1,22 +1,332 @@
 \section{能控、能观标准型及其实现}
 \label{sec:standard-forms}
 
+\subsection*{引言：为系统选择 \textquotedblleft 最佳姿态 \textquotedblright}
+
+想象你要搬运一个大箱子。如果箱子是竖着的，搬起来很困难；但如果把它放平，就容易多了。\textbf{这就是标准型的作用：通过线性变换，将系统矩阵转换为结构简单、便于分析和设计的 \textquotedblleft 标准姿态 \textquotedblright 。}
+
+\subsubsection*{为什么需要标准型？}
+
+在\ref{sec:linear-transformation}节中，我们学会了线性变换 $x = Pz$。但问题是：\textbf{如何选择变换矩阵 $P$，才能让新系统矩阵 $\bar{A}$ 的结构最简单？}标准型就是答案。
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{分析便利}：标准型矩阵结构清晰，系统性质一目了然
+    \item \textbf{设计便利}：极点配置、观测器设计等算法在标准型下最简单
+    \item \textbf{计算便利}：标准型可直接从传递函数或能控/能观矩阵获得
+    \item \textbf{理论价值}：不同标准型揭示了系统的本质特性
+\end{itemize}
+
+\subsubsection*{三种主要标准型}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{gray!20}
+\textbf{标准型} & \textbf{关键特征} & \textbf{主要用途} \\
+\hline
+\textbf{能控标准型} & $\bar{B} = [0, 0, \ldots, 1]^T$ & 极点配置设计 \\
+\hline
+\textbf{能观标准型} & $\bar{C} = [0, 0, \ldots, 1]$ & 状态观测器设计 \\
+\hline
+\textbf{对角标准型} & $\bar{A} = \text{diag}(\lambda_1, \ldots, \lambda_n)$ & 系统解耦、稳定性分析 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{本章路线图}
+
+\begin{enumerate}
+    \item \textbf{能控标准型}：定义、矩阵结构、变换方法、极点配置应用
+    \item \textbf{能观标准型}：定义、对偶关系、观测器设计应用
+    \item \textbf{对角标准型}：条件、实现步骤、与\ref{sec:linear-transformation}节的联系
+    \item \textbf{标准型对比}：如何根据任务选择合适的标准型
+    \item \textbf{通向结构分解}：为\ref{sec:structural-decomposition}节的Kalman分解做准备
+\end{enumerate}
+
 \subsection{能控标准型}
-对于单输入系统，能控标准型为：
-\[\bar{A} = \begin{bmatrix}
+
+\subsubsection*{定义与矩阵结构}
+
+对于\textbf{单输入}系统 $\dot{x} = Ax + Bu$，如果系统\textbf{完全能控}，则存在线性变换使其化为\textbf{能控标准型}：
+
+\begin{empheq}[box=\fbox]{equation}
+\bar{A} = \begin{bmatrix}
 0 & 1 & 0 & \cdots & 0 \\
 0 & 0 & 1 & \cdots & 0 \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & 0 & \cdots & 1 \\
 -a_0 & -a_1 & -a_2 & \cdots & -a_{n-1}
-\end{bmatrix}, \quad \bar{B} = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}\]
+\end{bmatrix}, \quad \bar{B} = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}
+\end{equation}
 
-\subsection{能观测标准型}
-对于单输出系统，能观测标准型为：
-\[\bar{A} = \begin{bmatrix}
+\subsubsection*{关键特性}
+
+\begin{enumerate}
+    \item \textbf{矩阵结构}：$\bar{A}$ 是伴随矩阵（Companion Matrix），最后一行为特征多项式系数的负值
+    \item \textbf{输入矩阵}：$\bar{B}$ 的最后一个元素为1，其余为0（输入直接作用在最后一个状态）
+    \item \textbf{能控性}：能控矩阵 $\bar{Q}_c = [\bar{B}, \bar{A}\bar{B}, \ldots, \bar{A}^{n-1}\bar{B}]$ 自动满秩
+    \item \textbf{特征多项式}：$\det(\lambda I - \bar{A}) = \lambda^n + a_{n-1}\lambda^{n-1} + \cdots + a_1\lambda + a_0$
+\end{enumerate}
+
+\subsubsection*{变换矩阵的构造}
+
+设原系统的能控矩阵为 $Q_c = [B, AB, \ldots, A^{n-1}B]$，则变换矩阵为：
+
+\begin{empheq}[box=\fbox]{equation}
+P = Q_c \cdot T
+\end{equation}
+
+其中 $T$ 是特定的变换矩阵（与特征多项式系数有关，推导见教材）。
+
+\subsubsection*{物理意义}
+
+能控标准型将系统表示为\textbf{串联积分器链}：
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=能控标准型的物理结构]
+输入 $u$ → 积分器1 ($\dot{z}_n$) → 积分器2 ($\dot{z}_{n-1}$) → $\cdots$ → 积分器n ($\dot{z}_1$)
+
+最后一个状态 $z_n$ 受输入和所有状态的反馈控制：
+\[z_n = -a_0 z_1 - a_1 z_2 - \cdots - a_{n-1} z_n + u\]
+\end{tcolorbox}
+
+\subsection{能观标准型}
+
+\subsubsection*{定义与矩阵结构}
+
+对于\textbf{单输出}系统 $\dot{x} = Ax + Bu$，$y = Cx$，如果系统\textbf{完全能观}，则存在线性变换使其化为\textbf{能观标准型}：
+
+\begin{empheq}[box=\fbox]{equation}
+\bar{A} = \begin{bmatrix}
 0 & 0 & \cdots & 0 & -a_0 \\
 1 & 0 & \cdots & 0 & -a_1 \\
 0 & 1 & \cdots & 0 & -a_2 \\
 \vdots & \vdots & \ddots & \vdots & \vdots \\
 0 & 0 & \cdots & 1 & -a_{n-1}
-\end{bmatrix}, \quad \bar{C} = \begin{bmatrix} 0 & 0 & \cdots & 0 & 1 \end{bmatrix}\]
+\end{bmatrix}, \quad \bar{C} = \begin{bmatrix} 0 & 0 & \cdots & 0 & 1 \end{bmatrix}
+\end{equation}
+
+\subsubsection*{与能控标准型的对偶关系}
+
+能观标准型是能控标准型的\textbf{转置}：
+
+\begin{align*}
+\bar{A}_{\text{能观}} &= \bar{A}_{\text{能控}}^T \\
+\bar{C}_{\text{能观}} &= \bar{B}_{\text{能控}}^T
+\end{align*}
+
+这种对偶性反映了能控性和能观性的对称关系。
+
+\subsection{对角标准型}
+
+\subsubsection*{定义}
+
+当系统矩阵 $A$ 有 $n$ 个\textbf{互不相同的特征值} $\lambda_1, \lambda_2, \ldots, \lambda_n$ 时，可化为\textbf{对角标准型}（即\ref{sec:linear-transformation}节中的对角化）：
+
+\begin{empheq}[box=\fbox]{equation}
+\bar{A} = P^{-1}AP = \begin{bmatrix}
+\lambda_1 & 0 & \cdots & 0 \\
+0 & \lambda_2 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & \lambda_n
+\end{bmatrix} = \Lambda
+\end{equation}
+
+其中 $P = [v_1, v_2, \ldots, v_n]$ 是特征向量矩阵。
+
+\subsubsection*{优势}
+
+\begin{itemize}
+    \item \textbf{完全解耦}：每个状态独立演化，$\dot{z}_i = \lambda_i z_i$
+    \item \textbf{稳定性判定}：直接观察特征值（实部<0则稳定）
+    \item \textbf{求解简便}：$e^{\bar{A}t} = \text{diag}(e^{\lambda_1 t}, \ldots, e^{\lambda_n t})$（参考\ref{sec:solving-state-space}节）
+\end{itemize}
+
+\subsection{例题1：转换为能控标准型}
+
+\textbf{问题}：将系统转换为能控标准型
+\[A = \begin{bmatrix} -2 & -3 \\ 1 & 0 \end{bmatrix}, \quad B = \begin{bmatrix} 1 \\ 0 \end{bmatrix}\]
+
+\textbf{解}：
+
+\textbf{步骤1}：验证能控性
+\[Q_c = [B, AB] = \begin{bmatrix} 1 & -2 \\ 0 & 1 \end{bmatrix}, \quad \det(Q_c) = 1 \neq 0 \quad \checkmark\]
+
+系统完全能控。
+
+\textbf{步骤2}：求特征多项式
+\[\det(\lambda I - A) = \det \begin{bmatrix} \lambda + 2 & 3 \\ -1 & \lambda \end{bmatrix} = \lambda^2 + 2\lambda + 3\]
+
+因此 $a_0 = 3$，$a_1 = 2$。
+
+\textbf{步骤3}：构造能控标准型
+\[\bar{A} = \begin{bmatrix} 0 & 1 \\ -3 & -2 \end{bmatrix}, \quad \bar{B} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}\]
+
+\textbf{步骤4}：求变换矩阵（利用 $Q_c$ 和能控标准型的能控矩阵）
+\[\bar{Q}_c = [\bar{B}, \bar{A}\bar{B}] = \begin{bmatrix} 0 & 1 \\ 1 & -2 \end{bmatrix}\]
+
+变换矩阵：
+\[P = Q_c \bar{Q}_c^{-1} = \begin{bmatrix} 1 & -2 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 0 & 1 \\ 1 & -2 \end{bmatrix}^{-1} = \begin{bmatrix} 1 & -2 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} 2 & 1 \\ 1 & 0 \end{bmatrix} = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}\]
+
+\textbf{步骤5}：验证
+\begin{align*}
+P^{-1}AP &= \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix} \begin{bmatrix} -2 & -3 \\ 1 & 0 \end{bmatrix} \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix} = \begin{bmatrix} 0 & 1 \\ -3 & -2 \end{bmatrix} \quad \checkmark \\
+P^{-1}B &= \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \end{bmatrix} \quad \checkmark
+\end{align*}
+
+\subsection{例题2：三种标准型的对比}
+
+\textbf{问题}：对于系统 $A = \begin{bmatrix} -3 & 1 \\ -2 & 0 \end{bmatrix}$，$B = \begin{bmatrix} 1 \\ 1 \end{bmatrix}$，$C = \begin{bmatrix} 1 & 0 \end{bmatrix}$，分别求能控标准型、能观标准型和对角标准型。
+
+\textbf{解}：
+
+\textbf{1. 能控标准型}
+
+特征多项式：$\det(\lambda I - A) = \lambda^2 + 3\lambda + 2 = (\lambda+1)(\lambda+2)$
+
+因此：
+\[\bar{A}_c = \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix}, \quad \bar{B}_c = \begin{bmatrix} 0 \\ 1 \end{bmatrix}\]
+
+\textbf{2. 能观标准型}
+
+\[\bar{A}_o = \begin{bmatrix} 0 & -2 \\ 1 & -3 \end{bmatrix}, \quad \bar{C}_o = \begin{bmatrix} 0 & 1 \end{bmatrix}\]
+
+\textbf{3. 对角标准型}
+
+特征值：$\lambda_1 = -1$，$\lambda_2 = -2$
+
+对于 $\lambda_1 = -1$：$v_1 = \begin{bmatrix} 1 \\ 2 \end{bmatrix}$
+
+对于 $\lambda_2 = -2$：$v_2 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}$
+
+因此：
+\[P = \begin{bmatrix} 1 & 1 \\ 2 & 1 \end{bmatrix}, \quad \bar{A}_d = \begin{bmatrix} -1 & 0 \\ 0 & -2 \end{bmatrix}\]
+
+\textbf{对比}：三种标准型的特征值完全相同（-1和-2），这是相似变换的不变性。
+
+\subsection{MATLAB实现}
+
+\begin{lstlisting}[style=Matlab-editor, caption=标准型转换的MATLAB实现]
+% 定义原系统
+A = [-2 -3; 1 0];
+B = [1; 0];
+C = [1 0];
+D = 0;
+sys = ss(A, B, C, D);
+
+% 方法1：使用canon函数转换为能控标准型
+sys_ctrbf = canon(sys, 'companion');
+[A_c, B_c, C_c, D_c] = ssdata(sys_ctrbf);
+fprintf('能控标准型:\n');
+A_c, B_c
+
+% 方法2：使用canon函数转换为能观标准型
+sys_obsvf = canon(sys, 'modal');  % modal是对角型的近似
+[A_o, B_o, C_o, D_o] = ssdata(sys_obsvf);
+fprintf('模态标准型（对角化）:\n');
+A_o, B_o
+
+% 方法3：手动对角化
+[V, Lambda] = eig(A);  % V是特征向量矩阵
+A_diag = inv(V) * A * V;
+B_diag = inv(V) * B;
+C_diag = C * V;
+fprintf('对角标准型:\n');
+Lambda, B_diag
+
+% 验证传递函数不变
+[num, den] = ss2tf(A, B, C, D);
+[num_c, den_c] = ss2tf(A_c, B_c, C_c, D_c);
+fprintf('传递函数对比:\n');
+tf_original = tf(num, den)
+tf_canonical = tf(num_c, den_c)
+\end{lstlisting}
+
+\subsection*{本章小结}
+
+\subsubsection*{核心要点}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=三种标准型的核心特征]
+\textbf{能控标准型}：
+\begin{itemize}
+    \item 矩阵：伴随矩阵（最后一行为 $-a_0, -a_1, \ldots, -a_{n-1}$）
+    \item 条件：系统完全能控
+    \item 应用：极点配置设计（\ref{sec:pole-placement}节）
+\end{itemize}
+
+\textbf{能观标准型}：
+\begin{itemize}
+    \item 矩阵：能控标准型的转置
+    \item 条件：系统完全能观
+    \item 应用：状态观测器设计（\ref{sec:state-observer}节）
+\end{itemize}
+
+\textbf{对角标准型}：
+\begin{itemize}
+    \item 矩阵：对角矩阵 $\text{diag}(\lambda_1, \ldots, \lambda_n)$
+    \item 条件：特征值互不相同
+    \item 应用：系统解耦、稳定性分析
+\end{itemize}
+\end{tcolorbox}
+
+\subsubsection*{标准型选择指南}
+
+\begin{table}[h]
+\centering
+\caption{标准型选择对比}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\rowcolor{gray!20}
+\textbf{任务} & \textbf{推荐标准型} & \textbf{原因} & \textbf{前提条件} \\
+\hline
+极点配置 & 能控标准型 & 状态反馈增益计算简单 & 完全能控 \\
+\hline
+观测器设计 & 能观标准型 & 观测器增益计算简单 & 完全能观 \\
+\hline
+稳定性分析 & 对角标准型 & 直接读取特征值 & 无重特征值 \\
+\hline
+系统解耦 & 对角标准型 & 状态独立演化 & 无重特征值 \\
+\hline
+时域响应计算 & 对角标准型 & $e^{\Lambda t}$ 计算简便 & 无重特征值 \\
+\hline
+重特征值系统 & 约当标准型 & 处理不可对角化情况 & 见\ref{sec:jordan-form}节 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{常见误区}
+
+\begin{itemize}
+    \item ❌ \textbf{误区1}：任何系统都能对角化（错！重特征值且线性无关特征向量不足时不能对角化）
+    \item ❌ \textbf{误区2}：能控标准型和能观标准型是同一个（错！它们是转置关系）
+    \item ❌ \textbf{误区3}：标准型改变了系统的特征值（错！特征值是相似变换的不变量）
+\end{itemize}
+
+\subsubsection*{与其他章节的联系}
+
+\begin{itemize}
+    \item \textbf{向后链接}：
+    \begin{itemize}
+        \item \ref{sec:linear-transformation}节：对角标准型就是对角化
+        \item \ref{sec:controllability-observability}节：能控/能观性是标准型存在的前提
+        \item \ref{sec:transfer-function}节：能控标准型直接对应传递函数形式
+    \end{itemize}
+    \item \textbf{向前链接}：
+    \begin{itemize}
+        \item \ref{sec:structural-decomposition}节：标准型是Kalman分解的基础
+        \item \ref{sec:jordan-form}节：约当型处理不可对角化情况
+        \item \ref{sec:pole-placement}节：极点配置在能控标准型下最简单
+        \item \ref{sec:state-observer}节：观测器设计在能观标准型下最简单
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{学习检查清单}
+
+\begin{itemize}
+    \item[$\square$] 理解三种标准型的矩阵结构（能控、能观、对角）
+    \item[$\square$] 掌握能控标准型的构造步骤（能控矩阵、特征多项式）
+    \item[$\square$] 理解能控型和能观型的对偶关系（转置）
+    \item[$\square$] 会判断系统能否对角化（特征值是否互不相同）
+    \item[$\square$] 知道如何根据任务选择合适的标准型
+    \item[$\square$] 能够使用MATLAB的 \texttt{canon()} 函数进行标准型转换
+\end{itemize}

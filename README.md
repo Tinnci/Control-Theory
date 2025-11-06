@@ -125,6 +125,63 @@ This repository contains notes on Control Theory, covering both classical and mo
     *   Full-Dimensional State Observer
     *   Observer Design
     *   Separation Principle
+12. **Nonlinear Systems** ⭐ *Enhanced in v1.8.0*
+    *   Phase Plane Method
+    *   Describing Function Method
+    *   Lyapunov Stability Theory
+    *   Engineering Applications (Friction, Saturation, Backlash)
+13. **Discrete-Time Systems** ⭐ *Enhanced in v1.8.0*
+    *   Sampling and Z-Transform
+    *   Discrete System Modeling
+    *   Stability Analysis
+    *   Digital Controller Design
+
+## Recent Updates
+
+### Version 1.8.0 (November 2025) - Modern Control Theory Enhancement
+
+**Major improvements to 4 chapters with comprehensive academic structure:**
+
+#### Enhanced Chapters:
+- **Ch05: Controllability & Observability** (275→459 lines, +67%)
+  - Comprehensive comparison tables
+  - Detailed Kalman rank criterion analysis
+  - 15-item learning checklist
+  - 10 common misconceptions with solutions
+
+- **Ch07: Structural Decomposition** (261→601 lines, +130%)
+  - Introduction with system "blind spot" analogy
+  - TikZ diagrams for subsystem information flow
+  - 11-dimension subsystem comparison table
+  - Complete integration with adjacent chapters
+
+- **Ch12: Nonlinear Systems** (465→929 lines, +100%)
+  - Real-world engineering examples (DC motor friction, op-amp saturation, gear backlash)
+  - Stick-slip phenomenon analysis with quantitative data
+  - PID integral windup with 3 anti-windup strategies
+  - 4×4 method comparison table
+  - 14-item learning checklist (theory + calculation + application)
+
+- **Ch13: Discrete-Time Systems** (545→1200 lines, +120%)
+  - Complete restructuring with logical grouping
+  - Digital control system visualization with ZOH explanation
+  - Continuous example G(s)=1/(s+1) throughout chapter
+  - 3 new TikZ diagrams (aliasing, system structure, step response)
+  - Complete C/Python code implementation examples
+
+#### Improvements:
+- **+1,824 lines** of high-quality content
+- **+40 pages** in compiled PDF
+- **⭐⭐⭐⭐⭐ Academic structure** for all 4 chapters
+- Fixed cross-references and numbering issues
+- Added `csquotes` package for proper quotation marks
+- Optimized table of contents color (darker sage green)
+
+#### Technical:
+- 3× full compilation verification
+- Overfull warnings: 40 (38 hbox + 2 vbox)
+- PDF: 247 pages, 1524 KB
+- No new errors introduced
 
 ## License
 

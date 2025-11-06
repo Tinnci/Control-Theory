@@ -601,18 +601,329 @@ x_1 = 0
     \item \textbf{尝试与验证}：构造李雅普诺夫函数需要尝试，没有通用公式
 \end{enumerate}
 
+\subsection{工程中的典型非线性现象}
+
+工程实践中，非线性现象无处不在。理解这些非线性特性对控制系统设计至关重要。
+
+\subsubsection{摩擦非线性及其影响}
+
+\textbf{DC电机中的摩擦现象}
+
+直流伺服电机广泛用于机器人关节、数控机床等精密定位系统。然而，摩擦力会严重影响其低速性能。
+
+\textbf{摩擦模型：}
+
+实际摩擦力 $F_f$ 可表示为：
+\begin{align*}
+F_f = \begin{cases}
+F_c \cdot \text{sign}(\dot{x}) + b\dot{x} & |\dot{x}| > \epsilon \\
+F_s \cdot \text{sign}(F_{ext}) & |\dot{x}| \leq \epsilon, |F_{ext}| < F_s \\
+F_{ext} & |\dot{x}| \leq \epsilon, |F_{ext}| \geq F_s
+\end{cases}
+\end{align*}
+
+其中：
+\begin{itemize}
+    \item $F_c$：库伦摩擦力（约0.5-2N，与速度无关）
+    \item $F_s$：静摩擦力（通常 $F_s = 1.2F_c$）
+    \item $b$：粘性摩擦系数（$b\dot{x}$ 与速度成正比）
+    \item $\epsilon$：低速阈值（通常0.01 rad/s）
+\end{itemize}
+
+\textbf{Stick-Slip（黏滑）现象：}
+
+当电机以极低速运行时（如0.1 rpm），摩擦力会导致：
+
+\begin{enumerate}
+    \item \textbf{Stick阶段}：静摩擦力 $F_s$ 超过驱动力，电机停止
+    \item \textbf{Slip阶段}：驱动力累积超过 $F_s$，电机突然跳跃
+    \item \textbf{周期重复}：导致爬行、振荡，无法平稳定位
+\end{enumerate}
+
+\textbf{真实响应 vs 线性化模型：}
+
+假设电机参数：$J = 0.01$ kg·m²，$b_{nominal} = 0.02$ N·m·s/rad，$F_c = 0.5$ N·m
+
+\begin{itemize}
+    \item \textbf{线性模型预测}：平滑的指数曲线，稳态误差约2\%
+    \item \textbf{实际测量}：低速段出现明显振荡，峰峰值达10\%，稳态时仍有0.5\%的周期性抖动
+\end{itemize}
+
+\textbf{工程对策：}
+
+\begin{itemize}
+    \item 摩擦补偿：根据速度方向施加反向补偿力矩
+    \item Dither信号：叠加小幅高频信号（50-100 Hz），使系统始终处于Slip状态
+    \item 速度前馈：避免系统长时间停留在低速区域
+\end{itemize}
+
+\subsubsection{饱和非线性的实际影响}
+
+\textbf{运算放大器的饱和}
+
+运放输出电压受电源限制：$V_{out} \in [-V_{sat}, +V_{sat}]$（典型值 $\pm12$ V 或 $\pm15$ V）
+
+\textbf{饱和曲线（实测数据）：}
+
+某型运放（TL082）在 $V_{CC} = \pm15$ V 时的实际特性：
+\begin{align*}
+V_{out} \approx \begin{cases}
+-13.5 \text{ V} & V_{in} < -1.5 \text{ mV} \\
+9000 \cdot V_{in} & -1.5 \text{ mV} \leq V_{in} \leq 1.5 \text{ mV} \\
++13.5 \text{ V} & V_{in} > 1.5 \text{ mV}
+\end{cases}
+\end{align*}
+
+线性区范围仅 $\pm1.5$ mV，非常窄！
+
+\textbf{PID控制器的积分饱和（Integral Windup）：}
+
+当执行器饱和时，PID控制器的积分项会持续累积误差：
+
+\textbf{机理：}
+\begin{enumerate}
+    \item 大的设定值阶跃导致误差 $e(t)$ 很大
+    \item 积分项 $\int e(\tau) d\tau$ 快速累积到很大的值
+    \item 输出饱和后，实际输出无法继续增大
+    \item 即使误差减小甚至变负，积分项仍需很长时间才能"放电"
+    \item 导致严重的超调和长时间的稳定过程
+\end{enumerate}
+
+\textbf{数值示例：}
+
+考虑温度控制系统，设定值从20°C突跳到80°C，PID参数 $K_p=5$，$K_i=0.2$，$K_d=1$，加热器输出限幅 $[0, 100]$\%：
+
+\begin{itemize}
+    \item \textbf{无抗饱和措施}：
+    \begin{itemize}
+        \item 上升时间：180 s
+        \item 超调量：25\%（达到100°C！）
+        \item 调节时间：480 s
+        \item 积分项峰值：450（远超合理范围）
+    \end{itemize}
+    \item \textbf{带积分限幅（Clamping）}：限制积分项 $\in [-50, 50]$
+    \begin{itemize}
+        \item 上升时间：185 s（略慢）
+        \item 超调量：8\%（改善67\%）
+        \item 调节时间：240 s（改善50\%）
+    \end{itemize}
+    \item \textbf{带Back-calculation}：饱和时积分项回退
+    \begin{itemize}
+        \item 上升时间：180 s
+        \item 超调量：5\%（改善80\%）
+        \item 调节时间：210 s（改善56\%）
+    \end{itemize}
+\end{itemize}
+
+\textbf{结论：}忽视饱和非线性会导致性能严重恶化，必须采取抗积分饱和措施。
+
+\subsubsection{死区与间隙的影响}
+
+\textbf{齿轮传动中的间隙（Backlash）}
+
+减速器齿轮副之间通常有0.1-0.5 mm的间隙，避免卡死。但这会导致：
+
+\textbf{迟滞回环（Hysteresis Loop）：}
+
+输入轴转角 $\theta_{in}$ 与输出轴转角 $\theta_{out}$ 的关系：
+\begin{align*}
+\theta_{out} = \begin{cases}
+k(\theta_{in} - \Delta/2) & \text{正向转动} \\
+k(\theta_{in} + \Delta/2) & \text{反向转动}
+\end{cases}
+\end{align*}
+
+其中 $\Delta$ 是间隙大小（等效到输入轴），$k$ 是减速比。
+
+\textbf{实际影响（机器人关节案例）：}
+
+六自由度机械臂末端定位精度测试：
+\begin{itemize}
+    \item \textbf{理论精度}：$\pm0.05$ mm（根据编码器分辨率）
+    \item \textbf{单向重复精度}：$\pm0.08$ mm（较好）
+    \item \textbf{双向重复精度}：$\pm0.35$ mm（恶化4倍！）
+    \item \textbf{主要原因}：6个关节的间隙累积，每个关节间隙约0.2 mm
+\end{itemize}
+
+\textbf{对控制系统的影响：}
+
+\begin{enumerate}
+    \item \textbf{定位误差}：方向反转时出现"失控"阶段，跟踪误差突增
+    \item \textbf{振荡加剧}：间隙相当于相位滞后，降低相位裕度
+    \item \textbf{极限环}：某些参数下会产生持续振荡，幅值约为间隙大小的2-3倍
+\end{enumerate}
+
+\textbf{补偿策略：}
+
+\begin{itemize}
+    \item \textbf{机械改进}：预紧弹簧、双齿轮消隙机构（成本高）
+    \item \textbf{反向间隙补偿}：检测方向反转，立即施加补偿转矩
+    \item \textbf{自适应控制}：在线估计间隙大小并动态调整控制器
+    \item \textbf{轨迹规划}：尽量避免频繁换向，采用单向逼近策略
+\end{itemize}
+
 \subsection{总结}
 
+\subsubsection{非线性分析方法对比}
+
 \begin{center}
-\begin{tabular}{|l|p{4cm}|p{4cm}|p{3cm}|}
+\begin{tabular}{|l|p{3.5cm}|p{3.8cm}|p{3.2cm}|}
 \hline
-\textbf{方法} & \textbf{适用范围} & \textbf{优点} & \textbf{缺点} \\
+\textbf{方法} & \textbf{适用范围} & \textbf{优点} & \textbf{局限性} \\
 \hline
-相平面法 & 二阶系统 & 直观、图形化 & 仅限二阶 \\
+\textbf{相平面法} & 二阶自治系统 & 直观、图形化、易于理解系统全局行为、可预测极限环 & 仅限二阶、难以量化、绘制费时 \\
 \hline
-描述函数法 & 含单一非线性环节 & 频域分析、预测极限环 & 近似方法 \\
+\textbf{描述函数法} & 含单一非线性环节的闭环系统 & 频域分析、可预测极限环的频率和幅值、工程实用 & 近似方法、忽略高次谐波、多非线性环节时失效 \\
 \hline
-Lyapunov法 & 任意阶非线性系统 & 严格、不需求解方程 & 构造函数困难 \\
+\textbf{Lyapunov法} & 任意阶非线性系统 & 严格的数学证明、不需求解微分方程、可处理时变系统 & 构造Lyapunov函数困难、保守性（稳定域估计偏小） \\
+\hline
+\textbf{线性化法} & 平衡点邻域小范围 & 简单、可用线性理论全套工具 & 仅局部有效、无法预测大信号行为、可能掩盖非线性本质 \\
 \hline
 \end{tabular}
 \end{center}
+
+\subsubsection{线性化的适用范围}
+
+线性化是分析非线性系统最常用的近似方法，但必须明确其适用条件：
+
+\textbf{数学条件：}
+
+对于系统 $\dot{\mathbf{x}} = \mathbf{f}(\mathbf{x})$，在平衡点 $\mathbf{x}_e$ 处线性化：
+\begin{align*}
+\Delta\dot{\mathbf{x}} = \mathbf{A}\Delta\mathbf{x}, \quad \mathbf{A} = \left.\frac{\partial \mathbf{f}}{\partial \mathbf{x}}\right|_{\mathbf{x}_e}
+\end{align*}
+
+线性化有效的充分条件：
+\begin{enumerate}
+    \item $\|\Delta\mathbf{x}\|$ 足够小（通常要求 $< 10\%$ 额定值）
+    \item 雅可比矩阵 $\mathbf{A}$ 的特征值远离虚轴（$|\text{Re}(\lambda_i)| \gg 0$）
+    \item 高阶项 $\|\mathbf{f}(\mathbf{x}) - \mathbf{A}\Delta\mathbf{x}\| / \|\Delta\mathbf{x}\|$ 足够小
+\end{enumerate}
+
+\textbf{工程判断准则：}
+
+\begin{itemize}
+    \item \textbf{幅值准则}：偏离平衡点的幅值应 $< 15\%$ 工作范围
+    \item \textbf{速度准则}：状态变化率应在系统带宽内（避免快速大幅变化）
+    \item \textbf{频率准则}：激励频率应远低于非线性特征频率
+\end{itemize}
+
+\textbf{线性化失效的典型情况：}
+
+\begin{enumerate}
+    \item 大角度摆动的倒立摆（$\theta > 30°$ 时 $\sin\theta \neq \theta$，误差 $>5\%$）
+    \item 饱和后的放大器（输出被限幅，增益突降为零）
+    \item 跨越多个平衡点的运动（相平面上的鞍点穿越）
+    \item 存在滑动摩擦时的静止状态（$\dot{x}=0$ 处不可微）
+\end{enumerate}
+
+\subsubsection{常见误区与正确做法}
+
+\begin{enumerate}
+    \item \textbf{误区：认为线性化总是有效的}
+    
+    \textit{正确做法：}始终检查工作点偏离范围，必要时进行非线性仿真验证。
+    
+    \item \textbf{误区：忽视执行器饱和的影响}
+    
+    \textit{正确做法：}在控制器设计中必须考虑饱和约束，采用抗饱和措施（如积分限幅、back-calculation）。
+    
+    \item \textbf{误区：将极限环视为系统故障}
+    
+    \textit{正确做法：}极限环有时是设计的一部分（如自激振荡器），关键是判断其稳定性和是否符合设计要求。
+    
+    \item \textbf{误区：Lyapunov函数找不到就说明系统不稳定}
+    
+    \textit{正确做法：}找不到Lyapunov函数只能说明无法用此方法证明稳定性，系统仍可能稳定。应尝试其他方法或不同的候选函数。
+    
+    \item \textbf{误区：相平面法只能分析二阶系统，因此实用性差}
+    
+    \textit{正确做法：}许多高阶系统可简化为二阶主导模态，相平面法仍能提供重要洞察。
+    
+    \item \textbf{误区：描述函数法给出精确的极限环预测}
+    
+    \textit{正确做法：}描述函数法基于基波近似，预测值通常有5-15\%误差，应作为初步估计，需仿真或实验验证。
+    
+    \item \textbf{误区：非线性系统必须用非线性控制方法}
+    
+    \textit{正确做法：}若工作范围小、非线性弱，线性控制器配合适当限幅保护往往已足够且更简单。
+    
+    \item \textbf{误区：死区、间隙只影响稳态精度}
+    
+    \textit{正确做法：}死区和间隙会显著降低相位裕度，可能导致系统不稳定或产生极限环，必须在动态设计中考虑。
+\end{enumerate}
+
+\subsubsection{学习要点检查清单}
+
+\textbf{理论理解（5项）：}
+\begin{enumerate}
+    \item[$\square$] 理解非线性系统与线性系统的本质区别（叠加原理失效）
+    \item[$\square$] 掌握五种典型非线性特性（饱和、死区、间隙、继电、摩擦）及其数学描述
+    \item[$\square$] 理解极限环的物理意义及其与线性系统稳定性的区别
+    \item[$\square$] 掌握Lyapunov稳定性的定义（稳定、渐近稳定、全局稳定）
+    \item[$\square$] 理解描述函数法的基本假设和适用条件
+\end{enumerate}
+
+\textbf{分析计算（5项）：}
+\begin{enumerate}
+    \item[$\square$] 能绘制给定二阶非线性系统的相轨迹，判断奇点类型
+    \item[$\square$] 能推导典型非线性环节（饱和、死区、继电）的描述函数
+    \item[$\square$] 能用描述函数法判断闭环系统是否存在极限环，并计算其幅值和频率
+    \item[$\square$] 能为给定的二阶非线性系统构造二次型Lyapunov函数并判断稳定性
+    \item[$\square$] 能用雅可比矩阵线性化非线性系统，并分析线性化的有效范围
+\end{enumerate}
+
+\textbf{工程应用（4项）：}
+\begin{enumerate}
+    \item[$\square$] 能识别实际系统中的非线性环节（如电机摩擦、放大器饱和）
+    \item[$\square$] 能分析非线性对控制性能的具体影响（超调、振荡、稳态误差）
+    \item[$\square$] 能提出针对性的补偿策略（摩擦补偿、抗饱和、死区补偿）
+    \item[$\square$] 能判断何时必须采用非线性控制方法，何时线性方法已足够
+\end{enumerate}
+
+\subsubsection{扩展阅读与后续学习}
+
+\textbf{深入学习方向：}
+
+\begin{itemize}
+    \item \textbf{滑模控制（Sliding Mode Control）}：
+    
+    针对不确定性和扰动的鲁棒非线性控制方法，广泛用于机器人、航空航天。参考：Utkin《Sliding Mode Control》
+    
+    \item \textbf{反馈线性化（Feedback Linearization）}：
+    
+    通过非线性状态变换和反馈将非线性系统精确线性化，是现代非线性控制的核心方法之一。参考：Isidori《Nonlinear Control Systems》
+    
+    \item \textbf{自适应控制（Adaptive Control）}：
+    
+    处理参数不确定的非线性系统，参数在线估计与控制器同步调整。参考：Slotine《Applied Nonlinear Control》
+    
+    \item \textbf{非线性H∞控制}：
+    
+    非线性系统的鲁棒优化控制，基于Hamilton-Jacobi不等式。
+    
+    \item \textbf{Backstepping设计}：
+    
+    递推设计方法，适用于严格反馈型非线性系统。
+\end{itemize}
+
+\textbf{与其他章节的联系：}
+
+\begin{itemize}
+    \item \textbf{与第4章（状态空间求解）}：线性化后可用状态空间方法分析
+    \item \textbf{与第9章（Lyapunov稳定性）}：非线性系统的稳定性严格证明
+    \item \textbf{与第10章（极点配置）}：局部线性化后可用极点配置设计
+    \item \textbf{与第13章（离散系统）}：数字控制中的非线性现象（如量化、饱和）
+\end{itemize}
+
+\textbf{工程资源：}
+
+\begin{itemize}
+    \item MATLAB/Simulink的\texttt{pplane}工具：交互式相平面绘制
+    \item \texttt{Control System Toolbox}：\texttt{linsim}与\texttt{nlsim}对比
+    \item 开源库\texttt{python-control}：支持非线性仿真和描述函数计算
+\end{itemize}
+
+\textbf{结语：}
+
+\textquotedblleft 线性化是近似，非线性才是真实。\textquotedblright 工程师必须在简化模型与精确描述之间找到平衡。理解非线性系统的本质，既不能被其复杂性吓倒而盲目线性化，也不能过度追求非线性方法而忽视工程实用性。正如控制大师Åström所言：\textquotedblleft 好的控制工程师知道什么时候该简化，什么时候不能简化。\textquotedblright

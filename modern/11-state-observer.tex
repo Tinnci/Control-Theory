@@ -969,7 +969,7 @@ $\square$（证毕）
 \subsubsection*{本节目的}
 将本章所学的所有概念——\textbf{控制器设计、观测器设计、分离定理}——应用于一个具体的物理系统，完整地走一遍从问题分析到系统验证的全过程。
 
-\subsubsection{1. 问题描述与系统建模}
+\subsubsection{问题描述与系统建模}
 
 \textbf{场景：}为一个直流电机设计高精度位置控制器。
 
@@ -1002,7 +1002,7 @@ $\square$（证毕）
     \item $y = x_1$：只测量角度
 \end{itemize}
 
-\subsubsection{2. 系统分析与性能指标}
+\subsubsection{系统分析与性能指标}
 
 \textbf{开环特性分析：}
 
@@ -1044,7 +1044,7 @@ $\det(W_o) = 1 \neq 0$，系统\textbf{完全能观测} ✓
 为了计算简便，我们选择接近的极点：
 \[\boxed{\lambda_{1,2} = -2.5 \pm j2.5}\]
 
-\subsubsection{3. 控制器设计（基于分离定理的第一步）}
+\subsubsection{控制器设计（基于分离定理的第一步）}
 
 我们首先\textbf{假设所有状态均可测量}，设计状态反馈增益 $K$。
 
@@ -1075,7 +1075,7 @@ k_1 &= 12.5
 
 \textbf{问题：}$\dot{\theta}$ 是未知的！这就是为什么我们需要观测器。
 
-\subsubsection{4. 观测器设计（基于分离定理的第二步）}
+\subsubsection{观测器设计（基于分离定理的第二步）}
 
 为解决 $\dot{\theta}$ 不可测的问题，我们设计一个观测器来提供状态估计 $\hat{x}$。
 
@@ -1116,7 +1116,7 @@ l_1 + l_2 &= 120 \quad \Rightarrow \quad l_2 = 120 - 21 = 99
 \textbf{结果：}
 \[\boxed{L = \begin{bmatrix} 21 \\ 99 \end{bmatrix}}\]
 
-\subsubsection{5. 组合系统与最终实现}
+\subsubsection{组合系统与最终实现}
 
 根据\textbf{分离定理}，我们可以将上述独立设计的控制器和观测器安全地组合起来。
 
@@ -1155,7 +1155,7 @@ l_1 + l_2 &= 120 \quad \Rightarrow \quad l_2 = 120 - 21 = 99
 \end{tikzpicture}
 \end{center}
 
-\subsubsection{6. 系统整体特性分析}
+\subsubsection{系统整体特性分析}
 
 \textbf{系统阶数：}
 
@@ -1195,7 +1195,7 @@ l_1 + l_2 &= 120 \quad \Rightarrow \quad l_2 = 120 - 21 = 99
 
 由于观测器远快于控制器，系统整体响应由控制器主导 ✓
 
-\subsubsection{7. 设计验证与性能评估}
+\subsubsection{设计验证与性能评估}
 
 \textbf{验证步骤：}
 
@@ -1244,7 +1244,7 @@ sys = ss(A_aug, B_aug, C_aug, 0);
 step(sys * 12.5);  % 阶跃响应
 \end{verbatim}
 
-\subsubsection{8. 实际考虑与改进方向}
+\subsubsection{实际考虑与改进方向}
 
 \textbf{实际问题：}
 

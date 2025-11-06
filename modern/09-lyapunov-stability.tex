@@ -535,6 +535,326 @@ x_1(34 + 432x_1^2) &= 0
     \item 如果特征值恰好在虚轴上（实部为零），方法失效，需改用第二方法
 \end{itemize}
 
+\subsection{离散系统的李雅普诺夫稳定性分析}
+\label{subsec:discrete-lyapunov}
+
+\subsubsection*{为什么需要离散版本的李雅普诺夫方法？}
+
+在现代控制工程中，几乎所有的控制器都是\textbf{数字实现}的——无论是无人机、工业机器人还是电力系统，控制决策都在\textbf{离散的时刻}进行计算。这意味着我们处理的实际上是\textbf{离散时间系统}：
+\begin{align*}
+x(k+1) = Ax(k) \quad \text{（离散状态方程）}
+\end{align*}
+
+而前面介绍的李雅普诺夫方法都是针对\textbf{连续时间系统}：
+\begin{align*}
+\dot{x}(t) = Ax(t) \quad \text{（连续状态方程）}
+\end{align*}
+
+这两者的稳定性判据有\textbf{本质区别}，必须使用不同的数学工具。
+
+\subsubsection{离散系统稳定性判据的关键差异}
+
+\textbf{核心思想}相同（能量递减），但\textbf{数学形式}完全不同：
+
+\begin{table}[H]
+\centering
+\caption{连续系统 vs 离散系统的稳定性判据对比}
+\begin{tabular}{|l|c|c|l|}
+\hline
+\textbf{对比项} & \textbf{连续系统} & \textbf{离散系统} & \textbf{物理意义} \\
+\hline
+\hline
+状态方程 & $\dot{x} = Ax$ & $x(k+1) = Ax(k)$ & 微分 vs 差分 \\
+\hline
+解的形式 & $x(t) = e^{At}x(0)$ & $x(k) = A^k x(0)$ & 指数 vs 幂次 \\
+\hline
+\multirow{2}{*}{稳定域} & \textbf{s平面左半平面} & \textbf{z平面单位圆内} & \multirow{2}{*}{指数衰减条件} \\
+& $\text{Re}(\lambda) < 0$ & $|\lambda| < 1$ & \\
+\hline
+临界情况 & $\text{Re}(\lambda) = 0$ & $|\lambda| = 1$ & 临界稳定 \\
+\hline
+不稳定域 & $\text{Re}(\lambda) > 0$ & $|\lambda| > 1$ & 发散 \\
+\hline
+能量变化 & 导数 $\dot{V}(t)$ & 差分 $\Delta V(k)$ & 连续 vs 离散 \\
+\hline
+\multirow{2}{*}{李雅普诺夫方程} & $A^T P + PA = -Q$ & $A^T P A - P = -Q$ & \multirow{2}{*}{判定工具} \\
+& （连续方程） & （离散方程） & \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{为什么稳定域不同？}
+
+\begin{itemize}
+    \item \textbf{连续系统}：解为 $x(t) \approx e^{\lambda t} x(0)$
+    \begin{itemize}
+        \item 若 $\text{Re}(\lambda) < 0$，则 $e^{\lambda t} \to 0$ （如 $e^{-0.5t} \to 0$）
+        \item 稳定域：复平面\textbf{左半平面}
+    \end{itemize}
+    
+    \item \textbf{离散系统}：解为 $x(k) \approx \lambda^k x(0)$
+    \begin{itemize}
+        \item 若 $|\lambda| < 1$，则 $\lambda^k \to 0$ （如 $0.8^k \to 0$）
+        \item 若 $|\lambda| > 1$，则 $\lambda^k \to \infty$ （如 $1.2^k \to \infty$）
+        \item 稳定域：复平面\textbf{单位圆内}
+    \end{itemize}
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+% 连续系统 - s平面
+\begin{scope}[xshift=0cm]
+\draw[thick,->] (-2.5,0) -- (1.5,0) node[right] {Re};
+\draw[thick,->] (0,-2) -- (0,2) node[above] {Im};
+\fill[blue!20, opacity=0.5] (-2.5,-2) rectangle (0,2);
+\draw[thick, red] (0,-2) -- (0,2);
+\node at (0,-2.5) {\textbf{连续系统 (s平面)}};
+\node[blue] at (-1.2,1.5) {稳定域};
+\node[blue] at (-1.2,1.2) {Re$(\lambda)<0$};
+\node[red] at (0.8,1.5) {不稳定域};
+\node[red] at (0.8,1.2) {Re$(\lambda)>0$};
+\draw[red, thick] (0,0) node[below right] {虚轴};
+\end{scope}
+
+% 离散系统 - z平面
+\begin{scope}[xshift=7cm]
+\draw[thick,->] (-2.5,0) -- (2.5,0) node[right] {Re};
+\draw[thick,->] (0,-2) -- (0,2) node[above] {Im};
+\draw[thick, red] (0,0) circle (1.5cm);
+\fill[blue!20, opacity=0.5] (0,0) circle (1.5cm);
+\node at (0,-2.5) {\textbf{离散系统 (z平面)}};
+\node[blue] at (0,0.7) {稳定域};
+\node[blue] at (0,0.3) {$|\lambda|<1$};
+\node[red] at (1.8,1.5) {不稳定域};
+\node[red] at (1.8,1.2) {$|\lambda|>1$};
+\draw[red, thick] (1.5,0) node[below right] {单位圆};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{离散李雅普诺夫方程}
+
+对于离散线性系统 $x(k+1) = Ax(k)$，李雅普诺夫第二方法的核心步骤如下：
+
+\textbf{1. 选择李雅普诺夫函数}
+
+与连续系统类似，选择二次型：
+\begin{align*}
+V(k) = x(k)^T P x(k) \quad \text{其中 } P = P^T > 0
+\end{align*}
+
+\textbf{2. 计算能量变化（差分而非导数）}
+
+离散系统中，我们不再看导数 $\dot{V}$，而是看\textbf{相邻两个时刻的能量差}：
+\begin{align*}
+\Delta V(k) &= V(k+1) - V(k) \\
+&= x(k+1)^T P x(k+1) - x(k)^T P x(k)
+\end{align*}
+
+代入 $x(k+1) = Ax(k)$：
+\begin{align*}
+\Delta V(k) &= (Ax(k))^T P (Ax(k)) - x(k)^T P x(k) \\
+&= x(k)^T A^T P A x(k) - x(k)^T P x(k) \\
+&= x(k)^T (A^T P A - P) x(k)
+\end{align*}
+
+\textbf{3. 要求能量递减}
+
+为使系统稳定，要求每一步能量都减少：
+\begin{align*}
+\Delta V(k) < 0 \quad \Rightarrow \quad A^T P A - P < 0
+\end{align*}
+
+令 $\Delta V(k) = -x(k)^T Q x(k)$，其中 $Q = Q^T > 0$ 是我们选择的正定矩阵，得到\textbf{离散李雅普诺夫方程}：
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title={\textbf{离散李雅普诺夫方程}}]
+\begin{align*}
+A^T P A - P = -Q
+\end{align*}
+
+\textbf{稳定性判据：}对于给定的系统矩阵 $A$，如果任意选择一个对称正定矩阵 $Q$，能够解出上述方程，且解 $P$ 也是\textbf{对称正定矩阵}，则系统\textbf{渐近稳定}。
+\end{tcolorbox}
+
+\textbf{与连续李雅普诺夫方程的对比：}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{项目} & \textbf{连续系统} & \textbf{离散系统} \\
+\hline
+状态方程 & $\dot{x} = Ax$ & $x(k+1) = Ax(k)$ \\
+\hline
+能量变化 & $\dot{V} = x^T(A^T P + PA)x$ & $\Delta V = x^T(A^T P A - P)x$ \\
+\hline
+\textbf{李雅普诺夫方程} & $\boldsymbol{A^T P + PA = -Q}$ & $\boldsymbol{A^T P A - P = -Q}$ \\
+\hline
+判据 & \multicolumn{2}{c|}{$Q > 0$ 任意给定，解出 $P > 0$ $\implies$ 渐近稳定} \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{关键区别：}
+\begin{itemize}
+    \item 连续：$A^T P + PA$（对称形式，矩阵加法）
+    \item 离散：$A^T P A - P$（二次形式，矩阵乘法）
+\end{itemize}
+
+\subsubsection{完整例题：离散系统稳定性分析}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title={\textbf{例题：离散系统的李雅普诺夫稳定性判断}},boxsep=5pt]
+
+\textbf{题目：}已知离散系统
+\begin{align*}
+x(k+1) = \begin{bmatrix} a & 0 & 0 \\ 0 & 1 & -1 \\ 1 & 2 & 0 \end{bmatrix} x(k)
+\end{align*}
+其中 $a \neq 1$。用李雅普诺夫第二法判断系统在原点的稳定性。
+
+\vspace{0.3cm}
+\textbf{解法一：特征值法（快速判断）}
+
+矩阵 $A$ 是分块下三角形式：
+\begin{align*}
+A = \begin{bmatrix} a & \mathbf{0}_{1 \times 2} \\ M_{21} & M_{22} \end{bmatrix}, \quad M_{22} = \begin{bmatrix} 1 & -1 \\ 2 & 0 \end{bmatrix}
+\end{align*}
+
+特征值包括：
+\begin{itemize}
+    \item $\lambda_1 = a$（第一个对角元素）
+    \item $M_{22}$ 的特征值：
+    \begin{align*}
+    \det(\lambda I - M_{22}) &= \begin{vmatrix} \lambda-1 & 1 \\ -2 & \lambda \end{vmatrix} = \lambda(\lambda-1) + 2 = \lambda^2 - \lambda + 2 = 0 \\
+    \lambda_{2,3} &= \frac{1 \pm \sqrt{1-8}}{2} = \frac{1 \pm i\sqrt{7}}{2}
+    \end{align*}
+\end{itemize}
+
+计算特征值的\textbf{模}：
+\begin{align*}
+|\lambda_1| &= |a| \\
+|\lambda_{2,3}| &= \sqrt{\left(\frac{1}{2}\right)^2 + \left(\frac{\sqrt{7}}{2}\right)^2} = \sqrt{\frac{1+7}{4}} = \sqrt{2} \approx 1.414
+\end{align*}
+
+\textbf{结论：}
+\begin{itemize}
+    \item $|\lambda_{2,3}| = \sqrt{2} > 1$ $\implies$ 有特征值在\textbf{单位圆外}
+    \item 无论参数 $a$ 取何值，系统都是\textbf{不稳定}的
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{解法二：离散李雅普诺夫方程法（理论验证）}
+
+根据离散李雅普诺夫判据，如果系统稳定，则对任意 $Q > 0$，应能解出 $P > 0$ 满足：
+\begin{align*}
+A^T P A - P = -Q
+\end{align*}
+
+选择最简单的 $Q = I_{3 \times 3}$（单位矩阵）。方程变为：
+\begin{align*}
+A^T P A - P = -I
+\end{align*}
+
+设 $P = \begin{bmatrix} p_{11} & p_{12} & p_{13} \\ p_{12} & p_{22} & p_{23} \\ p_{13} & p_{23} & p_{33} \end{bmatrix}$ （对称矩阵，6个未知数）
+
+展开 $A^T P A$（计算量很大，实际中用MATLAB/Python求解）：
+\begin{align*}
+A^T &= \begin{bmatrix} a & 0 & 1 \\ 0 & 1 & 2 \\ 0 & -1 & 0 \end{bmatrix}, \quad
+A^T P A = \begin{bmatrix} \cdots & \cdots & \cdots \\ \cdots & \cdots & \cdots \\ \cdots & \cdots & \cdots \end{bmatrix}
+\end{align*}
+
+\textbf{关键观察：}
+\begin{itemize}
+    \item 由于 $|\lambda_{2,3}| = \sqrt{2} > 1$，系统不稳定
+    \item 根据李雅普诺夫理论，这意味着\textbf{不存在}正定矩阵 $P$ 满足方程
+    \item 因此方程组要么无解，要么解出的 $P$ 不是正定矩阵
+\end{itemize}
+
+\textbf{数值验证（用MATLAB）：}
+\begin{verbatim}
+A = [a 0 0; 0 1 -1; 1 2 0];
+Q = eye(3);
+% 尝试求解 A'*P*A - P = -Q
+% 结果：当 a ≠ ±1 且 |a| < 1 时，P 仍然不正定（因为 λ₂₃ > 1）
+\end{verbatim}
+
+\textbf{结论一致性：}两种方法得到相同结论——系统不稳定。
+\end{tcolorbox}
+
+\subsubsection{方法对比与选择建议}
+
+\begin{table}[H]
+\centering
+\caption{离散系统稳定性判断方法对比}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{方法} & \textbf{计算难度} & \textbf{理论深度} & \textbf{适用场景} & \textbf{推荐度} \\
+\hline
+\hline
+\textbf{特征值法} & ⭐ 最简单 & 低 & 快速判断 & ⭐⭐⭐⭐⭐ \\
+$|\lambda_i| < 1$ & 求根即可 & 直接判据 & 线性系统 & 首选 \\
+\hline
+\textbf{李雅普诺夫方程} & ⭐⭐⭐ 较复杂 & 高 & 理论分析 & ⭐⭐⭐ \\
+$A^TPA - P = -Q$ & 解线性方程组 & 能量方法 & 需要深入理解 & 考试/研究 \\
+\hline
+\textbf{劳斯判据} & ⭐⭐ 中等 & 中 & 传递函数形式 & ⭐⭐⭐⭐ \\
+（双线性变换） & 变换+列表 & 经典方法 & z域多项式 & 常用 \\
+\hline
+\textbf{Jury判据} & ⭐⭐ 中等 & 中 & 直接z域判断 & ⭐⭐⭐ \\
+（直接判据） & 构造判定表 & z域专用 & 低阶系统 & 了解即可 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{实际工程中的选择策略：}
+\begin{enumerate}
+    \item \textbf{首选特征值法}：MATLAB/Python一行代码 \texttt{eig(A)}，立即得到结果
+    \item \textbf{理论分析时用李雅普诺夫方程}：
+    \begin{itemize}
+        \item 需要构造李雅普诺夫函数时
+        \item 分析鲁棒稳定性时
+        \item 研究参数摄动影响时
+    \end{itemize}
+    \item \textbf{传递函数形式时用劳斯/Jury判据}：z域多项式直接判断
+\end{enumerate}
+
+\subsubsection{与连续系统的联系：采样映射关系}
+
+离散系统往往来源于连续系统的采样。稳定域的映射关系为：
+\begin{align*}
+z = e^{sT}
+\end{align*}
+其中 $T$ 是采样周期。
+
+\textbf{映射性质：}
+\begin{itemize}
+    \item s平面虚轴 ($\text{Re}(s)=0$) → z平面单位圆 ($|z|=1$)
+    \item s平面左半平面 ($\text{Re}(s)<0$) → z平面单位圆内 ($|z|<1$)
+    \item s平面右半平面 ($\text{Re}(s)>0$) → z平面单位圆外 ($|z|>1$)
+\end{itemize}
+
+\textbf{例：}连续系统极点 $s=-1$，采样周期 $T=0.1$ s
+\begin{align*}
+z = e^{-1 \times 0.1} = e^{-0.1} = 0.9048 \quad (|z|=0.9048 < 1, \text{ 稳定})
+\end{align*}
+
+详细的采样系统分析见第\ref{sec:discrete-systems}章（离散系统）。
+
+\subsubsection{本节总结}
+
+\textbf{关键要点：}
+\begin{itemize}
+    \item 离散系统稳定域是\textbf{单位圆内}，而非左半平面
+    \item 离散李雅普诺夫方程：$A^T P A - P = -Q$（注意是二次形式）
+    \item 实际工程中，\textbf{特征值法}最简单高效（求模判断 $|\lambda| < 1$）
+    \item 李雅普诺夫方程法适用于理论分析和鲁棒性研究
+\end{itemize}
+
+\textbf{常见误区：}
+\begin{itemize}
+    \item ✗ 将连续系统判据直接用于离散系统（稳定域完全不同！）
+    \item ✗ 混淆"实部小于零"和"模小于一"
+    \item ✗ 忽视离散李雅普诺夫方程与连续版本的区别（$A^TPA-P$ vs $A^TP+PA$）
+    \item ✓ 记住：离散=单位圆，连续=左半平面
+\end{itemize}
+
 \subsection*{本章总结}
 
 \subsubsection*{核心要点回顾}

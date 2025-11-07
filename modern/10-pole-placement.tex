@@ -53,72 +53,173 @@
 
 \subsubsection{状态反馈的基本思想}
 
-\textbf{经典反馈 vs 状态反馈：}
+\textbf{经典反馈 vs 状态反馈对比：}
 
-\begin{itemize}
-    \item \textbf{经典输出反馈}：$u = -K_p y$（只反馈输出，如PID控制器）
-    \item \textbf{状态反馈}：$u = -Kx$（反馈所有状态变量）
-\end{itemize}
+\begin{center}
+\begin{tikzpicture}[>=stealth, node distance=2.5cm, thick]
+    % 经典输出反馈
+    \node[draw, rectangle, minimum width=1.5cm, minimum height=1cm] (sys1) at (0,3) {系统};
+    \node[draw, rectangle, minimum width=1cm, minimum height=0.8cm] (ctrl1) at (-3,3) {$K_p$};
+    \node[circle, draw, inner sep=2pt] (sum1) at (-1.5,3) {$+$};
+    
+    \draw[->] (ctrl1) -- (sum1);
+    \draw[->] (sum1) -- node[above] {$u$} (sys1);
+    \draw[->] (sys1) -- ++(1.5,0) node[above] {$y$} coordinate (out1);
+    \draw[->] (out1) -- ++(0,-1.5) -| node[near start, below] {\textcolor{blue}{输出反馈}} (ctrl1);
+    
+    \node[above] at (0,4.2) {{\small 经典输出反馈（PID）}};
+    \node[right, text width=3cm, align=left] at (2,3) {{\small 只用输出$y$\\不能任意配置极点}};
+    
+    % 状态反馈
+    \node[draw, rectangle, minimum width=1.5cm, minimum height=1cm] (sys2) at (0,0) {系统};
+    \node[draw, rectangle, minimum width=1cm, minimum height=0.8cm] (ctrl2) at (-3,0) {$K$};
+    \node[circle, draw, inner sep=2pt] (sum2) at (-1.5,0) {$+$};
+    
+    \draw[->] (ctrl2) -- (sum2);
+    \draw[->] (sum2) -- node[above] {$u$} (sys2);
+    \draw[->] (sys2) -- ++(1.5,0) coordinate (out2);
+    \draw[->] (out2) -- ++(0,-1.5) -| node[near start, below] {\textcolor{red!80!black}{\textbf{状态反馈}}} (ctrl2);
+    
+    % 状态向量指示
+    \draw[->, thick, red!80!black] (sys2.south) -- ++(0,-0.8) node[below] {$x_1, x_2, \ldots, x_n$};
+    
+    \node[above] at (0,1.2) {{\small 状态反馈}};
+    \node[right, text width=3cm, align=left, red!80!black] at (2,0) {{\small \textbf{用所有状态$\mathbf{x}$}\\能任意配置极点}};
+\end{tikzpicture}
+\end{center}
 
-\textbf{为什么需要状态反馈？}
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{为什么需要状态反馈？}]
 \begin{itemize}
-    \item 输出反馈只利用了部分信息（$y = Cx$，可能只是状态的一部分）
-    \item 状态反馈利用了\textbf{完整的系统信息}
-    \item 只有状态反馈才能\textbf{任意配置极点}
+    \item 经典输出反馈：$u = -K_p y$ \quad $\to$ 只利用\textit{部分信息}（$y = Cx$）
+    \item \textcolor{red!80!black}{\textbf{状态反馈}}：$u = -Kx$ \quad $\to$ 利用\textit{完整系统信息}
+    \item \textbf{关键优势}：\emph{只有状态反馈才能任意配置极点}（前提：系统能控）
 \end{itemize}
+\end{tcolorbox}
 
 \subsubsection{状态反馈控制律}
 
-\textbf{基本形式：}
-\[u = -Kx + v\]
+\begin{tcolorbox}[colback=yellow!10!white, colframe=orange!75!black, title=\textbf{状态反馈控制律——基本形式}]
+\begin{center}
+\Large
+$\boxed{u = -Kx + v}$
+\end{center}
 
-其中：
+\textbf{参数含义：}
 \begin{itemize}
-    \item $x \in \mathbb{R}^n$：状态向量（需要全部可测或通过观测器估计）
-    \item $K \in \mathbb{R}^{p \times n}$：\textbf{反馈增益矩阵}（待设计的参数）
-    \item $v \in \mathbb{R}^p$：\textbf{参考输入}（期望的目标值）
-    \item 负号表示\textbf{负反馈}（稳定控制的标准配置）
+    \item $x \in \mathbb{R}^n$ \quad 状态向量（需全部可测或通过\textit{观测器}估计）
+    \item $K \in \mathbb{R}^{p \times n}$ \quad \textcolor{red!80!black}{\textbf{反馈增益矩阵}}（\emph{待设计的关键参数}）
+    \item $v \in \mathbb{R}^p$ \quad 参考输入（期望的目标值）
+    \item 负号 \quad 表示\textbf{负反馈}（稳定控制的标准配置）
 \end{itemize}
 
 \textbf{直观理解：}
 \begin{itemize}
-    \item $-Kx$ 是\textbf{校正项}：根据当前状态偏差进行调整
-    \item $v$ 是\textbf{目标项}：驱动系统到期望状态
-    \item $K$ 的每个元素决定了对应状态变量的\textit{权重}
+    \item $-Kx$ \quad \textit{校正项}：根据当前状态偏差进行调整
+    \item $v$ \quad \textit{目标项}：驱动系统到期望状态
+    \item $K$ 的每个元素 \quad 决定对应状态变量的\textit{权重}
 \end{itemize}
+\end{tcolorbox}
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, node distance=2cm, thick]
+    % 参考输入
+    \node (ref) at (-6,0) {$v$};
+    \node[circle, draw, minimum size=0.8cm] (sum1) at (-4.5,0) {$\Sigma$};
+    
+    % 系统
+    \node[draw, rectangle, minimum width=2cm, minimum height=1.2cm] (sys) at (-1,0) {
+        \begin{tabular}{c}
+            \textbf{系统} \\
+            $\dot{x} = Ax + Bu$
+        \end{tabular}
+    };
+    
+    % 输出
+    \draw[->] (ref) -- node[above] {} (sum1);
+    \draw[->] (sum1) -- node[above] {$u$} (sys);
+    \draw[->] (sys) -- ++(2.5,0) node[right] {$x$};
+    
+    % 反馈路径
+    \coordinate (fb) at (1.5,0);
+    \node[draw, rectangle, minimum width=1.5cm, minimum height=0.8cm, fill=red!10] (K) at (0,-2.5) {\textcolor{red!80!black}{\textbf{$K$}}};
+    
+    \draw[->] (fb) -- ++(0,-1.5) -| (K);
+    \draw[->] (K) -| node[near start, right] {\textcolor{red!80!black}{$-Kx$}} (sum1);
+    
+    % 标注
+    \node[below, text width=2.5cm, align=center] at (0,-3.5) {\small \textcolor{red!80!black}{\textbf{状态反馈增益}}\\{\small（设计目标）}};
+    \node[above, text width=2cm, align=center] at (-1,1.2) {\small 开环系统\\{\small 矩阵：$A$}};
+\end{tikzpicture}
+\end{center}
 
 \subsubsection{闭环系统}
 
+\textbf{闭环系统的推导：}
+
 将 $u = -Kx + v$ 代入开环系统 $\dot{x} = Ax + Bu$：
 \begin{align*}
-\dot{x} &= Ax + B(-Kx + v) \\
+\dot{x} &= Ax + B(\textcolor{blue}{-Kx + v}) \\
 &= Ax - BKx + Bv \\
-&= (A - BK)x + Bv
+&= \textcolor{red!80!black}{(A - BK)}x + Bv
 \end{align*}
 
-\textbf{闭环系统：}
-\[\boxed{\dot{x} = (A - BK)x + Bv}\]
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{闭环系统方程}]
+\begin{center}
+\Large
+$\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}}x + Bv}$
+\end{center}
+\end{tcolorbox}
 
-\textbf{关键观察：}
-\begin{itemize}
-    \item 开环系统矩阵：$A$
-    \item 闭环系统矩阵：$A_{\text{cl}} = A - BK$
-    \item 通过选择 $K$，我们改变了系统矩阵，从而改变了极点！
-\end{itemize}
+\vspace{0.5cm}
 
-\textbf{极点的变化：}
-\begin{itemize}
-    \item 开环极点：$\det(\lambda I - A) = 0$ 的根
-    \item 闭环极点：$\det(\lambda I - A + BK) = 0$ 的根
-    \item $K$ 是我们的\textit{旋钮}，可以调节极点位置
-\end{itemize}
+\begin{center}
+\begin{tikzpicture}[>=stealth, node distance=3cm, thick]
+    % 开环到闭环的变化
+    \node[draw, rounded corners, fill=blue!10, minimum width=3cm, minimum height=1.5cm] (open) at (0,0) {
+        \begin{tabular}{c}
+            \textbf{开环系统} \\[0.2cm]
+            $\dot{x} = \textcolor{blue}{A}x + Bu$ \\[0.1cm]
+            极点：$\det(\lambda I - A) = 0$
+        \end{tabular}
+    };
+    
+    \node[draw, rounded corners, fill=red!10, minimum width=3cm, minimum height=1.5cm] (closed) at (7,0) {
+        \begin{tabular}{c}
+            \textbf{闭环系统} \\[0.2cm]
+            $\dot{x} = \textcolor{red!80!black}{(A-BK)}x + Bv$ \\[0.1cm]
+            极点：$\det(\lambda I - A + BK) = 0$
+        \end{tabular}
+    };
+    
+    \draw[->, very thick, blue!50!red] (open) -- node[above, text width=2.5cm, align=center] {\small \textbf{状态反馈}\\$u = -Kx + v$} (closed);
+    
+    % 关键观察
+    \node[below, text width=3cm, align=center] at (0,-2) {\small 系统矩阵：\textcolor{blue}{\textbf{$A$}}};
+    \node[below, text width=3cm, align=center] at (7,-2) {\small 系统矩阵：\textcolor{red!80!black}{\textbf{$A-BK$}}};
+    
+    \node[below, text width=7cm, align=center, fill=yellow!20, draw=orange, thick, rounded corners] at (3.5,-3.5) {
+        \textbf{核心思想}：通过选择 $K$，改变系统矩阵，从而\emph{改变极点位置}！
+    };
+\end{tikzpicture}
+\end{center}
 
-\textbf{重要提醒：}
+\begin{tcolorbox}[colback=yellow!5!white, colframe=orange!75!black, title=\textbf{极点的变化规律}]
 \begin{itemize}
-    \item 状态反馈\textbf{不改变系统的能控性和能观测性}
-    \item 状态反馈\textbf{不改变系统的零点}（只改变极点）
-    \item 状态反馈要求状态\textbf{可测}或\textbf{可估计}（这就是为什么需要观测器）
+    \item \textbf{开环极点}：$\det(\lambda I - \textcolor{blue}{A}) = 0$ 的根 \quad （\textit{原始系统固有特性}）
+    \item \textcolor{red!80!black}{\textbf{闭环极点}}：$\det(\lambda I - \textcolor{red!80!black}{A + BK}) = 0$ 的根 \quad （\emph{通过$K$可调节}）
+    \item $K$ 是我们的\textit{"旋钮"}，可以\textbf{精确控制}极点位置
 \end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\faExclamationTriangle\ \textbf{重要提醒}]
+\begin{itemize}
+    \item 状态反馈\textbf{不改变}系统的能控性和能观测性
+    \item 状态反馈\textbf{不改变}系统的零点（\emph{只改变极点}）
+    \item 状态反馈要求状态\textbf{可测}或\textbf{可估计}（需要观测器辅助）
+\end{itemize}
+\end{tcolorbox}
 
 \subsection{极点配置定理}
 
@@ -127,70 +228,168 @@
 
 \subsubsection{定理陈述}
 
-\textbf{极点配置定理（Pole Placement Theorem）：}
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\faStarO\ \textbf{极点配置定理（Pole Placement Theorem）}]
+对于单输入系统 $(A, B)$，若系统\textcolor{red!80!black}{\textbf{完全能控}}，则对于\emph{任意给定}的 $n$ 个复数 
+\[\lambda_1, \lambda_2, \ldots, \lambda_n\]
+（复数必须成对共轭出现），\textbf{存在}反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值\emph{恰好}为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
+\end{tcolorbox}
 
-对于单输入系统 $(A, B)$，若系统\textbf{完全能控}，则对于任意给定的 $n$ 个复数 $\lambda_1, \lambda_2, \ldots, \lambda_n$（复数必须成对共轭出现），\textbf{存在}反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值恰好为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
+\vspace{0.5cm}
 
-\textbf{定理的含义：}
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    % 左侧：能控性
+    \node[draw, rounded corners, fill=green!10, minimum width=3.5cm, minimum height=1.5cm] (ctrl) at (0,0) {
+        \begin{tabular}{c}
+            \textbf{前提条件} \\[0.2cm]
+            系统\textcolor{green!60!black}{\textbf{完全能控}} \\[0.1cm]
+            $\text{rank}(W_c) = n$
+        \end{tabular}
+    };
+    
+    % 中间：箭头
+    \draw[->, ultra thick, green!60!black] (3.5,0) -- node[above] {\Large \textbf{保证}} (5.5,0);
+    
+    % 右侧：极点配置
+    \node[draw, rounded corners, fill=yellow!10, minimum width=3.5cm, minimum height=1.5cm] (pole) at (9,0) {
+        \begin{tabular}{c}
+            \textbf{结论} \\[0.2cm]
+            可\textcolor{orange!80!black}{\textbf{任意配置}}极点 \\[0.1cm]
+            $\lambda_1, \ldots, \lambda_n$
+        \end{tabular}
+    };
+    
+    % 双向箭头（充要条件）
+    \draw[<->, ultra thick, red!80!black] (ctrl.south) -- ++(0,-1) -| node[near start, below] {\textcolor{red!80!black}{\textbf{充要条件}}} (pole.south);
+\end{tikzpicture}
+\end{center}
+
+\textbf{定理的核心含义：}
+
 \begin{itemize}
-    \item \textbf{充要条件}：完全能控 $\Leftrightarrow$ 可任意配置极点
-    \item \textbf{任意性}：极点位置完全由你决定（只要满足共轭对要求）
-    \item \textbf{构造性}：不仅说存在，还有具体的计算方法
+    \item \textcolor{green!60!black}{\textbf{充要条件}}：完全能控 $\Leftrightarrow$ 可任意配置极点
+    \item \textcolor{orange!80!black}{\textbf{任意性}}：极点位置\emph{完全由你决定}（只要满足共轭对要求）
+    \item \textcolor{blue!80!black}{\textbf{构造性}}：不仅说\textit{存在}，还有\textit{具体的计算方法}
 \end{itemize}
 
 \subsubsection{定理的深刻意义}
 
 \textbf{1. 能控性是充要条件}
 
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=2cm]
+    % 能控性保证
+    \node[draw, rectangle, rounded corners, fill=blue!10, text width=4cm, align=center] (ctrl) at (0,2) {
+        \textbf{能控性} \\[0.1cm]
+        $W_c = [B\ AB\ \cdots\ A^{n-1}B]$ \\
+        张成\emph{整个状态空间}
+    };
+    
+    \node[draw, rectangle, rounded corners, fill=green!10, text width=4cm, align=center] (inf) at (0,0) {
+        \textbf{影响力} \\[0.1cm]
+        通过 $BK$ 可在 \\
+        \emph{所有方向}上施加影响
+    };
+    
+    \node[draw, rectangle, rounded corners, fill=orange!10, text width=4cm, align=center] (pole) at (0,-2) {
+        \textbf{极点配置} \\[0.1cm]
+        可将 $A$ 的特征值 \\
+        \emph{推到任意位置}
+    };
+    
+    \draw[->, very thick, blue!60!black] (ctrl) -- (inf);
+    \draw[->, very thick, green!60!black] (inf) -- (pole);
+\end{tikzpicture}
+\end{center}
+
 \begin{itemize}
-    \item \textbf{充分性}：能控 $\Rightarrow$ 可任意配置极点（定理保证）
-    \item \textbf{必要性}：可任意配置极点 $\Rightarrow$ 能控（反证法：不能控意味着某些模态不受控制影响，无法移动）
+    \item \textbf{充分性}：能控 $\Rightarrow$ 可任意配置极点（\emph{定理保证}）
+    \item \textbf{必要性}：可任意配置极点 $\Rightarrow$ 能控 \\
+          {\small （反证：不能控意味着某些模态\textit{不受控制影响}，无法移动）}
 \end{itemize}
 
-\textbf{为什么能控性如此关键？}
-\begin{itemize}
-    \item 能控性保证 $B, AB, \ldots, A^{n-1}B$ 张成整个状态空间
-    \item 这意味着通过 $BK$ 可以在所有方向上施加影响
-    \item 从而可以将 $A$ 的特征值\textit{推到}任意位置
-\end{itemize}
+\vspace{0.3cm}
 
 \textbf{2. 复数共轭对要求}
 
-由于系统矩阵 $A, B, K$ 都是\textbf{实矩阵}，闭环矩阵 $A - BK$ 的特征多项式的系数也是实数。因此：
+\begin{tcolorbox}[colback=yellow!5!white, colframe=orange!75!black]
+由于系统矩阵 $A, B, K$ 都是\textbf{实矩阵}，闭环矩阵 $A - BK$ 的特征多项式系数也是\textit{实数}。因此：
 \begin{itemize}
-    \item 实数极点：可以单独指定
-    \item 复数极点：必须成对共轭出现（如 $-2 \pm 3j$）
+    \item \textcolor{blue!80!black}{\textbf{实数极点}}：可以单独指定（如 $s = -3$）
+    \item \textcolor{red!80!black}{\textbf{复数极点}}：必须\emph{成对共轭}出现（如 $s = -2 \pm 3j$）
 \end{itemize}
 
-\textbf{物理意义：}实系统不能产生单个复数极点，这会导致非物理的复数状态轨迹。
+\textbf{物理意义}：实系统不能产生单个复数极点，这会导致\textit{非物理的复数状态轨迹}。
+\end{tcolorbox}
+
+\vspace{0.3cm}
 
 \textbf{3. 多输入系统的推广}
 
-定理对多输入系统（$p > 1$）也成立，但：
+定理对多输入系统（$p > 1$）也成立，但特点是：
+
 \begin{itemize}
-    \item $K$ 不是唯一的（有更多自由度）
-    \item 可以利用额外自由度优化其他性能指标（如鲁棒性、输入能量）
-    \item 这是\textbf{最优控制}理论的起点
+    \item $K$ \textbf{不是唯一的}（有更多自由度）
+    \item 可利用额外自由度优化其他性能指标：
+    \begin{itemize}
+        \item[-] 鲁棒性（对参数摄动的敏感度）
+        \item[-] 输入能量（控制成本）
+        \item[-] 传递函数零点位置
+    \end{itemize}
+    \item 这是\textcolor{blue!80!black}{\textbf{最优控制}}理论（如LQR）的起点
 \end{itemize}
 
 \subsubsection{设计步骤概览}
 
-使用极点配置定理设计控制器的典型流程：
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\faCogs\ \textbf{极点配置设计流程}]
 
-\begin{enumerate}
-    \item \textbf{验证能控性}：计算 $\text{rank}(W_c)$，确保 $= n$
-    \item \textbf{选择期望极点}：根据性能要求确定 $\lambda_1, \ldots, \lambda_n$
-    \item \textbf{计算反馈增益}：使用直接法、变换法或阿克曼公式求 $K$
-    \item \textbf{验证设计}：检查闭环极点是否正确，分析性能
-\end{enumerate}
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=2.3cm]
+    \node[draw, rectangle, rounded corners, fill=blue!15, minimum width=3.2cm, minimum height=1cm] (step1) at (0,0) {
+        \begin{tabular}{c}
+            \textbf{步骤1：验证能控性} \\
+            $\text{rank}(W_c) \stackrel{?}{=} n$
+        \end{tabular}
+    };
+    
+    \node[draw, rectangle, rounded corners, fill=green!15, minimum width=3.2cm, minimum height=1cm] (step2) at (4.5,0) {
+        \begin{tabular}{c}
+            \textbf{步骤2：选择极点} \\
+            $\lambda_1, \ldots, \lambda_n$
+        \end{tabular}
+    };
+    
+    \node[draw, rectangle, rounded corners, fill=orange!15, minimum width=3.2cm, minimum height=1cm] (step3) at (9,0) {
+        \begin{tabular}{c}
+            \textbf{步骤3：计算$K$} \\
+            Ackermann公式
+        \end{tabular}
+    };
+    
+    \node[draw, rectangle, rounded corners, fill=red!15, minimum width=3.2cm, minimum height=1cm] (step4) at (4.5,-2.3) {
+        \begin{tabular}{c}
+            \textbf{步骤4：验证设计} \\
+            检查闭环极点
+        \end{tabular}
+    };
+    
+    \draw[->, very thick] (step1) -- (step2);
+    \draw[->, very thick] (step2) -- (step3);
+    \draw[->, very thick] (step3) -- ++(0,-1.15) -| (step4);
+    \draw[->, very thick, dashed] (step4) -- ++(-3.5,0) |- node[near start, left, text width=2cm, align=center] {\small 性能不满足\\重新调整} (step2);
+\end{tikzpicture}
+\end{center}
 
-\textbf{定理的局限性：}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\faExclamationTriangle\ \textbf{定理的局限性}]
 \begin{itemize}
-    \item 只适用于\textbf{能控}系统（这是硬性要求）
+    \item 只适用于\textcolor{red!80!black}{\textbf{能控}}系统（这是\emph{硬性要求}）
     \item 没有告诉你\textbf{如何选择}期望极点（需要经验和性能分析）
-    \item 假设状态\textbf{完全可测}（实际中可能需要观测器）
+    \item 假设状态\textbf{完全可测}（实际中可能需要\textit{观测器}）
     \item 可能导致很大的控制输入（\textbf{饱和问题}）
 \end{itemize}
+\end{tcolorbox}
 
 \subsection{极点配置的方法}
 
@@ -199,159 +398,234 @@
 
 \subsubsection{方法概览}
 
-\begin{enumerate}
-    \item \textbf{直接方法}：解特征方程 $\det(sI - A + BK) = 0$
-    \begin{itemize}
-        \item 适用于低阶系统（$n \leq 3$）
-        \item 直观但计算繁琐
-    \end{itemize}
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    % 方法1
+    \node[draw, rounded corners, fill=blue!10, text width=3.5cm, minimum height=2.2cm, align=center] (m1) at (0,0) {
+        \textbf{方法1：直接法} \\[0.2cm]
+        $\det(sI - A + BK) = 0$ \\[0.2cm]
+        {\small 适合 $n \leq 3$} \\
+        {\small 直观但繁琐}
+    };
     
-    \item \textbf{变换方法}：将系统化为能控标准型后配置极点
-    \begin{itemize}
-        \item 适用于任意阶次
-        \item 需要坐标变换
-    \end{itemize}
+    % 方法2
+    \node[draw, rounded corners, fill=green!10, text width=3.5cm, minimum height=2.2cm, align=center] (m2) at (5,0) {
+        \textbf{方法2：变换法} \\[0.2cm]
+        能控标准型 \\[0.2cm]
+        {\small 适合任意阶次} \\
+        {\small 需要变换矩阵}
+    };
     
-    \item \textbf{阿克曼公式}：$K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)$
-    \begin{itemize}
-        \item 单输入系统的显式公式
-        \item 最简洁，适合程序实现
-    \end{itemize}
-\end{enumerate}
+    % 方法3
+    \node[draw, rounded corners, fill=orange!10, text width=3.5cm, minimum height=2.2cm, align=center] (m3) at (10,0) {
+        \textbf{方法3：Ackermann} \\[0.2cm]
+        $K = [\cdots 1]W_c^{-1}\alpha_c(A)$ \\[0.2cm]
+        {\small \textcolor{red!80!black}{\textbf{最简洁}}} \\
+        {\small 单输入系统}
+    };
+    
+    % 推荐标记
+    \node[star, star points=5, star point ratio=2.5, draw=red!80!black, fill=yellow, minimum size=1.2cm, thick] at (10,2) {};
+    \node[text=red!80!black] at (10,2) {\small \textbf{推荐}};
+\end{tikzpicture}
+\end{center}
 
 \subsubsection{方法1：直接方法}
 
-\textbf{基本思路：}直接让闭环特征多项式等于期望特征多项式。
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{方法1：直接方法}]
+\textbf{基本思路}：直接让闭环特征多项式\emph{等于}期望特征多项式
 
-\textbf{步骤：}
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    \node[draw, rounded corners, fill=yellow!10, minimum width=3cm, minimum height=1cm] (desire) at (0,0) {
+        \begin{tabular}{c}
+            \textbf{期望特征多项式} \\
+            $\alpha_d(s) = \prod(s-\lambda_i)$
+        \end{tabular}
+    };
+    
+    \node[draw, rounded corners, fill=green!10, minimum width=3cm, minimum height=1cm] (actual) at (6.5,0) {
+        \begin{tabular}{c}
+            \textbf{闭环特征多项式} \\
+            $\det(sI - A + BK)$
+        \end{tabular}
+    };
+    
+    \draw[<->, ultra thick, red!80!black] (desire) -- node[above] {令相等} (actual);
+\end{tikzpicture}
+\end{center}
+
+\textbf{计算步骤}：
 \begin{enumerate}
-    \item 写出期望特征多项式：
-    \[\alpha_d(s) = (s - \lambda_1)(s - \lambda_2) \cdots (s - \lambda_n) = s^n + a_1 s^{n-1} + \cdots + a_n\]
-    
-    \item 计算闭环特征多项式：
-    \[\det(sI - A + BK) = s^n + b_1(K) s^{n-1} + \cdots + b_n(K)\]
-    
-    \item 令两者相等：
-    \[b_i(K) = a_i, \quad i = 1, 2, \ldots, n\]
-    
-    \item 解方程组得到 $K$
+    \item 期望多项式：$\alpha_d(s) = (s - \lambda_1)(s - \lambda_2) \cdots (s - \lambda_n) = s^n + a_1 s^{n-1} + \cdots + a_n$
+    \item 闭环多项式：$\det(sI - A + BK) = s^n + b_1(K) s^{n-1} + \cdots + b_n(K)$
+    \item 系数匹配：$b_i(K) = a_i, \quad i = 1, 2, \ldots, n$
+    \item 解方程组得 $K$
 \end{enumerate}
 
-\textbf{优点：}
 \begin{itemize}
-    \item 概念直接，容易理解
-    \item 适合手算低阶系统
+    \item[\textcolor{green!60!black}{\checkmark}] \textbf{优点}：概念直接，适合手算低阶系统（$n \leq 3$）
+    \item[\textcolor{red!80!black}{\times}] \textbf{缺点}：高阶系统计算量大，展开 $\det$ 繁琐
 \end{itemize}
-
-\textbf{缺点：}
-\begin{itemize}
-    \item 高阶系统计算量大
-    \item 展开 $\det(sI - A + BK)$ 很繁琐
-\end{itemize}
+\end{tcolorbox}
 
 \subsubsection{方法2：变换方法}
 
-\textbf{核心思想：}在能控标准型下，极点配置变得非常简单。
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=\textbf{方法2：变换方法（能控标准型）}]
+\textbf{核心思想}：在\emph{能控标准型}下，极点配置变得\textbf{非常简单}！
 
-\textbf{能控标准型的特殊性质：}
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=3cm]
+    \node[draw, rounded corners, fill=blue!10, minimum width=2.5cm, minimum height=1cm] (orig) at (0,0) {
+        \begin{tabular}{c}
+            \textbf{原系统} \\
+            $(A, B)$
+        \end{tabular}
+    };
+    
+    \node[draw, rounded corners, fill=green!10, minimum width=2.5cm, minimum height=1cm] (std) at (4.5,0) {
+        \begin{tabular}{c}
+            \textbf{标准型} \\
+            $(\bar{A}, \bar{B})$
+        \end{tabular}
+    };
+    
+    \node[draw, rounded corners, fill=orange!10, minimum width=2.5cm, minimum height=1cm] (gain) at (9,0) {
+        \begin{tabular}{c}
+            \textbf{反馈增益} \\
+            $K$
+        \end{tabular}
+    };
+    
+    \draw[->, very thick] (orig) -- node[above] {\small 变换 $T$} (std);
+    \draw[->, very thick] (std) -- node[above] {\small 简单计算} (gain);
+    \draw[->, very thick, dashed, bend right=40] (orig) to node[below] {\small 直接很难} (gain);
+\end{tikzpicture}
+\end{center}
 
-对于能控标准型系统：
+\textbf{能控标准型的\emph{神奇性质}}：
+
 \[\bar{A} = \begin{bmatrix}
 0 & 1 & 0 & \cdots & 0 \\
 0 & 0 & 1 & \cdots & 0 \\
 \vdots & \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & 0 & \cdots & 1 \\
--a_0 & -a_1 & -a_2 & \cdots & -a_{n-1}
+\textcolor{red!80!black}{-a_0} & \textcolor{red!80!black}{-a_1} & \textcolor{red!80!black}{-a_2} & \cdots & \textcolor{red!80!black}{-a_{n-1}}
 \end{bmatrix}, \quad \bar{B} = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \\ 1 \end{bmatrix}\]
 
-特征多项式直接从最后一行读出：
-\[\det(sI - \bar{A}) = s^n + a_{n-1}s^{n-1} + \cdots + a_1s + a_0\]
+特征多项式\textbf{直接从最后一行读出}：
+\[\boxed{\det(sI - \bar{A}) = s^n + \textcolor{red!80!black}{a_{n-1}}s^{n-1} + \cdots + \textcolor{red!80!black}{a_1}s + \textcolor{red!80!black}{a_0}}\]
 
-\textbf{设计步骤：}
+\textbf{设计步骤}：
 \begin{enumerate}
-    \item 找到变换矩阵 $T$，使原系统变为能控标准型
-    \[\bar{A} = TAT^{-1}, \quad \bar{B} = TB\]
-    
-    \item 在标准型下设计反馈增益 $\bar{K}$（非常简单！）：
-    \[\bar{K} = [\alpha_0 - a_0 \quad \alpha_1 - a_1 \quad \cdots \quad \alpha_{n-1} - a_{n-1}]\]
-    其中 $\alpha_i$ 是期望特征多项式的系数
-    
-    \item 变换回原坐标：
-    \[K = \bar{K}T\]
+    \item 找变换矩阵 $T$，使 $\bar{A} = TAT^{-1}, \bar{B} = TB$
+    \item 在标准型下设计（\textbf{超级简单}）：
+    \[\textcolor{red!80!black}{\bar{K} = [\alpha_0 - a_0 \quad \alpha_1 - a_1 \quad \cdots \quad \alpha_{n-1} - a_{n-1}]}\]
+    其中 $\alpha_i$ 是\emph{期望}特征多项式的系数
+    \item 变换回原坐标：$K = \bar{K}T$
 \end{enumerate}
 
-\textbf{优点：}
 \begin{itemize}
-    \item 计算规范，不易出错
-    \item 适用于任意阶次
+    \item[\textcolor{green!60!black}{\checkmark}] \textbf{优点}：计算规范，适用任意阶次，不易出错
+    \item[\textcolor{red!80!black}{\times}] \textbf{缺点}：需要计算 $T$，当系统\textit{接近不能控}时数值不稳定
 \end{itemize}
-
-\textbf{缺点：}
-\begin{itemize}
-    \item 需要计算变换矩阵 $T$
-    \item 当系统接近不能控时，$T$ 可能数值不稳定
-\end{itemize}
+\end{tcolorbox}
 
 \subsubsection{方法3：阿克曼公式（Ackermann's Formula）}
 
-\textbf{最简洁的方法！}对于单输入系统，有显式公式：
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=\faStar\ \textbf{方法3：Ackermann公式（最简洁！）}]
 
-\[\boxed{K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)}\]
+\textbf{单输入系统的显式公式}：
 
-其中：
+\begin{center}
+\Large
+\colorbox{yellow!30}{$\boxed{K = [0 \quad 0 \quad \cdots \quad 0 \quad 1] W_c^{-1} \alpha_c(A)}$}
+\end{center}
+
+\textbf{符号说明}：
 \begin{itemize}
-    \item $W_c = [B \quad AB \quad A^2B \quad \cdots \quad A^{n-1}B]$：能控性矩阵
-    \item $\alpha_c(s) = s^n + \alpha_1 s^{n-1} + \cdots + \alpha_n$：期望特征多项式
-    \item $\alpha_c(A) = A^n + \alpha_1 A^{n-1} + \cdots + \alpha_n I$：矩阵多项式
+    \item $W_c = [B \quad AB \quad A^2B \quad \cdots \quad A^{n-1}B]$ \quad 能控性矩阵
+    \item $\alpha_c(s) = s^n + \alpha_1 s^{n-1} + \cdots + \alpha_n$ \quad \emph{期望}特征多项式
+    \item $\alpha_c(A) = A^n + \alpha_1 A^{n-1} + \cdots + \alpha_n I$ \quad \textbf{矩阵多项式}
 \end{itemize}
 
-\textbf{注意：}$\alpha_c(A)$ 是将多项式中的 $s$ 替换为矩阵 $A$！
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    \node[draw, circle, fill=blue!10, minimum size=1.5cm] (wc) at (0,0) {$W_c^{-1}$};
+    \node[draw, circle, fill=green!10, minimum size=1.5cm] (alpha) at (3,0) {$\alpha_c(A)$};
+    \node[draw, circle, fill=orange!10, minimum size=1.5cm] (k) at (7,0) {$K$};
+    
+    \node[above, text width=2cm, align=center] at (0,1.2) {\small 能控性\\矩阵的逆};
+    \node[above, text width=2.5cm, align=center] at (3,1.2) {\small 期望多项式\\代入 $A$};
+    \node[above, text width=2cm, align=center] at (7,1.2) {\small \textcolor{red!80!black}{\textbf{反馈增益}}};
+    
+    \draw[->, ultra thick] (wc) -- node[above] {$\times$} (alpha);
+    \draw[->, ultra thick] (alpha) -- node[above] {\small 取最后一行} (k);
+\end{tikzpicture}
+\end{center}
 
-\textbf{优点：}
+\textbf{关键提醒}：$\alpha_c(A)$ 是将多项式中的 $s$ \emph{替换为矩阵} $A$！
+
 \begin{itemize}
-    \item \textbf{最简洁}：一个公式搞定
-    \item 易于编程实现
-    \item 不需要坐标变换
+    \item[\textcolor{green!60!black}{\checkmark}] \textbf{优点}：
+    \begin{itemize}
+        \item 最简洁——\textit{一个公式搞定}
+        \item 易于编程实现（MATLAB: \texttt{acker(A,B,poles)}）
+        \item 不需要坐标变换
+    \end{itemize}
+    \item[\textcolor{red!80!black}{\times}] \textbf{缺点}：
+    \begin{itemize}
+        \item 仅适用于\textbf{单输入}系统
+        \item 需要求逆 $W_c^{-1}$（能控时必可逆）
+        \item 数值稳定性依赖于 $W_c$ 的条件数
+    \end{itemize}
 \end{itemize}
 
-\textbf{缺点：}
-\begin{itemize}
-    \item 仅适用于\textbf{单输入系统}
-    \item 需要求逆 $W_c^{-1}$（能控时必可逆）
-    \item 数值稳定性依赖于 $W_c$ 的条件数
-\end{itemize}
-
-\textbf{MATLAB实现：}
+\textbf{MATLAB实现}：
 \begin{verbatim}
 K = acker(A, B, desired_poles)
 \end{verbatim}
 
+\end{tcolorbox}
+
 \subsubsection{三种方法的对比}
 
 \begin{center}
-\renewcommand{\arraystretch}{1.6}
-\begin{tabular}{|l|p{4cm}|p{4cm}|p{4cm}|}
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{|l|p{3.5cm}|p{3.5cm}|p{3.5cm}|}
 \hline
-\rowcolor[gray]{0.9}
-\textbf{方法} & \textbf{直接方法} & \textbf{变换方法} & \textbf{阿克曼公式} \\
+\rowcolor{blue!20}
+\textbf{特性} & \textbf{直接方法} & \textbf{变换方法} & \cellcolor{orange!30}\textbf{Ackermann公式} \\
 \hline
-\textbf{适用范围} & 低阶系统 & 任意阶次 & 单输入系统 \\
+\textbf{适用范围} & 低阶系统（$n \leq 3$） & 任意阶次 & \cellcolor{yellow!20}单输入系统 \\
 \hline
-\textbf{计算复杂度} & 中等（需展开行列式） & 较高（需变换矩阵） & 低（一个公式） \\
+\textbf{计算复杂度} & 中等\\（需展开行列式） & 较高\\（需变换矩阵$T$） & \cellcolor{green!20}\textcolor{green!60!black}{\textbf{低}}\\（一个公式） \\
 \hline
-\textbf{直观性} & 高（直接配置） & 中等 & 低（公式较抽象） \\
+\textbf{直观性} & \textcolor{blue!80!black}{\textbf{高}}\\（直接配置） & 中等 & 低\\（公式较抽象） \\
 \hline
 \textbf{数值稳定性} & 好 & 取决于 $T$ & 取决于 $W_c$ \\
 \hline
-\textbf{推荐场景} & 手算 $n \leq 3$ & 理论分析 & 程序实现 \\
+\rowcolor{yellow!10}
+\textbf{推荐场景} & \textit{手算} $n \leq 3$ & \textit{理论分析} & \cellcolor{orange!20}\textcolor{red!80!black}{\textbf{程序实现}} \\
 \hline
 \end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tcolorbox}[colback=yellow!10, colframe=orange!75!black, width=12cm]
+\textbf{实用建议}：
+\begin{itemize}
+    \item \textbf{课堂作业}：直接方法（便于理解原理）
+    \item \textbf{理论推导}：变换方法（揭示结构特性）
+    \item \textcolor{red!80!black}{\textbf{工程应用}}：\emph{Ackermann公式}（快速准确）
+\end{itemize}
+\end{tcolorbox}
 \end{center}
 
 \subsection{极点选择的实用准则}
 
 \subsubsection*{本节目的}
-理论上可以任意配置极点，但\textbf{实际中如何选择}期望极点？这需要平衡性能、鲁棒性和实现成本。
+理论上可以任意配置极点，但\textbf{实际中如何选择}期望极点？这需要平衡\textit{性能}、\textit{鲁棒性}和\textit{实现成本}。
 
 \subsubsection{性能指标与极点位置的关系}
 
@@ -360,52 +634,188 @@ K = acker(A, B, desired_poles)
 
 极点位置：$s_{1,2} = -\zeta\omega_n \pm j\omega_n\sqrt{1-\zeta^2}$
 
-\begin{itemize}
-    \item $\omega_n$：自然频率（影响\textbf{响应速度}）
-    \item $\zeta$：阻尼比（影响\textbf{超调量和振荡}）
-\end{itemize}
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=1.2]
+    % 坐标轴
+    \draw[->] (-0.5,0) -- (5,0) node[right] {$\text{Re}(s)$};
+    \draw[->] (0,-3) -- (0,3) node[above] {$\text{Im}(s)$};
+    
+    % 稳定区域
+    \fill[blue!10, opacity=0.5] (-0.5,-3) rectangle (0,3);
+    \node[text=red!80!black, rotate=90] at (0.3,0) {\textbf{不稳定区域}};
+    \node[text=green!60!black, rotate=90] at (-0.3,0) {\textbf{稳定区域}};
+    
+    % 极点示例
+    \node[circle, fill=blue, inner sep=2pt, label=above right:{实极点}] (p1) at (1.5,0) {};
+    \node[circle, fill=red, inner sep=2pt, label=above:{复数极点对}] (p2) at (2,1.5) {};
+    \node[circle, fill=red, inner sep=2pt] (p3) at (2,-1.5) {};
+    
+    % 参数标注
+    \draw[dashed, thick, blue!50] (2,0) -- (p2);
+    \draw[<->, orange, thick] (0,0) -- node[below, sloped] {$\omega_n$} (p2);
+    \draw[orange, thick] (2,0) arc (0:36.87:1.5) node[midway, right] {$\theta$};
+    \draw[<->, green!60!black, thick] (2,0) -- node[right] {$\omega_d$} (2,1.5);
+    \draw[<->, red!80!black, thick] (0,0) -- node[above] {$\zeta\omega_n$} (2,0);
+    
+    % 性能区域
+    \draw[thick, purple, dashed] (3.5,-2.5) -- (3.5,2.5);
+    \node[text=purple, text width=2cm, align=center] at (4.2,2) {\small 响应\\更快};
+    
+    \draw[thick, orange, dashed] (1,-2.8) -- (3.5,0);
+    \draw[thick, orange, dashed] (1,2.8) -- (3.5,0);
+    \node[text=orange, text width=2cm, align=center] at (0.5,2.5) {\small 超调\\较大};
+    
+    % 公式标注
+    \node[below, text width=7cm, align=left] at (2.5,-3.5) {
+        $\zeta = \cos\theta$, \quad $\omega_d = \omega_n\sqrt{1-\zeta^2}$
+    };
+\end{tikzpicture}
+\end{center}
 
-\textbf{性能指标：}
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{关键参数}]
 \begin{itemize}
-    \item 调节时间：$t_s \approx \frac{4}{\zeta\omega_n}$（越小越快）
-    \item 超调量：$M_p \approx e^{-\pi\zeta/\sqrt{1-\zeta^2}}$（越小越平稳）
-    \item 峰值时间：$t_p = \frac{\pi}{\omega_n\sqrt{1-\zeta^2}}$
+    \item $\omega_n$ \quad \textbf{自然频率}——影响\emph{响应速度}（越大越快）
+    \item $\zeta$ \quad \textbf{阻尼比}——影响\emph{超调量和振荡}（越大越平稳）
+    \item $\omega_d = \omega_n\sqrt{1-\zeta^2}$ \quad 阻尼自然频率（虚部大小）
 \end{itemize}
+\end{tcolorbox}
+
+\textbf{性能指标与极点位置的关系}：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|l|c|c|}
+\hline
+\rowcolor{blue!20}
+\textbf{性能指标} & \textbf{公式} & \textbf{极点参数} \\
+\hline
+调节时间 & $t_s \approx \dfrac{4}{\zeta\omega_n}$ & \cellcolor{yellow!20}实部越大越小 \\
+\hline
+超调量 & $M_p \approx e^{-\pi\zeta/\sqrt{1-\zeta^2}}$ & \cellcolor{green!20}$\zeta$越大越小 \\
+\hline
+峰值时间 & $t_p = \dfrac{\pi}{\omega_d}$ & 虚部越大越小 \\
+\hline
+\end{tabular}
+\end{center}
 
 \subsubsection{极点配置的实用原则}
 
-\textbf{1. 稳定性要求（基本要求）}
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\faCheckCircle\ \textbf{原则1：稳定性要求（基本要求）}]
 \begin{itemize}
-    \item 所有极点必须在\textbf{左半平面}（$\text{Re}(s_i) < 0$）
-    \item 距离虚轴越远，稳定裕度越大
+    \item 所有极点必须在\textcolor{green!60!black}{\textbf{左半平面}}（$\text{Re}(s_i) < 0$）
+    \item 距离虚轴\emph{越远}，稳定裕度\emph{越大}
 \end{itemize}
 
-\textbf{2. 响应速度要求}
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.8]
+    \draw[->] (-4,0) -- (1,0) node[right] {$\text{Re}$};
+    \draw[->] (0,-2) -- (0,2) node[above] {$\text{Im}$};
+    \fill[green!20, opacity=0.5] (-4,-2) rectangle (0,2);
+    \node at (-2,1.5) {\textcolor{green!60!black}{\textbf{稳定}}};
+    \fill[red!20, opacity=0.5] (0,-2) rectangle (1,2);
+    \node at (0.5,1.5) {\textcolor{red!80!black}{\textbf{不稳定}}};
+    
+    \node[circle, fill=green!60!black, inner sep=2pt] at (-3,0.5) {};
+    \node[circle, fill=green!60!black, inner sep=2pt] at (-3,-0.5) {};
+    \node[right] at (-2.8,0) {\small 稳定裕度大};
+    
+    \node[circle, fill=orange, inner sep=2pt] at (-0.5,1) {};
+    \node[circle, fill=orange, inner sep=2pt] at (-0.5,-1) {};
+    \node[right] at (-0.3,0) {\small 稳定裕度小};
+\end{tikzpicture}
+\end{center}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\faClock\ \textbf{原则2：响应速度要求}]
 \begin{itemize}
-    \item 主导极点的实部决定响应速度
-    \item 更快响应 $\to$ 极点更靠左（但需要更大的控制能量）
+    \item \textbf{主导极点}的实部决定响应速度：$t_s \approx \dfrac{4}{|\text{Re}(s)|}$
+    \item 更快响应 $\to$ 极点更靠左（\textcolor{red!80!black}{\textbf{但}}需要更大的控制能量）
 \end{itemize}
 
-\textbf{3. 超调和振荡要求}
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.8]
+    \draw[->] (-5,0) -- (1,0) node[right] {$\text{Re}$};
+    \draw[->] (0,-2) -- (0,2) node[above] {$\text{Im}$};
+    
+    \node[circle, fill=red, inner sep=2pt, label=below:{\small 慢}] at (-1,0) {};
+    \draw[<->, red] (-1,-1.5) -- node[right] {$t_s$ 大} (-1,-2.5);
+    
+    \node[circle, fill=orange, inner sep=2pt, label=below:{\small 中}] at (-2.5,0) {};
+    \draw[<->, orange] (-2.5,-1.5) -- node[right] {$t_s$ 中} (-2.5,-2.3);
+    
+    \node[circle, fill=green!60!black, inner sep=2pt, label=below:{\small 快}] at (-4,0) {};
+    \draw[<->, green!60!black] (-4,-1.5) -- node[right] {$t_s$ 小} (-4,-2);
+\end{tikzpicture}
+\end{center}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=yellow!5!white, colframe=orange!75!black, title=\faLineChart\ \textbf{原则3：超调和振荡要求}]
 \begin{itemize}
-    \item 实极点：无超调，单调响应
-    \item 复数极点：有超调和振荡
-    \item 常用选择：$\zeta = 0.5 \sim 0.707$（适度阻尼）
+    \item \textcolor{blue!80!black}{\textbf{实极点}}：无超调，单调响应
+    \item \textcolor{red!80!black}{\textbf{复数极点}}：有超调和振荡
+    \item 常用选择：$\zeta = 0.5 \sim 0.707$（\emph{适度阻尼}）
 \end{itemize}
 
-\textbf{4. 高阶系统的极点配置}
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.8]
+    % 三种情况
+    \draw[->] (-5,0) -- (0.5,0) node[right] {$\text{Re}$};
+    \draw[->] (0,-2.5) -- (0,2.5) node[above] {$\text{Im}$};
+    
+    % 实极点
+    \node[circle, fill=blue, inner sep=2pt, label=left:{\small 实极点}] at (-3,0) {};
+    \node[below, text width=2cm, align=center] at (-3,-2.8) {\small \textcolor{blue!80!black}{无超调}};
+    
+    % 适度阻尼
+    \node[circle, fill=green!60!black, inner sep=2pt] at (-2,1.2) {};
+    \node[circle, fill=green!60!black, inner sep=2pt, label=right:{\small $\zeta \approx 0.7$}] at (-2,-1.2) {};
+    \node[below, text width=2cm, align=center] at (-2,-2.8) {\small \textcolor{green!60!black}{\textbf{推荐}}};
+    
+    % 欠阻尼
+    \node[circle, fill=red, inner sep=2pt] at (-1,2) {};
+    \node[circle, fill=red, inner sep=2pt, label=right:{\small $\zeta$ 小}] at (-1,-2) {};
+    \node[below, text width=2cm, align=center] at (-1,-2.8) {\small \textcolor{red!80!black}{振荡大}};
+\end{tikzpicture}
+\end{center}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\faCubes\ \textbf{原则4：高阶系统的极点配置}]
 \begin{itemize}
-    \item \textbf{主导极点}：最靠近虚轴的极点对（决定主要动态特性）
-    \item \textbf{非主导极点}：远离虚轴（衰减快，影响小）
+    \item \textcolor{red!80!black}{\textbf{主导极点}}：最靠近虚轴的极点对（\emph{决定主要动态特性}）
+    \item \textcolor{blue!80!black}{\textbf{非主导极点}}：远离虚轴（衰减快，影响小）
     \item 典型配置：2个主导极点 + $(n-2)$ 个快衰减极点
 \end{itemize}
 
-\textbf{5. 实际限制}
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.9]
+    \draw[->] (-5,0) -- (0.5,0) node[right] {$\text{Re}$};
+    \draw[->] (0,-2.5) -- (0,2.5) node[above] {$\text{Im}$};
+    
+    % 主导极点
+    \node[circle, fill=red, inner sep=3pt] (d1) at (-1,1.2) {};
+    \node[circle, fill=red, inner sep=3pt] (d2) at (-1,-1.2) {};
+    \node[left, text=red!80!black] at (-1,1.5) {\textbf{主导极点}};
+    \draw[->, thick, red!80!black] (d1) -- ++(-0.5,0) node[left] {\small 决定性能};
+    
+    % 非主导极点
+    \node[circle, fill=blue, inner sep=2pt] at (-3.5,0.5) {};
+    \node[circle, fill=blue, inner sep=2pt] at (-3.5,-0.5) {};
+    \node[circle, fill=blue, inner sep=2pt] at (-4.5,0) {};
+    \node[left, text=blue!80!black] at (-4,1) {\textbf{非主导极点}};
+    \draw[->, thick, blue!80!black] (-4,-0.3) -- ++(-0.5,-0.3) node[left, text width=2cm] {\small 快速衰减\\影响小};
+\end{tikzpicture}
+\end{center}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\faExclamationTriangle\ \textbf{原则5：实际限制}]
 \begin{itemize}
-    \item \textbf{控制饱和}：极点太左 $\to$ 控制信号过大
-    \item \textbf{测量噪声}：极点太左 $\to$ 对噪声敏感
-    \item \textbf{模型误差}：极点太精确 $\to$ 鲁棒性差
+    \item \textcolor{red!80!black}{\textbf{控制饱和}}：极点太左 $\to$ 控制信号\emph{过大}（执行器限制）
+    \item \textcolor{orange!80!black}{\textbf{测量噪声}}：极点太左 $\to$ 对噪声\emph{敏感}（高增益放大噪声）
+    \item \textcolor{blue!80!black}{\textbf{模型误差}}：极点太精确 $\to$ \emph{鲁棒性差}（对参数变化敏感）
 \end{itemize}
+
+\textbf{设计平衡}：性能 $\leftrightarrow$ 稳定性 $\leftrightarrow$ 实现成本
+\end{tcolorbox}
 
 \subsubsection{经验法则}
 

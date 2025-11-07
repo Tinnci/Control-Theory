@@ -453,13 +453,25 @@ G(z) &= \frac{1-e^{-aT}}{z-e^{-aT}} = \frac{1-e^{-0.1}}{z-e^{-0.1}} \\
 
 \textbf{多种判定方法：}
 \begin{enumerate}
-    \item \textbf{特征值法}：直接求特征值，判断模是否小于1（最简单）
-    \item \textbf{劳斯判据}：通过双线性变换转换到w平面（下文详述）
-    \item \textbf{Jury判据}：直接在z域判断（下文详述）
-    \item \textbf{李雅普诺夫方法}：能量递减法，适用于状态空间形式（见第\ref{subsec:discrete-lyapunov}节）
+    \item \textbf{特征值法}：直接求特征值，判断模是否小于1（最简单，首选）
+    \item \textbf{劳斯判据}：通过双线性变换转换到w平面（下文详述，适用于多项式形式）
+    \item \textbf{Jury判据}：直接在z域判断（下文详述，直接但较繁琐）
+    \item \textbf{李雅普诺夫方法}：能量递减法，适用于状态空间形式
+    \begin{itemize}
+        \item 理论基础见第\ref{sec:lyapunov-stability}章第\ref{subsec:discrete-lyapunov}节
+        \item 包含离散李雅普诺夫方程 $A^TPA-P=-Q$ 的详细推导
+        \item 提供完整的3×3矩阵稳定性分析例题
+        \item 给出特征值法与李雅普诺夫法的对比
+    \end{itemize}
 \end{enumerate}
 
-\textbf{重要提醒：}离散系统的稳定域是\textbf{单位圆内}，与连续系统的左半平面完全不同！关于离散系统李雅普诺夫稳定性分析的详细内容，请参见第\ref{sec:lyapunov-stability}章第\ref{subsec:discrete-lyapunov}节。
+\textbf{重要提醒：}
+\begin{itemize}
+    \item 离散系统的稳定域是\textbf{单位圆内}（$|z|<1$），与连续系统的左半平面（$\text{Re}(s)<0$）完全不同！
+    \item \textbf{实际工程推荐}：对于状态空间形式，优先用特征值法（MATLAB/Python一行代码）
+    \item \textbf{理论分析推荐}：需要深入理解或鲁棒性分析时，使用李雅普诺夫方法（详见第\ref{subsec:discrete-lyapunov}节）
+    \item 本节后续的劳斯/Jury判据主要用于传递函数形式的快速判断
+\end{itemize}
 
 \subsubsection{劳斯判据的应用（双线性变换）}
 
@@ -1131,8 +1143,14 @@ $G(z)$（z域）
 \begin{itemize}
     \item \textbf{第\ref{sec:transfer-function}章（传递函数）}：$G(z)$是$G(s)$的离散类比，物理意义相同
     \item \textbf{第\ref{sec:state-space}章（状态空间）}：离散状态方程$x(k+1)=Ax(k)+Bu(k)$结构相同
-    \item \textbf{第\ref{sec:stability-analysis}章（稳定性）}：稳定性判据从左半平面改为单位圆内，但\textbf{本质}（衰减vs发散）不变
-    \item \textbf{第\ref{sec:controllability-observability}章}：能控能观判据在离散系统中\textbf{完全适用}（只需替换$A,B,C$）
+    \item \textbf{第\ref{sec:lyapunov-stability}章（李雅普诺夫稳定性）}：
+    \begin{itemize}
+        \item 第\ref{subsec:discrete-lyapunov}节专门讲解\textbf{离散李雅普诺夫方法}
+        \item 稳定性判据从左半平面改为单位圆内，但\textbf{本质}（能量衰减）不变
+        \item 离散李雅普诺夫方程 $A^TPA-P=-Q$ 是本章稳定性分析的理论基础
+        \item 包含完整的状态空间形式稳定性判断例题
+    \end{itemize}
+    \item \textbf{第\ref{sec:controllability-observability}章（能控能观性）}：判据在离散系统中\textbf{完全适用}（只需替换$A,B,C$）
 \end{itemize}
 
 \textbf{前向展望（Applications）：}

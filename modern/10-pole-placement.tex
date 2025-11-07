@@ -213,7 +213,7 @@ $\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}
 \end{itemize}
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\faExclamationTriangle\ \textbf{重要提醒}]
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{! 重要提醒}]
 \begin{itemize}
     \item 状态反馈\textbf{不改变}系统的能控性和能观测性
     \item 状态反馈\textbf{不改变}系统的零点（\emph{只改变极点}）
@@ -228,7 +228,7 @@ $\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}
 
 \subsubsection{定理陈述}
 
-\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\faStarO\ \textbf{极点配置定理（Pole Placement Theorem）}]
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{$\bigstar$ 极点配置定理（Pole Placement Theorem）}]
 对于单输入系统 $(A, B)$，若系统\textcolor{red!80!black}{\textbf{完全能控}}，则对于\emph{任意给定}的 $n$ 个复数 
 \[\lambda_1, \lambda_2, \ldots, \lambda_n\]
 （复数必须成对共轭出现），\textbf{存在}反馈增益矩阵 $K$，使得闭环系统矩阵 $A - BK$ 的特征值\emph{恰好}为 $\lambda_1, \lambda_2, \ldots, \lambda_n$。
@@ -341,7 +341,7 @@ $\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}
 
 \subsubsection{设计步骤概览}
 
-\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\faCogs\ \textbf{极点配置设计流程}]
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{$\triangleright$ 极点配置设计流程}]
 
 \begin{center}
 \begin{tikzpicture}[>=stealth, thick, node distance=2.3cm]
@@ -382,7 +382,7 @@ $\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}
 
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\faExclamationTriangle\ \textbf{定理的局限性}]
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{! 定理的局限性}]
 \begin{itemize}
     \item 只适用于\textcolor{red!80!black}{\textbf{能控}}系统（这是\emph{硬性要求}）
     \item 没有告诉你\textbf{如何选择}期望极点（需要经验和性能分析）
@@ -533,7 +533,7 @@ $\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}
 
 \subsubsection{方法3：阿克曼公式（Ackermann's Formula）}
 
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=\faStar\ \textbf{方法3：Ackermann公式（最简洁！）}]
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=\textbf{$\bigstar$ 方法3：Ackermann公式（最简洁！）}]
 
 \textbf{单输入系统的显式公式}：
 
@@ -700,7 +700,7 @@ K = acker(A, B, desired_poles)
 
 \subsubsection{极点配置的实用原则}
 
-\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\faCheckCircle\ \textbf{原则1：稳定性要求（基本要求）}]
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{$\bigcirc$ 原则1：稳定性要求（基本要求）}]
 \begin{itemize}
     \item 所有极点必须在\textcolor{green!60!black}{\textbf{左半平面}}（$\text{Re}(s_i) < 0$）
     \item 距离虚轴\emph{越远}，稳定裕度\emph{越大}
@@ -726,7 +726,7 @@ K = acker(A, B, desired_poles)
 \end{center}
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\faClock\ \textbf{原则2：响应速度要求}]
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{$\bullet$ 原则2：响应速度要求}]
 \begin{itemize}
     \item \textbf{主导极点}的实部决定响应速度：$t_s \approx \dfrac{4}{|\text{Re}(s)|}$
     \item 更快响应 $\to$ 极点更靠左（\textcolor{red!80!black}{\textbf{但}}需要更大的控制能量）
@@ -749,7 +749,7 @@ K = acker(A, B, desired_poles)
 \end{center}
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=yellow!5!white, colframe=orange!75!black, title=\faLineChart\ \textbf{原则3：超调和振荡要求}]
+\begin{tcolorbox}[colback=yellow!5!white, colframe=orange!75!black, title=\textbf{$\sim$ 原则3：超调和振荡要求}]
 \begin{itemize}
     \item \textcolor{blue!80!black}{\textbf{实极点}}：无超调，单调响应
     \item \textcolor{red!80!black}{\textbf{复数极点}}：有超调和振荡
@@ -779,7 +779,7 @@ K = acker(A, B, desired_poles)
 \end{center}
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\faCubes\ \textbf{原则4：高阶系统的极点配置}]
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\textbf{$\triangleright$ 原则4：高阶系统的极点配置}]
 \begin{itemize}
     \item \textcolor{red!80!black}{\textbf{主导极点}}：最靠近虚轴的极点对（\emph{决定主要动态特性}）
     \item \textcolor{blue!80!black}{\textbf{非主导极点}}：远离虚轴（衰减快，影响小）
@@ -807,7 +807,7 @@ K = acker(A, B, desired_poles)
 \end{center}
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\faExclamationTriangle\ \textbf{原则5：实际限制}]
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{! 原则5：实际限制}]
 \begin{itemize}
     \item \textcolor{red!80!black}{\textbf{控制饱和}}：极点太左 $\to$ 控制信号\emph{过大}（执行器限制）
     \item \textcolor{orange!80!black}{\textbf{测量噪声}}：极点太左 $\to$ 对噪声\emph{敏感}（高增益放大噪声）
@@ -842,11 +842,11 @@ K = acker(A, B, desired_poles)
 \subsubsection{极点配置的常见错误}
 
 \begin{itemize}
-    \item ✗ 极点配置过于激进（远离虚轴）$\to$ 控制饱和
-    \item ✗ 忽略零点的影响（系统零点不变，可能抵消部分极点效果）
-    \item ✗ 所有极点聚在同一位置 $\to$ 数值不稳定
-    \item ✓ 平衡性能和实现成本
-    \item ✓ 验证闭环系统对参数变化的鲁棒性
+    \item[$\times$] 极点配置过于激进（远离虚轴）$\to$ 控制饱和
+    \item[$\times$] 忽略零点的影响（系统零点不变，可能抵消部分极点效果）
+    \item[$\times$] 所有极点聚在同一位置 $\to$ 数值不稳定
+    \item[$\checkmark$] 平衡性能和实现成本
+    \item[$\checkmark$] 验证闭环系统对参数变化的鲁棒性
 \end{itemize}
 
 \subsection{实际应用范例}
@@ -1039,12 +1039,12 @@ K &= [0 \quad 1] W_c^{-1} \alpha_d(A) \\
 \subsubsection*{常见误区}
 
 \begin{itemize}
-    \item ✗ 认为能控性不重要（能控性是极点配置的\textbf{充要条件}）
-    \item ✗ 极点配置得越快越好（要考虑控制饱和和噪声）
-    \item ✗ 忽略系统零点（零点不变，会影响实际响应）
-    \item ✗ 期望所有极点重合（数值不稳定）
-    \item ✓ 仔细选择极点位置，平衡性能和鲁棒性
-    \item ✓ 验证闭环系统对参数摄动的敏感性
+    \item[$\times$] 认为能控性不重要（能控性是极点配置的\textbf{充要条件}）
+    \item[$\times$] 极点配置得越快越好（要考虑控制饱和和噪声）
+    \item[$\times$] 忽略系统零点（零点不变，会影响实际响应）
+    \item[$\times$] 期望所有极点重合（数值不稳定）
+    \item[$\checkmark$] 仔细选择极点位置，平衡性能和鲁棒性
+    \item[$\checkmark$] 验证闭环系统对参数摄动的敏感性
 \end{itemize}
 
 \subsubsection*{实际应用建议}

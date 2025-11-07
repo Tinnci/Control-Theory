@@ -277,30 +277,32 @@ $\boxed{\dot{x} = \underbrace{(A - BK)}_{\textcolor{red!80!black}{A_{\text{cl}}}
 \textbf{1. 能控性是充要条件}
 
 \begin{center}
-\begin{tikzpicture}[>=stealth, thick, node distance=2cm]
-    % 能控性保证
-    \node[draw, rectangle, rounded corners, fill=blue!10, text width=4cm, align=center] (ctrl) at (0,2) {
+\begin{tikzpicture}[>=stealth, thick, node distance=1.5cm]
+    % 能控性保证 - 横向排列更紧凑
+    \node[draw, rectangle, rounded corners, fill=blue!10, text width=3.5cm, align=center, minimum height=2cm] (ctrl) at (0,0) {
         \textbf{能控性} \\[0.1cm]
-        $W_c = [B\ AB\ \cdots\ A^{n-1}B]$ \\
-        张成\emph{整个状态空间}
+        $W_c = [B\ AB\ \cdots]$ \\
+        张成整个状态空间
     };
     
-    \node[draw, rectangle, rounded corners, fill=green!10, text width=4cm, align=center] (inf) at (0,0) {
+    \node[draw, rectangle, rounded corners, fill=green!10, text width=3.5cm, align=center, minimum height=2cm] (inf) at (4.5,0) {
         \textbf{影响力} \\[0.1cm]
         通过 $BK$ 可在 \\
-        \emph{所有方向}上施加影响
+        所有方向施加影响
     };
     
-    \node[draw, rectangle, rounded corners, fill=orange!10, text width=4cm, align=center] (pole) at (0,-2) {
+    \node[draw, rectangle, rounded corners, fill=orange!10, text width=3.5cm, align=center, minimum height=2cm] (pole) at (9,0) {
         \textbf{极点配置} \\[0.1cm]
         可将 $A$ 的特征值 \\
-        \emph{推到任意位置}
+        推到任意位置
     };
     
     \draw[->, very thick, blue!60!black] (ctrl) -- (inf);
     \draw[->, very thick, green!60!black] (inf) -- (pole);
 \end{tikzpicture}
 \end{center}
+
+\vspace{0.3cm}
 
 \begin{itemize}
     \item \textbf{充分性}：能控 $\Rightarrow$ 可任意配置极点（\emph{定理保证}）

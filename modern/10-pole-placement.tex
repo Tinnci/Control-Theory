@@ -593,23 +593,33 @@ K = acker(A, B, desired_poles)
 \subsubsection{三种方法的对比}
 
 \begin{center}
-\renewcommand{\arraystretch}{1.8}
-\begin{tabular}{|l|p{3.5cm}|p{3.5cm}|p{3.5cm}|}
-\hline
-\rowcolor{blue!20}
-\textbf{特性} & \textbf{直接方法} & \textbf{变换方法} & \cellcolor{orange!30}\textbf{Ackermann公式} \\
-\hline
-\textbf{适用范围} & 低阶系统（$n \leq 3$） & 任意阶次 & \cellcolor{yellow!20}单输入系统 \\
-\hline
-\textbf{计算复杂度} & 中等\\（需展开行列式） & 较高\\（需变换矩阵$T$） & \cellcolor{green!20}\textcolor{green!60!black}{\textbf{低}}\\（一个公式） \\
-\hline
-\textbf{直观性} & \textcolor{blue!80!black}{\textbf{高}}\\（直接配置） & 中等 & 低\\（公式较抽象） \\
-\hline
-\textbf{数值稳定性} & 好 & 取决于 $T$ & 取决于 $W_c$ \\
-\hline
-\rowcolor{yellow!10}
-\textbf{推荐场景} & \textit{手算} $n \leq 3$ & \textit{理论分析} & \cellcolor{orange!20}\textcolor{red!80!black}{\textbf{程序实现}} \\
-\hline
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}l c c c@{}}
+\toprule
+\textbf{特性} & \textbf{直接方法} & \textbf{变换方法} & \textbf{Ackermann公式} \\
+\midrule
+\textbf{适用范围} & 低阶（$n \leq 3$） & 任意阶次 & 单输入系统 \\[0.2em]
+\textbf{计算复杂度} & 中等 & 较高 & \textcolor{green!60!black}{\textbf{低}} \\[0.2em]
+\textbf{直观性} & \textcolor{blue!80!black}{\textbf{高}} & 中等 & 低 \\[0.2em]
+\textbf{数值稳定性} & 好 & 取决于 $T$ & 取决于 $W_c$ \\[0.2em]
+\midrule
+\textbf{推荐场景} & 手算 & 理论分析 & \textcolor{red!80!black}{\textbf{程序实现}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}
+\small
+\begin{tabular}{@{}l p{11cm}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{详细说明}} \\
+\midrule
+\textbf{直接方法} & 展开行列式 $\det(sI - A + BK)$ 并与期望多项式系数匹配，适合手算低阶系统 \\[0.3em]
+\textbf{变换方法} & 先变换到能控标准型，在标准型下设计 $\bar{K}$，再变换回原坐标 $K = \bar{K}T$ \\[0.3em]
+\textbf{Ackermann} & 直接公式 $K = [0 \cdots 0 \quad 1] W_c^{-1} \alpha_c(A)$，最简洁实用 \\
+\bottomrule
 \end{tabular}
 \end{center}
 

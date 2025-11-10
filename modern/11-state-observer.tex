@@ -244,158 +244,674 @@ y &= Cx
 
 \subsubsection{误差动态分析}
 
-定义\textbf{估计误差}：
-\[e(t) = x(t) - \hat{x}(t)\]
+\textbf{核心问题：}观测器的估计值 $\hat{x}$ 能逼近真实状态 $x$ 吗？多快能收敛？
 
-\textbf{目标：}设计 $L$ 使 $e(t) \to 0$。
+\vspace{0.3cm}
 
-\textbf{推导误差动态方程：}
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{第一步：定义估计误差}]
+\begin{center}
+\Large
+$\boxed{e(t) = x(t) - \hat{x}(t)}$
+\end{center}
 
-真实系统：
-\[\dot{x} = Ax + Bu\]
+\textbf{物理意义：}
+\begin{itemize}
+    \item $e = 0$ \quad $\Rightarrow$ \quad 完美估计
+    \item $\|e(t)\|$ \quad 衡量估计的精度
+    \item \textcolor{red!80!black}{\textbf{设计目标}}：使 $e(t) \to 0$（渐近收敛）
+\end{itemize}
+\end{tcolorbox}
 
-观测器：
-\[\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x}) = A\hat{x} + Bu + LC(x - \hat{x})\]
+\vspace{0.5cm}
 
-两式相减：
+\textbf{第二步：推导误差动态方程}
+
+\textit{思路}：既然 $\dot{x}$ 和 $\dot{\hat{x}}$ 都已知，那么 $\dot{e} = \dot{x} - \dot{\hat{x}}$ 也能算出来！
+
 \begin{align*}
-\dot{e} &= \dot{x} - \dot{\hat{x}} \\
-&= Ax + Bu - [A\hat{x} + Bu + LC(x - \hat{x})] \\
-&= Ax - A\hat{x} - LCx + LC\hat{x} \\
+\text{\textcolor{blue}{真实系统：}} \quad & \dot{x} = Ax + Bu \\[0.2cm]
+\text{\textcolor{green!60!black}{观测器：}} \quad & \dot{\hat{x}} = A\hat{x} + Bu + \textcolor{red!80!black}{L(y - C\hat{x})} \\
+& \quad = A\hat{x} + Bu + LC\underbrace{(x - \hat{x})}_{e} \\[0.3cm]
+\text{\textcolor{orange!80!black}{两式相减：}} \quad & \dot{e} = \dot{x} - \dot{\hat{x}}
+\end{align*}
+
+\begin{align*}
+\dot{e} &= \textcolor{blue}{Ax + Bu} - \textcolor{green!60!black}{[A\hat{x} + Bu + LCe]} \\
+&= Ax \textcolor{gray}{+ Bu} - A\hat{x} \textcolor{gray}{- Bu} - LCe \quad \text{\small \textit{（$Bu$ 项相消！）}} \\
 &= A(x - \hat{x}) - LC(x - \hat{x}) \\
 &= (A - LC)e
 \end{align*}
 
-\textbf{关键结果：}
-\[\boxed{\dot{e} = (A - LC)e}\]
+\vspace{0.3cm}
 
-\textbf{重要观察：}
-\begin{itemize}
-    \item 误差动态与输入 $u$ \textbf{无关}！（控制不影响估计误差）
-    \item 误差是\textbf{齐次方程}，只依赖于初始误差 $e(0) = x(0) - \hat{x}(0)$
-    \item 收敛性完全由 $A - LC$ 的特征值决定
-\end{itemize}
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{⚡ 核心结论：误差动态方程}, fonttitle=\bfseries]
+\begin{center}
+\Huge
+$\boxed{\dot{e} = (A - LC)e}$
+\end{center}
+
+\vspace{0.2cm}
+
+\textbf{三个震撼性发现：}
+
+\begin{enumerate}
+    \item \textcolor{red!80!black}{\textbf{与输入 $u$ 无关！}} 
+    \begin{itemize}
+        \item 控制输入不影响估计误差
+        \item 观测器可以独立于控制器设计
+        \item 这是\textit{分离定理}的数学基础
+    \end{itemize}
+    
+    \item \textcolor{blue!80!black}{\textbf{齐次方程}}
+    \begin{itemize}
+        \item 只依赖于初始误差 $e(0) = x(0) - \hat{x}(0)$
+        \item 即使初始估计错误，也能收敛
+    \end{itemize}
+    
+    \item \textcolor{green!60!black}{\textbf{收敛速度由 $A - LC$ 的极点决定}}
+    \begin{itemize}
+        \item 极点越左，收敛越快
+        \item 设计 $L$ 就是配置这些极点
+        \item 与极点配置\textit{完全类似}！
+    \end{itemize}
+\end{enumerate}
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=2.5cm]
+    % 误差演化示意
+    \draw[->] (0,0) -- (8,0) node[right] {时间 $t$};
+    \draw[->] (0,0) -- (0,3) node[above] {误差 $\|e(t)\|$};
+    
+    % 初始误差
+    \node[circle, fill=red, inner sep=2pt] at (0.5,2.5) {};
+    \node[above] at (0.5,2.8) {\small $e(0)$};
+    
+    % 收敛曲线
+    \draw[red!80!black, very thick] plot[smooth, domain=0.5:7] 
+        (\x, {2.5*exp(-0.8*(\x-0.5))});
+    
+    % 标注
+    \node[below, text width=3cm, align=center] at (4,-0.8) {
+        \small \textcolor{blue}{由 $A-LC$ 极点决定} \\
+        \small \textcolor{green!60!black}{与 $u$ 无关}
+    };
+    
+    % 目标线
+    \draw[dashed, gray] (0,0.2) -- (8,0.2) node[right, black] {\small 目标};
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange!75!black, title=\textbf{💡 设计启示}]
+\textbf{问题：}如何让 $e(t) \to 0$？
+
+\textbf{答案：}选择增益 $L$，使 $A - LC$ 的所有特征值在\textcolor{green!60!black}{\textbf{左半平面}}！
+
+\begin{center}
+\textit{这与极点配置问题一模一样，只是把 $K$ 换成了 $L$！}
+\end{center}
+\end{tcolorbox}
 
 \subsubsection{观测器收敛条件}
 
-要使 $e(t) \to 0$，需要 $A - LC$ 的所有特征值在\textbf{左半平面}。
+\textbf{目标：}使估计误差 $e(t) \to 0$。
 
-\textbf{如何选择 $L$？}
+从 $\dot{e} = (A - LC)e$ 可知，误差收敛的\textbf{充要条件}是：
 
-这与极点配置\textbf{完全类似}：
-\begin{itemize}
-    \item 极点配置：选择 $K$ 使 $A - BK$ 的特征值在期望位置
-    \item 观测器设计：选择 $L$ 使 $A - LC$ 的特征值在期望位置
-\end{itemize}
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{收敛条件}]
+\begin{center}
+\Large
+$A - LC$ 的所有特征值在\textcolor{green!60!black}{\textbf{左半平面}}
+\end{center}
 
-\textbf{对偶性（Duality）：}
+\vspace{0.2cm}
+
+\textbf{数学表达：}
+\[\text{Re}(\lambda_i(A - LC)) < 0, \quad i = 1, 2, \ldots, n\]
+
+\textbf{等价于：}
+\[e(t) = e^{(A-LC)t}e(0) \to 0 \quad \text{当 } t \to \infty\]
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\textbf{关键问题：}如何选择 $L$ 来配置 $A - LC$ 的极点？
 
 \begin{center}
-\renewcommand{\arraystretch}{1.6}
-\begin{tabular}{|l|c|c|}
-\hline
-\rowcolor[gray]{0.9}
-& \textbf{控制器设计} & \textbf{观测器设计} \\
-\hline
-\textbf{目标} & 配置 $A - BK$ 的极点 & 配置 $A - LC$ 的极点 \\
-\hline
-\textbf{前提条件} & $(A, B)$ 能控 & $(A, C)$ 能观测 \\
-\hline
+\textit{这个问题是否似曾相识？}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{🔄 对偶性（Duality）—— 观测器设计的"秘密武器"}]
+
+\textbf{惊人发现：}观测器设计 = 极点配置的\textcolor{red!80!black}{\textbf{对偶问题}}！
+
+\begin{center}
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{@{}l c c@{}}
+\toprule
+\textbf{问题} & \textbf{极点配置} & \textbf{观测器设计} \\
+\midrule
+\textbf{目标矩阵} & $A - BK$ & $A - LC$ \\[0.2em]
+\textbf{极点位置} & 期望控制器极点 & 期望观测器极点 \\[0.2em]
+\textbf{前提条件} & $(A, B)$ \textcolor{blue}{能控} & $(A, C)$ \textcolor{green!60!black}{能观测} \\[0.2em]
+\textbf{设计参数} & $K \in \mathbb{R}^{m \times n}$ & $L \in \mathbb{R}^{n \times p}$ \\[0.2em]
+\midrule
 \textbf{对偶变换} & --- & $(A, C) \leftrightarrow (A^T, C^T)$ \\
-\hline
-\textbf{增益计算} & $K$ 通过阿克曼公式 & $L^T$ 通过对偶系统 \\
-\hline
+\bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{利用对偶性设计 $L$：}
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=3cm]
+    % 极点配置
+    \node[draw, rectangle, rounded corners, fill=blue!10, minimum width=3.5cm, minimum height=2cm, align=center] (pole) at (0,0) {
+        \textbf{极点配置} \\[0.3cm]
+        设计 $K$ \\
+        配置 $A - BK$
+    };
+    
+    % 观测器设计
+    \node[draw, rectangle, rounded corners, fill=green!10, minimum width=3.5cm, minimum height=2cm, align=center] (obs) at (6,0) {
+        \textbf{观测器设计} \\[0.3cm]
+        设计 $L$ \\
+        配置 $A - LC$
+    };
+    
+    % 对偶箭头
+    \draw[<->, very thick, red!80!black, bend left=30] (pole) to node[above, text width=2.5cm, align=center] {\textbf{对偶变换} \\ {\small $A \to A^T$} \\ {\small $B \to C^T$}} (obs);
+    
+    % 底部标注
+    \node[below=1cm of pole, text width=3cm, align=center, fill=yellow!20, rounded corners] {
+        {\small 需要能控性}
+    };
+    
+    \node[below=1cm of obs, text width=3cm, align=center, fill=yellow!20, rounded corners] {
+        {\small 需要能观测性}
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
+\textbf{📌 记忆卡片：对偶性的核心公式}
+
+\begin{center}
+\fcolorbox{red!80!black}{yellow!10}{
+\begin{minipage}{0.85\textwidth}
+\vspace{0.2cm}
+\textbf{控制器设计：}
+\begin{itemize}
+    \item 能控 $(A, B)$ $\Rightarrow$ 存在 $K$ 使 $A - BK$ 有任意极点
+    \item 方法：直接法、变换法、Ackermann 公式
+\end{itemize}
+
+\textbf{观测器设计（对偶）：}
+\begin{itemize}
+    \item 能观测 $(A, C)$ $\Rightarrow$ 存在 $L$ 使 $A - LC$ 有任意极点
+    \item 方法：\textcolor{red!80!black}{\textbf{完全相同}}，只需把 $(A, B) \to (A^T, C^T)$，$K \to L^T$
+\end{itemize}
+
+\vspace{0.1cm}
+\end{minipage}
+}
+\end{center}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\textbf{利用对偶性设计观测器增益 $L$ 的步骤：}
 
 \begin{enumerate}
-    \item 检查 $(A, C)$ 的能观测性
-    \item 将问题转化为对偶系统 $(A^T, C^T)$ 的能控性问题
-    \item 为对偶系统设计 $K^T$（使 $A^T - C^T K^T$ 有期望极点）
-    \item 取 $L = K^T$（或直接 $L^T = K$）
+    \item \textbf{验证能观测性}
+    \begin{itemize}
+        \item 检查 $(A, C)$ 的能观测矩阵：$W_o = \begin{bmatrix} C \\ CA \\ \vdots \\ CA^{n-1} \end{bmatrix}$
+        \item 确认 $\text{rank}(W_o) = n$
+    \end{itemize}
+    
+    \item \textbf{构造对偶系统}
+    \begin{itemize}
+        \item 对偶系统矩阵：$(A^T, C^T)$
+        \item 这个对偶系统是\textbf{能控}的！（因为原系统能观测）
+    \end{itemize}
+    
+    \item \textbf{为对偶系统设计 $K$}
+    \begin{itemize}
+        \item 使用任何极点配置方法（如 Ackermann）
+        \item 使 $A^T - C^T K$ 有期望的观测器极点
+    \end{itemize}
+    
+    \item \textbf{转置得到 $L$}
+    \begin{itemize}
+        \item $L = K^T$（或 $L^T = K$）
+    \end{itemize}
 \end{enumerate}
 
-\textbf{实际计算（MATLAB）：}
-\begin{verbatim}
-% 方法1：直接使用place函数
-L = place(A', C', desired_poles)';
+\vspace{0.3cm}
 
-% 方法2：利用对偶性
-K_dual = acker(A', C', desired_poles);
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\textbf{💻 MATLAB 实现}]
+
+\textbf{方法1：直接使用 place 函数}
+\begin{lstlisting}[style=Matlab-editor]
+% 为观测器设计增益 L
+desired_observer_poles = [-5, -6, -7];  % 期望极点
+L = place(A', C', desired_observer_poles)';
+% 注意：A' 和 C' 是转置，最后结果再转置
+\end{lstlisting}
+
+\textbf{方法2：利用 Ackermann 公式（单输出系统）}
+\begin{lstlisting}[style=Matlab-editor]
+% 先为对偶系统设计 K
+K_dual = acker(A', C', desired_observer_poles);
+% 转置得到 L
 L = K_dual';
-\end{verbatim}
+\end{lstlisting}
+
+\textbf{验证设计：}
+\begin{lstlisting}[style=Matlab-editor]
+% 检查观测器极点
+eig(A - L*C)
+% 应该等于 desired_observer_poles
+\end{lstlisting}
+
+\textbf{为什么这样做？}
+\begin{itemize}
+    \item MATLAB 的极点配置函数都是为控制器设计的
+    \item 通过对偶性，我们"欺骗"MATLAB 为对偶系统设计控制器
+    \item 然后转置，得到原系统的观测器增益
+\end{itemize}
+
+\end{tcolorbox}
 
 \subsubsection{观测器增益的物理意义}
 
-$L$ 是 $n \times p$ 矩阵，其中：
+\textbf{问题：}增益矩阵 $L$ 究竟是什么？它的每个元素代表什么？
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{增益 $L$ 的结构}]
+
+\begin{center}
+$L = \begin{bmatrix} l_{11} & l_{12} & \cdots & l_{1p} \\ l_{21} & l_{22} & \cdots & l_{2p} \\ \vdots & \vdots & \ddots & \vdots \\ l_{n1} & l_{n2} & \cdots & l_{np} \end{bmatrix} \in \mathbb{R}^{n \times p}$
+\end{center}
+
+\textbf{维度解释：}
 \begin{itemize}
-    \item $n$：状态变量个数
-    \item $p$：输出变量个数
+    \item $n$：状态变量个数（要估计多少个状态）
+    \item $p$：输出变量个数（有多少个测量值）
 \end{itemize}
 
-\textbf{增益元素的含义：}
+\textbf{物理意义：}
 
-$L_{ij}$：当第 $j$ 个输出有单位误差时，对第 $i$ 个状态估计的校正强度。
+\textcolor{red!80!black}{\textbf{$L_{ij}$}}：当第 $j$ 个输出有\textbf{单位误差}时，对第 $i$ 个状态估计的\textcolor{blue}{\textbf{校正强度}}。
 
-\textbf{极端情况分析：}
+\vspace{0.2cm}
 
+\textit{类比：$L$ 就像"信任权重"——每个测量值对每个状态估计的影响有多大。}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\textbf{通过极端情况理解 $L$：}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    % 光谱图
+    \draw[line width=3mm, left color=blue!50, right color=red!50] (0,0) -- (10,0);
+    
+    % 刻度
+    \foreach \x/\label in {0/$L=0$, 5/$L$ 适中, 10/$L \to \infty$} {
+        \draw (\x,-0.2) -- (\x,0.2);
+        \node[below] at (\x,-0.5) {\label};
+    }
+    
+    % 特性标注
+    \node[above, text width=3cm, align=center] at (0,1.2) {
+        \textcolor{blue}{\textbf{开环观测器}} \\
+        {\small 完全信任模型}
+    };
+    
+    \node[above, text width=3cm, align=center] at (5,1.2) {
+        \textcolor{purple}{\textbf{平衡设计}} \\
+        {\small 模型+测量}
+    };
+    
+    \node[above, text width=3cm, align=center] at (10,1.2) {
+        \textcolor{red!80!black}{\textbf{高增益观测器}} \\
+        {\small 完全信任测量}
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange!75!black, title=\textbf{情况1：$L = 0$（开环观测器）}]
+
+\textbf{观测器方程退化为：}
+\[\dot{\hat{x}} = A\hat{x} + Bu \quad \text{\textcolor{gray}{（无校正项）}}\]
+
+\textbf{误差动态：}
+\[\dot{e} = (A - 0 \cdot C)e = Ae\]
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=2cm]
+    \node[draw, rectangle, minimum width=2.5cm, minimum height=1cm] (sys) at (0,0) {真实系统};
+    \node[draw, rectangle, minimum width=2.5cm, minimum height=1cm] (obs) at (0,-2.5) {观测器模型};
+    
+    \node[left=1cm of sys] (u) {$u$};
+    \draw[->, very thick] (u) -- (sys);
+    \draw[->, very thick] (u) |- (obs);
+    
+    \node[right=1cm of sys] (y) {$y$};
+    \draw[->] (sys) -- (y);
+    
+    % 无反馈
+    \draw[->, dashed, gray] (y) -- ++(0,-1) node[midway, right] {\textcolor{gray}{忽略}};
+    
+    \node[below, text width=5cm, align=left] at (0,-4) {
+        {\small \textcolor{red}{问题}：如果模型不准或初始误差大，} \\
+        {\small 误差\textbf{永不收敛}（$A$ 可能不稳定）}
+    };
+\end{tikzpicture}
+\end{center}
+
+\textbf{适用场景：}
 \begin{itemize}
-    \item \textbf{$L = 0$}：开环观测器
-    \begin{itemize}
-        \item 完全忽略输出误差
-        \item 误差动态：$\dot{e} = Ae$（不稳定或缓慢收敛）
-        \item 适用场景：模型极其准确，无需校正
-    \end{itemize}
-    
-    \item \textbf{$L$ 很大}：高增益观测器
-    \begin{itemize}
-        \item 强烈依赖输出信息
-        \item 误差快速收敛
-        \item 代价：对测量噪声\textbf{极度敏感}
-    \end{itemize}
-    
-    \item \textbf{$L$ 适中}：平衡设计
-    \begin{itemize}
-        \item 收敛速度与噪声抑制的折中
-        \item 实际工程的典型选择
-    \end{itemize}
+    \item 模型\textbf{极其准确}（罕见）
+    \item 测量噪声巨大，不如不用
 \end{itemize}
+
+\textbf{结论：}\textcolor{red!80!black}{几乎不实用！}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=red!10, colframe=red!75!black, title=\textbf{情况2：$L$ 很大（高增益观测器）}]
+
+\textbf{误差动态：}
+\[\dot{e} = (\underbrace{A}_{\text{缓慢}} - \underbrace{LC}_{\text{主导}})e \approx -LCe\]
+
+当 $\|L\| \to \infty$，观测器极点 $\to -\infty$（超快收敛）。
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.8]
+    % 时间轴
+    \draw[->] (0,0) -- (6,0) node[right] {$t$};
+    \draw[->] (0,0) -- (0,3) node[above] {$\|e\|$};
+    
+    % 不同L的收敛曲线
+    \draw[blue, thick] plot[smooth, domain=0.2:5.5] (\x, {2*exp(-0.5*\x)});
+    \draw[green!60!black, thick] plot[smooth, domain=0.2:5.5] (\x, {2*exp(-1.5*\x)});
+    \draw[red, ultra thick] plot[smooth, domain=0.2:5.5] (\x, {2*exp(-5*\x)});
+    
+    % 图例
+    \node[right, text=blue] at (3,2) {$L$ 小};
+    \node[right, text=green!60!black] at (2,1.2) {$L$ 中等};
+    \node[right, text=red!80!black] at (1,0.5) {$L$ 大};
+\end{tikzpicture}
+\end{center}
+
+\textbf{优点：}
+\begin{itemize}
+    \item[\textcolor{green!60!black}{\checkmark}] 误差\textbf{极快收敛}
+    \item[\textcolor{green!60!black}{\checkmark}] 对模型误差不敏感
+\end{itemize}
+
+\textbf{代价：}
+\begin{itemize}
+    \item[\textcolor{red!80!black}{\times}] 测量噪声被\textbf{严重放大}
+    \item[\textcolor{red!80!black}{\times}] 估计值\textbf{抖动}剧烈
+    \item[\textcolor{red!80!black}{\times}] 控制输入 $u = -K\hat{x}$ 也跟着抖动
+\end{itemize}
+
+\textbf{实际后果：}电机\textit{嗡嗡作响}，机械臂\textit{疯狂颤抖}！
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{✓ 情况3：$L$ 适中（工程平衡）}]
+
+\textbf{设计准则：}
+
+观测器极点比控制器极点快 \textcolor{blue}{\textbf{2~5 倍}}。
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    % s平面
+    \draw[->] (-6,0) -- (1,0) node[right] {Re};
+    \draw[->] (0,-2) -- (0,2) node[above] {Im};
+    
+    % 控制器极点
+    \node[circle, fill=blue, inner sep=2pt] at (-1.5,0.8) {};
+    \node[circle, fill=blue, inner sep=2pt] at (-1.5,-0.8) {};
+    \node[above right, text=blue] at (-1.5,0.8) {控制器极点};
+    
+    % 观测器极点
+    \node[circle, fill=red, inner sep=2pt] at (-4.5,1.2) {};
+    \node[circle, fill=red, inner sep=2pt] at (-4.5,-1.2) {};
+    \node[above right, text=red!80!black] at (-4.5,1.2) {观测器极点};
+    
+    % 标注
+    \draw[<->, dashed] (-1.5,-1.5) -- node[below] {\small 快 2-5 倍} (-4.5,-1.5);
+\end{tikzpicture}
+\end{center}
+
+\textbf{折中效果：}
+\begin{itemize}
+    \item 误差收敛\textit{足够快}（不拖累控制性能）
+    \item 噪声放大\textit{可接受}（不引起抖动）
+    \item 鲁棒性\textit{良好}（对模型误差容忍）
+\end{itemize}
+
+\textbf{经验公式：}
+
+如果控制器主导极点实部为 $\sigma_c$，则观测器极点选择：
+\[\sigma_o \approx (3 \sim 4) \times |\sigma_c|\]
+
+\textbf{示例：}
+\begin{itemize}
+    \item 控制器极点：$-2 \pm j3$ \quad $\Rightarrow$ \quad $\sigma_c = -2$
+    \item 观测器极点：$-8, -10$ \quad $\Rightarrow$ \quad $\sigma_o \approx -9$ \quad （4.5倍）
+\end{itemize}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\textbf{📊 增益选择的权衡曲线}]
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.9]
+    % 坐标轴
+    \draw[->] (0,0) -- (8,0) node[right] {$\|L\|$（增益大小）};
+    \draw[->] (0,0) -- (0,5) node[above] {性能};
+    
+    % 收敛速度曲线（单调递增）
+    \draw[blue, very thick] plot[smooth, domain=0.5:7.5] (\x, {4 - 3.5*exp(-0.5*\x)});
+    \node[above, text=blue] at (7,3.5) {收敛速度};
+    
+    % 噪声敏感性曲线（单调递增）
+    \draw[red, very thick] plot[smooth, domain=0.5:7.5] (\x, {0.5 + 0.4*\x});
+    \node[above, text=red!80!black] at (7,3.5) {噪声放大};
+    
+    % 最优区域
+    \fill[green!20, opacity=0.5] (3,0) rectangle (5,5);
+    \draw[green!60!black, dashed, thick] (3,0) -- (3,5);
+    \draw[green!60!black, dashed, thick] (5,0) -- (5,5);
+    \node[below, text=green!60!black] at (4,-0.5) {\textbf{工程最优区}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{设计哲学：}
+
+\textit{不求最快，但求稳定；不追极致，但求实用。}
+
+\end{tcolorbox}
 
 \subsubsection{观测器设计定理}
 
-\textbf{全维状态观测器设计定理：}
+\textbf{核心问题：}我们真的能任意配置观测器的极点吗？
 
-若系统 $(A, C)$ \textbf{完全能观测}，则对于任意给定的 $n$ 个复数 $\mu_1, \mu_2, \ldots, \mu_n$（复数成对共轭），\textbf{存在}观测器增益矩阵 $L$，使得误差矩阵 $A - LC$ 的特征值恰好为 $\mu_1, \mu_2, \ldots, \mu_n$。
+\vspace{0.3cm}
 
-\textbf{定理的意义：}
-\begin{itemize}
-    \item 能观测性是任意配置观测器极点的\textbf{充要条件}
-    \item 这与极点配置定理\textbf{完全对偶}
-    \item 设计方法可以直接套用极点配置的算法
-\end{itemize}
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{📜 全维状态观测器设计定理}]
 
-\textbf{与极点配置的对比：}
+\textbf{定理陈述：}
+
+若系统 $(A, C)$ \textcolor{red!80!black}{\textbf{完全能观测}}，则对于任意给定的 $n$ 个复数 $\mu_1, \mu_2, \ldots, \mu_n$（复数成对共轭），\textbf{存在}观测器增益矩阵 $L \in \mathbb{R}^{n \times p}$，使得误差矩阵 $A - LC$ 的特征值恰好为 $\mu_1, \mu_2, \ldots, \mu_n$。
+
+\vspace{0.2cm}
+
+\textbf{数学表达：}
+\[\text{能观测} \quad \Leftrightarrow \quad \text{极点任意配置}\]
+
+\tcblower
+
+\textbf{定理的三层含义：}
+
+\begin{enumerate}
+    \item \textcolor{blue}{\textbf{充分性}}：能观测 $\Rightarrow$ 可配置极点
+    
+    \textit{（只要系统能观测，我们就有能力让误差以任意速度收敛）}
+    
+    \item \textcolor{blue}{\textbf{必要性}}：可配置极点 $\Rightarrow$ 能观测
+    
+    \textit{（如果不能观测，某些状态的估计误差永远无法控制）}
+    
+    \item \textcolor{blue}{\textbf{构造性}}：定理不仅说"存在"，还给出了计算方法！
+    
+    \textit{（通过对偶性，直接套用极点配置算法）}
+\end{enumerate}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=yellow!10, colframe=orange!75!black, title=\textbf{💡 为什么需要能观测性？——一个直观解释}]
+
+\textbf{场景：}假设某个状态 $x_i$ 对输出 $y$ \textbf{完全没有影响}（不能观测）。
 
 \begin{center}
-\begin{tabular}{|l|c|c|}
-\hline
-\rowcolor[gray]{0.9}
-& \textbf{极点配置} & \textbf{观测器设计} \\
-\hline
-系统 & $\dot{x} = Ax + Bu$ & $\dot{e} = (A - LC)e$ \\
-\hline
-配置目标 & $A - BK$ 的极点 & $A - LC$ 的极点 \\
-\hline
-条件 & $(A, B)$ 能控 & $(A, C)$ 能观测 \\
-\hline
-增益 & $K$ & $L$ \\
-\hline
-对偶关系 & $B \leftrightarrow C^T$ & $K \leftrightarrow L^T$ \\
-\hline
+\begin{tikzpicture}[>=stealth, thick, node distance=2.5cm]
+    % 系统框图
+    \node[draw, circle, minimum size=1.2cm] (xi) {$x_i$};
+    \node[draw, circle, minimum size=1.2cm, right=of xi] (xj) {$x_j$};
+    \node[draw, rectangle, minimum width=2cm, minimum height=1cm, right=of xj] (output) {输出 $y$};
+    
+    % 连接
+    \draw[->, dashed, gray] (xi) -- node[above] {\textcolor{gray}{无影响}} (xj);
+    \draw[->] (xj) -- (output);
+    
+    % 观测器部分
+    \node[draw, circle, minimum size=1.2cm, below=2cm of xi, fill=red!10] (xi_hat) {$\hat{x}_i$};
+    \node[below=0.3cm of xi_hat, text width=3cm, align=center] {
+        {\small \textcolor{red}{问题}：$\hat{x}_i$ 的误差} \\
+        {\small 在 $y$ 中看不到！}
+    };
+    
+    \draw[->, red, dashed, thick] (output) -- ++(0,-1.5) node[midway, right] {\small 反馈} -- ++(-5,0);
+    \draw[->, gray, dashed] (xi_hat) -- ++(-1.5,0) node[left] {\small $e_i = x_i - \hat{x}_i$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{后果：}
+\begin{itemize}
+    \item 无论 $L$ 怎么设计，都无法从 $y$ 的误差校正 $\hat{x}_i$
+    \item $e_i(t) = x_i(t) - \hat{x}_i(t)$ 的演化只能靠\textbf{开环}（$\dot{e}_i = \cdots$）
+    \item 如果对应的 $A$ 子块不稳定，$e_i$ 会发散！
+\end{itemize}
+
+\textbf{结论：}\textcolor{red!80!black}{\textbf{不能观测 $\Rightarrow$ 无法保证误差收敛！}}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{🔄 对偶性——观测器设计的"免费午餐"}]
+
+\textbf{震撼发现：}观测器设计 = 极点配置的\textcolor{blue}{\textbf{对偶问题}}！
+
+\vspace{0.3cm}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{} l c c @{}}
+\toprule
+\textbf{对比项} & \textbf{极点配置（控制器）} & \textbf{观测器设计} \\
+\midrule
+\textbf{系统方程} & $\dot{x} = Ax + Bu$ & $\dot{e} = (A - LC)e$ \\
+\textbf{配置目标矩阵} & $A - BK$ & $A - LC$ \\
+\textbf{前提条件} & $(A, B)$ 能控 & $(A, C)$ 能观测 \\
+\textbf{增益矩阵} & $K \in \mathbb{R}^{m \times n}$ & $L \in \mathbb{R}^{n \times p}$ \\
+\textbf{对偶变换} & --- & $A \to A^T, \, B \to C^T, \, K \to L^T$ \\
+\midrule
+\textbf{设计方法} & \multicolumn{2}{c}{\textcolor{blue}{完全相同！（pole, acker）}} \\
+\bottomrule
 \end{tabular}
 \end{center}
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=4cm]
+    % 左边：控制器设计
+    \node[draw, rectangle, fill=blue!10, minimum width=3cm, minimum height=2.5cm, text width=2.8cm, align=center] (control) {
+        \textbf{控制器设计} \\[0.2cm]
+        配置 $A - BK$ \\[0.1cm]
+        需要 $(A,B)$ 能控
+    };
+    
+    % 右边：观测器设计
+    \node[draw, rectangle, fill=red!10, minimum width=3cm, minimum height=2.5cm, text width=2.8cm, align=center, right=of control] (observer) {
+        \textbf{观测器设计} \\[0.2cm]
+        配置 $A - LC$ \\[0.1cm]
+        需要 $(A,C)$ 能观测
+    };
+    
+    % 对偶变换箭头
+    \draw[->, very thick, blue] (control) to[bend left=20] node[above, text width=3cm, align=center] {
+        \small 对偶变换 \\
+        \small $A \to A^T$ \\
+        \small $B \to C^T$
+    } (observer);
+    
+    \draw[->, very thick, red] (observer) to[bend left=20] node[below, text width=3cm, align=center] {
+        \small 逆变换 \\
+        \small $K \to L^T$
+    } (control);
+    
+    % 底部标注
+    \node[below=0.5cm of control, text=blue] {已有成熟算法};
+    \node[below=0.5cm of observer, text=red!80!black] {直接套用！};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
+\fcolorbox{red}{yellow!20}{
+\begin{minipage}{0.95\textwidth}
+\textbf{📌 记忆卡片：对偶性快速查表}
+
+\begin{itemize}
+    \item \textbf{控制器}：能控 $\xrightarrow{\text{设计 } K}$ 配置 $A - BK$
+    \item \textbf{观测器}：能观测 $\xrightarrow{\text{对偶变换}}$ 配置 $A - LC$
+    \item \textbf{方法一致}：`place(A', C', poles)'，结果转置 $\Rightarrow L$
+\end{itemize}
+
+\textbf{口诀：}同样的配方，同样的味道，只是原料调换了顺序！
+\end{minipage}
+}
+
+\end{tcolorbox}
 
 \subsection{观测器的设计}
 
@@ -404,92 +920,427 @@ $L_{ij}$：当第 $j$ 个输出有单位误差时，对第 $i$ 个状态估计�
 
 \subsubsection{设计步骤}
 
-\textbf{观测器设计的标准流程：}
+\textbf{核心问题：}知道了理论，如何一步步设计出实际的观测器？
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=cyan!5!white, colframe=cyan!75!black, title=\textbf{🛠️ 观测器设计标准流程（四步法）}]
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=1.8cm]
+    % 步骤节点
+    \node[draw, circle, fill=blue!20, minimum size=1.5cm] (step1) {\textbf{1}};
+    \node[draw, circle, fill=blue!20, minimum size=1.5cm, below=of step1] (step2) {\textbf{2}};
+    \node[draw, circle, fill=blue!20, minimum size=1.5cm, below=of step2] (step3) {\textbf{3}};
+    \node[draw, circle, fill=blue!20, minimum size=1.5cm, below=of step3] (step4) {\textbf{4}};
+    
+    % 步骤描述
+    \node[right=0.5cm of step1, text width=6cm, align=left] {
+        \textbf{验证能观测性} \\
+        {\small 计算 $W_o$，检查 rank$(W_o) = n$}
+    };
+    
+    \node[right=0.5cm of step2, text width=6cm, align=left] {
+        \textbf{选择观测器极点} \\
+        {\small $\mu_1, \ldots, \mu_n$（左半平面，比控制器快2-5倍）}
+    };
+    
+    \node[right=0.5cm of step3, text width=6cm, align=left] {
+        \textbf{计算增益 $L$} \\
+        {\small MATLAB: \texttt{L = place(A',C',poles)'}}
+    };
+    
+    \node[right=0.5cm of step4, text width=6cm, align=left] {
+        \textbf{验证设计} \\
+        {\small 检查 $\lambda(A-LC)$，仿真误差动态}
+    };
+    
+    % 连接箭头
+    \draw[->, very thick] (step1) -- (step2);
+    \draw[->, very thick] (step2) -- (step3);
+    \draw[->, very thick] (step3) -- (step4);
+    
+    % 失败返回路径
+    \draw[->, dashed, red, thick] (step1.west) -- ++(-0.8,0) |- node[left, pos=0.25, text=red] {\small 不能观测} ++(0,-2) node[left] {\small 重新建模};
+    \draw[->, dashed, orange, thick] (step4.east) -- ++(0.8,0) |- node[right, pos=0.25, text=orange] {\small 噪声过大} ++(0,-3.5) -- (step2.east);
+\end{tikzpicture}
+\end{center}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=\textbf{第一步：验证能观测性}]
+
+\textbf{为什么必须先检查？}
+
+如果 $(A,C)$ 不能观测，就\textbf{无法}任意配置极点（定理前提不满足）！
+
+\vspace{0.2cm}
+
+\textbf{检查方法：}
+
+构造\textbf{能观测性矩阵}：
+\[\Large W_o = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix} \in \mathbb{R}^{np \times n}\]
+
+\textbf{判据：}$\text{rank}(W_o) = n$ \quad $\Leftrightarrow$ \quad 系统能观测
+
+\vspace{0.2cm}
+
+\textbf{💻 MATLAB 代码：}
+\begin{lstlisting}[style=Matlab-editor]
+% 方法1：手动计算秩
+Wo = obsv(A, C);  % 自动生成能观测性矩阵
+r = rank(Wo);
+if r == size(A, 1)
+    disp('系统能观测，可以继续设计！');
+else
+    disp(['系统不能观测！秩亏 ', num2str(size(A,1) - r)]);
+    return;  % 终止设计
+end
+
+% 方法2：直接判断
+if rank(obsv(A, C)) == size(A, 1)
+    % 继续设计...
+end
+\end{lstlisting}
+
+\textbf{⚠️ 不能观测怎么办？}
+\begin{itemize}
+    \item 重新设计传感器布局（增加测量点）
+    \item 改变输出选择（测量不同的状态组合）
+    \item 使用降维观测器（只估计可观测部分）
+\end{itemize}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{第二步：选择观测器极点}]
+
+\textbf{核心原则：}观测器必须比控制器\textcolor{red}{\textbf{更快收敛}}！
+
+\vspace{0.2cm}
+
+\textbf{为什么？——一个时间线故事}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, scale=0.9]
+    % 时间轴
+    \draw[->, ultra thick] (0,0) -- (12,0) node[right] {时间 $t$};
+    
+    % 事件标记
+    \filldraw (0,0) circle (3pt) node[below] {$t_0$};
+    \filldraw (3,0) circle (3pt) node[below] {$t_1$};
+    \filldraw (6,0) circle (3pt) node[below] {$t_2$};
+    \filldraw (10,0) circle (3pt) node[below] {$t_3$};
+    
+    % 阶段描述
+    \node[above, text width=2.5cm, align=center] at (1.5,1.5) {
+        \textcolor{blue}{\textbf{启动阶段}} \\
+        {\small $e(t_0)$ 很大}
+    };
+    
+    \node[above, text width=2.5cm, align=center] at (4.5,1.5) {
+        \textcolor{orange}{\textbf{观测器收敛}} \\
+        {\small $e \to 0$}
+    };
+    
+    \node[above, text width=2.5cm, align=center] at (8,1.5) {
+        \textcolor{green!60!black}{\textbf{控制器生效}} \\
+        {\small $x \to$ 目标}
+    };
+    
+    % 曲线示意
+    \draw[red, very thick] (0,-1.5) .. controls (2,-1) and (4,-0.5) .. (6,-0.2) node[right] {\small $\|e(t)\|$};
+    \draw[blue, very thick] (3,-2.5) .. controls (5,-2) and (7,-1) .. (10,-0.2) node[right] {\small $\|x - x_{\text{ref}}\|$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{关键时刻：}
+\begin{itemize}
+    \item $t_1$：如果此时 $e$ 还很大，控制器用错误的 $\hat{x}$ 计算 $u = -K\hat{x}$，性能糟糕！
+    \item $t_2$：观测器收敛后，控制器才能正常工作
+\end{itemize}
+
+\textbf{结论：}观测器收敛速度必须 $\gg$ 控制器，才不拖后腿！
+
+\tcblower
+
+\textbf{📐 经验法则（黄金比例）}
+
+设控制器主导极点为 $s_c = -\sigma_c \pm j\omega_c$，则观测器极点选择：
+
+\[\boxed{s_o = -(k \cdot \sigma_c) \pm j\omega_o, \quad k \in [2, 5]}\]
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{} c c l @{}}
+\toprule
+\textbf{倍数 $k$} & \textbf{设计类型} & \textbf{特点} \\
+\midrule
+2 & 保守设计 & 噪声敏感性低，收敛较慢 \\
+3-4 & \textcolor{blue}{\textbf{推荐}} & \textcolor{blue}{\textbf{平衡设计，工程常用}} \\
+5+ & 激进设计 & 收敛极快，但噪声放大严重 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{✅ 设计范例：}
+
+假设控制器极点为 $-2 \pm j3$（$\sigma_c = 2$），则观测器极点可选：
+
+\begin{itemize}
+    \item \textbf{方案1（保守）}：$-4, -5$ \quad （$k=2\sim 2.5$）
+    \item \textbf{方案2（推荐）}：$-8, -10$ \quad （$k=4\sim 5$）
+    \item \textbf{方案3（激进）}：$-12, -15$ \quad （$k=6\sim 7.5$）$\leftarrow$ 噪声敏感！
+\end{itemize}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\textbf{第三步：计算观测器增益 $L$}]
+
+\textbf{好消息：}有了对偶性，计算 $L$ 变得异常简单！
+
+\vspace{0.3cm}
+
+\textbf{💻 方法1：MATLAB 一行搞定（推荐）}
+
+\begin{lstlisting}[style=Matlab-editor]
+% 已知：A, C, 期望极点 poles = [-8, -10, ...]
+L = place(A', C', poles)';  % 注意三个关键点：
+%       ^^  ^^         ^^
+%       |   |          |
+%       |   |          +--- 最后转置！
+%       |   +-------------- C 也要转置
+%       +------------------ A 转置
+
+% 为什么这样做？
+% place() 本来是设计控制器 K: A-BK
+% 通过对偶性 (A,B) <-> (A',C')，我们"欺骗"它设计观测器
+% 得到的是 K'，再转置回来就是 L
+
+% 验证设计
+eig(A - L*C)  % 应该等于 poles（可能顺序不同）
+\end{lstlisting}
+
+\vspace{0.2cm}
+
+\textbf{💻 方法2：Ackermann 公式（小规模系统）}
+
+\begin{lstlisting}[style=Matlab-editor]
+L = acker(A', C', poles)';  
+% acker 适用于 SISO 或小规模系统
+% place 更通用，支持多输出系统
+\end{lstlisting}
+
+\vspace{0.2cm}
+
+\textbf{💻 方法3：手工计算（$n \leq 2$ 时可行）}
+
+对于二阶系统 $(n=2)$，可以直接求解：
+\[\det(sI - (A - LC)) = (s - \mu_1)(s - \mu_2)\]
+展开后对比系数，解线性方程组得 $L$。
+
+\textbf{示例（$n=2$）：}
+\begin{lstlisting}[style=Matlab-editor]
+% 已知 A, C, poles = [mu1, mu2]
+syms l1 l2  % 观测器增益元素
+A_LC = A - [l1; l2]*C;
+char_poly = det(s*eye(2) - A_LC);  % 特征多项式
+desired_poly = (s - mu1)*(s - mu2);  % 期望多项式
+% 对比系数，求解 l1, l2
+\end{lstlisting}
+
+\textbf{⚠️ 注意：}$n \geq 3$ 时手算极其复杂，\textbf{务必使用 MATLAB}！
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=\textbf{第四步：验证设计}]
+
+\textbf{设计完成 $\neq$ 任务结束！}必须验证是否符合预期。
+
+\vspace{0.3cm}
+
+\textbf{✅ 验证清单：}
 
 \begin{enumerate}
-    \item \textbf{验证能观测性}
-    \begin{itemize}
-        \item 计算能观测性矩阵：$W_o = \begin{bmatrix} C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1} \end{bmatrix}$
-        \item 检查：$\text{rank}(W_o) = n$
-        \item 若不能观测，则\textbf{无法}任意配置观测器极点
-    \end{itemize}
+    \item \textbf{极点检查}
+    \begin{lstlisting}[style=Matlab-editor]
+designed_poles = eig(A - L*C);
+fprintf('期望极点: '); disp(poles');
+fprintf('实际极点: '); disp(designed_poles);
+% 允许小误差（数值误差），但位置应接近
+    \end{lstlisting}
     
-    \item \textbf{选择观测器极点} $\mu_1, \mu_2, \ldots, \mu_n$
-    \begin{itemize}
-        \item 必须在左半平面（保证误差收敛）
-        \item 通常比控制器极点\textbf{更靠左}（收敛更快）
-        \item 经验法则：观测器极点实部 = 控制器极点实部的 $2 \sim 5$ 倍
-    \end{itemize}
+    \item \textbf{误差收敛仿真}
+    \begin{lstlisting}[style=Matlab-editor]
+% 设定大初始误差
+e0 = [5; -3; 2];  % 例如
+% 模拟误差动态: de/dt = (A-LC)e
+[t, e] = ode45(@(t,e) (A-L*C)*e, [0 5], e0);
+plot(t, e); xlabel('时间 (s)'); ylabel('误差 e(t)');
+title('观测器误差收敛曲线');
+% 检查：是否在预期时间内收敛到 0？
+    \end{lstlisting}
     
-    \item \textbf{计算观测器增益 $L$}
-    \begin{itemize}
-        \item 方法1：直接使用 MATLAB \texttt{place(A', C', poles)'}
-        \item 方法2：利用对偶性，设计 $(A^T, C^T)$ 的控制器增益
-        \item 方法3：手算低阶系统（$n \leq 3$）
-    \end{itemize}
+    \item \textbf{噪声敏感性测试}
+    \begin{lstlisting}[style=Matlab-editor]
+% 在输出 y 上加入噪声
+y_noisy = y + 0.01*randn(size(y));  % 1% 噪声
+% 运行观测器，观察 x_hat 的抖动
+% 如果 x_hat 抖动剧烈 -> L 过大，需重新选择极点
+    \end{lstlisting}
     
-    \item \textbf{验证设计}
-    \begin{itemize}
-        \item 检查 $A - LC$ 的特征值是否为期望值
-        \item 仿真误差动态 $\dot{e} = (A - LC)e$
-        \item 评估对测量噪声的敏感性
-    \end{itemize}
+    \item \textbf{鲁棒性测试（可选）}
+    \begin{lstlisting}[style=Matlab-editor]
+% 故意引入模型误差
+A_actual = A * 1.1;  % 假设 A 有 10% 误差
+% 用原始 L 运行观测器，检查是否仍能收敛
+    \end{lstlisting}
 \end{enumerate}
+
+\textbf{⚠️ 常见问题诊断：}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{} p{4cm} p{6cm} @{}}
+\toprule
+\textbf{现象} & \textbf{可能原因与解决方案} \\
+\midrule
+误差不收敛 & • 检查能观测性 \\
+ & • 检查极点是否在左半平面 \\
+ & • 验证 \texttt{eig(A-L*C)} \\
+\midrule
+收敛过慢 & • 观测器极点离虚轴太近 \\
+ & • 增大极点实部（更靠左） \\
+\midrule
+$\hat{x}$ 剧烈抖动 & • 增益 $L$ 过大，噪声放大 \\
+ & • 减小极点实部（不要太激进） \\
+ & • 考虑滤波器 \\
+\midrule
+计算溢出/不稳定 & • 极点过于极端（如 $-1000$） \\
+ & • 数值精度问题，调整极点 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{tcolorbox}
 
 \subsubsection{观测器极点选择准则}
 
-\textbf{1. 为什么观测器极点要比控制器极点快？}
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{⚠️ 极点配置的实际限制——不是越快越好！}]
 
-\textbf{原因：}
+虽然理论上可以任意配置极点，但实际工程中存在\textbf{四大约束}：
+
+\vspace{0.3cm}
+
+\textbf{1️⃣ 测量噪声约束}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick]
+    % 关系链
+    \node[draw, rectangle, fill=blue!10] (poles) {极点左移};
+    \node[draw, rectangle, fill=orange!10, right=1.5cm of poles] (L) {增益 $L$ 增大};
+    \node[draw, rectangle, fill=red!10, right=1.5cm of L] (noise) {噪声放大};
+    
+    \draw[->, very thick] (poles) -- (L);
+    \draw[->, very thick] (L) -- (noise);
+    
+    \node[below=0.5cm of L, text width=8cm, align=center] {
+        {\small 观测器方程：$\dot{\hat{x}} = A\hat{x} + Bu + L(y - C\hat{x})$} \\
+        {\small $L$ 大 $\Rightarrow$ 测量噪声直接放大到 $\hat{x}$ 中}
+    };
+\end{tikzpicture}
+\end{center}
+
+\textbf{后果：}$\hat{x}$ 抖动 $\to$ $u = -K\hat{x}$ 抖动 $\to$ 执行器磨损、能耗增加
+
+\textbf{折中：}收敛速度 vs 噪声抑制
+
+\vspace{0.3cm}
+
+\textbf{2️⃣ 计算负担约束}
+
 \begin{itemize}
-    \item 控制器需要\textbf{真实状态} $x$ 才能发挥作用
-    \item 如果估计误差 $e$ 收敛太慢，控制器会\textit{误用}错误的状态信息
-    \item 让观测器先收敛，控制器才能基于准确的 $\hat{x}$ 工作
+    \item 观测器需要\textbf{实时}运行（每个采样周期更新 $\hat{x}$）
+    \item 极点极快 $\Rightarrow$ 需要极小的采样时间 $T_s$（数字实现时）
+    \item 嵌入式处理器可能\textbf{算不过来}
 \end{itemize}
 
-\textbf{经验法则：}
+\textbf{经验：}采样频率应至少为观测器最快极点频率的 \textbf{10~20倍}
 
-设控制器主导极点为 $s_c = -\sigma_c \pm j\omega_c$，则观测器极点选择为：
-\[s_o = -(2\sim 5)\sigma_c \pm j\omega_o\]
+\vspace{0.3cm}
 
-\textbf{典型选择：}
+\textbf{3️⃣ 模型误差约束}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, thick, node distance=2cm]
+    \node[draw, ellipse, fill=green!10] (model) {理论模型 $A, B, C$};
+    \node[draw, ellipse, fill=red!10, right=3cm of model] (real) {实际系统};
+    
+    \draw[<->, dashed, thick, red] (model) -- node[above] {误差！} (real);
+    
+    \node[below=0.5cm of model, text width=3cm, align=center] {
+        {\small 观测器依赖这些}
+    };
+    
+    \node[below=0.5cm of real, text width=3cm, align=center] {
+        {\small 参数漂移、非线性}
+    };
+\end{tikzpicture}
+\end{center}
+
+\textbf{问题：}高增益观测器对模型误差\textcolor{red}{\textbf{不鲁棒}}（误差会被放大）
+
+\textbf{解决：}
 \begin{itemize}
-    \item \textbf{保守设计}：观测器极点 = 2倍控制器极点
-    \item \textbf{中等设计}：3-4倍
-    \item \textbf{激进设计}：5倍（快速收敛，但噪声敏感）
+    \item 不追求过快的极点
+    \item 使用鲁棒观测器设计（如 $H_\infty$ 观测器）
+    \item 在线参数辨识
 \end{itemize}
 
-\textbf{2. 观测器极点配置的实际限制}
+\vspace{0.3cm}
+
+\textbf{4️⃣ 执行器饱和约束}
 
 \begin{itemize}
-    \item \textbf{测量噪声}
-    \begin{itemize}
-        \item 观测器极点越靠左，增益 $L$ 越大
-        \item $L$ 大 $\to$ 对 $y$ 的噪声放大严重
-        \item 平衡：收敛速度 vs 噪声抑制
-    \end{itemize}
-    
-    \item \textbf{计算负担}
-    \begin{itemize}
-        \item 观测器需要实时运行
-        \item 极点太快 $\to$ 需要更小的采样周期（数字实现时）
-        \item 嵌入式系统可能无法承受
-    \end{itemize}
-    
-    \item \textbf{模型误差}
-    \begin{itemize}
-        \item 观测器依赖准确的 $A, B, C$ 矩阵
-        \item 高增益观测器对模型误差\textbf{不鲁棒}
-        \item 实际系统建模总有偏差
-    \end{itemize}
-    
-    \item \textbf{执行器饱和}
-    \begin{itemize}
-        \item 观测器初始误差大时，可能导致 $\hat{x}$ 剧烈变化
-        \item 基于 $\hat{x}$ 的控制律 $u = -K\hat{x}$ 可能饱和
-        \item 需要考虑\textit{抗饱和}设计
-    \end{itemize}
+    \item 观测器初始误差 $e(0)$ 可能很大（如启动时刻）
+    \item 快速极点 $\Rightarrow$ $\hat{x}$ 剧烈变化
+    \item 控制律 $u = -K\hat{x}$ 可能\textbf{超出执行器范围}（如电机最大电压）
 \end{itemize}
+
+\textbf{后果：}饱和 $\to$ 实际控制效果与设计偏离 $\to$ 性能下降甚至不稳定
+
+\textbf{解决：}
+\begin{itemize}
+    \item 抗饱和（anti-windup）设计
+    \item 初始化观测器状态（如有可能）
+    \item 软启动策略
+\end{itemize}
+
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\fcolorbox{blue}{cyan!10}{
+\begin{minipage}{0.95\textwidth}
+\textbf{📌 记忆卡片：极点选择的黄金准则}
+
+\begin{enumerate}
+    \item \textbf{基准：}观测器极点 = $3 \sim 4 \times$ 控制器极点实部
+    \item \textbf{上限：}受测量噪声、计算能力、模型精度限制
+    \item \textbf{下限：}不能比控制器慢（否则拖累性能）
+    \item \textbf{迭代：}设计 $\to$ 仿真 $\to$ 调整，反复优化
+\end{enumerate}
+
+\textbf{记住：}\textit{极点选择是艺术，不是科学——需要经验和权衡！}
+\end{minipage}
+}
 
 \textbf{3. 观测器极点的典型配置模式}
 
@@ -851,7 +1702,7 @@ $-10, -12$ & $[22, 118]^T$ & 0.4 s & 高 \\
     % 矩阵结构可视化
     \draw[thick] (0,0) rectangle (4,4);
     \draw[thick] (0,2) -- (4,2);
-    \draw[thick (2,0) -- (2,4);
+    \draw[thick] (2,0) -- (2,4);
     
     % 填充颜色
     \fill[blue!20] (0,2) rectangle (2,4);

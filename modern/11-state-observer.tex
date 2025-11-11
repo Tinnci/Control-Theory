@@ -836,7 +836,7 @@ $L = \begin{bmatrix} l_{11} & l_{12} & \cdots & l_{1p} \\ l_{21} & l_{22} & \cdo
 
 \vspace{0.3cm}
 
-\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{🔄 对偶性——观测器设计的"免费午餐"}]
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{🔄 对偶性——观测器设计的"免费午餐"}, breakable]
 
 \textbf{震撼发现：}观测器设计 = 极点配置的\textcolor{blue}{\textbf{对偶问题}}！
 
@@ -1016,7 +1016,7 @@ end
 
 \vspace{0.3cm}
 
-\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{第二步：选择观测器极点}]
+\begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{第二步：选择观测器极点}, breakable]
 
 \textbf{核心原则：}观测器必须比控制器\textcolor{red}{\textbf{更快收敛}}！
 
@@ -1100,7 +1100,7 @@ end
 
 \vspace{0.3cm}
 
-\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\textbf{第三步：计算观测器增益 $L$}]
+\begin{tcolorbox}[colback=purple!5!white, colframe=purple!75!black, title=\textbf{第三步：计算观测器增益 $L$}, breakable]
 
 \textbf{好消息：}有了对偶性，计算 $L$ 变得异常简单！
 
@@ -1160,7 +1160,7 @@ desired_poly = (s - mu1)*(s - mu2);  % 期望多项式
 
 \vspace{0.3cm}
 
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=\textbf{第四步：验证设计}]
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=\textbf{第四步：验证设计}, breakable]
 
 \textbf{设计完成 $\neq$ 任务结束！}必须验证是否符合预期。
 
@@ -1245,7 +1245,7 @@ $\hat{x}$ 剧烈抖动 & • 增益 $L$ 过大，噪声放大 \\
 
 \subsubsection{观测器极点选择准则}
 
-\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{⚠️ 极点配置的实际限制——不是越快越好！}]
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=\textbf{⚠️ 极点配置的实际限制——不是越快越好！}, breakable]
 
 虽然理论上可以任意配置极点，但实际工程中存在\textbf{四大约束}：
 
@@ -1798,7 +1798,11 @@ $-10, -12$ & $[22, 118]^T$ & 0.4 s & 高 \\
 \begin{tcolorbox}[colback=green!5!white, colframe=green!60!black, title=\textbf{降维观测器标准形式}]
 
 \textbf{辅助变量动态方程：}
-\[\boxed{\dot{z} = (A_{bb} - LA_{ab})z + (A_{ba} - LA_{aa})x_a + (B_b - LB_a)u}\]
+\begin{empheq}[box=\fbox]{align*}
+\dot{z} &= (A_{bb} - LA_{ab})z \\
+        &\quad + (A_{ba} - LA_{aa})x_a \\
+        &\quad + (B_b - LB_a)u
+\end{empheq}
 
 \textbf{不可测状态估计：}
 \[\boxed{\hat{x}_b = z + Lx_a}\]
@@ -1877,8 +1881,11 @@ $-10, -12$ & $[22, 118]^T$ & 0.4 s & 高 \\
 
 \textbf{步骤4：构造观测器方程}
 \begin{itemize}
-    \item $\dot{z} = (A_{bb} - LA_{ab})z + (A_{ba} - LA_{aa})x_a + (B_b - LB_a)u$
-    \item $\hat{x}_b = z + Lx_a$
+    \item 辅助变量：
+    \begin{align*}
+    \dot{z} &= (A_{bb} - LA_{ab})z + (A_{ba} - LA_{aa})x_a + (B_b - LB_a)u
+    \end{align*}
+    \item 状态估计：$\hat{x}_b = z + Lx_a$
 \end{itemize}
 
 \textbf{步骤5：验证设计}
@@ -2229,8 +2236,13 @@ u &= -K\hat{x} + v \\
 
 \textbf{推导增广系统：}
 
-真实系统：
-\[\dot{x} = Ax + Bu = Ax + B(-K\hat{x}) = Ax - BK(x - e) = (A - BK)x + BKe\]
+真实系统（逐步展开）：
+\begin{align*}
+\dot{x} &= Ax + Bu \\
+        &= Ax + B(-K\hat{x}) \quad \text{\small （代入控制律）} \\
+        &= Ax - BK(x - e) \quad \text{\small （因为 $\hat{x} = x - e$）} \\
+        &= (A - BK)x + BKe \quad \text{\small （整理）}
+\end{align*}
 
 误差动态（与 $u$ 无关）：
 \[\dot{e} = (A - LC)e\]
@@ -2461,7 +2473,12 @@ $\det(W_o) = 1 \neq 0$，系统\textbf{完全能观测} ✓
 
 \textbf{计算 $K$（直接法）：}
 
-\[A - BK = \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} 0 \\ 1 \end{bmatrix} [k_1 \quad k_2] = \begin{bmatrix} 0 & 1 \\ -k_1 & -1-k_2 \end{bmatrix}\]
+计算闭环矩阵：
+\begin{align*}
+A - BK &= \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} 0 \\ 1 \end{bmatrix} [k_1 \quad k_2] \\
+&= \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} 0 & 0 \\ k_1 & k_2 \end{bmatrix} \\
+&= \begin{bmatrix} 0 & 1 \\ -k_1 & -1-k_2 \end{bmatrix}
+\end{align*}
 
 特征方程：
 \[\det(sI - (A-BK)) = s(s+1+k_2) + k_1 = s^2 + (1+k_2)s + k_1\]
@@ -2504,9 +2521,13 @@ k_1 &= 12.5
 
 \textbf{计算观测器增益 $L$（直接法）：}
 
-设 $L = \begin{bmatrix} l_1 \\ l_2 \end{bmatrix}$：
+设 $L = \begin{bmatrix} l_1 \\ l_2 \end{bmatrix}$，计算误差矩阵：
 
-\[A - LC = \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} l_1 \\ l_2 \end{bmatrix} [1 \quad 0] = \begin{bmatrix} -l_1 & 1 \\ -l_2 & -1 \end{bmatrix}\]
+\begin{align*}
+A - LC &= \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} l_1 \\ l_2 \end{bmatrix} [1 \quad 0] \\
+&= \begin{bmatrix} 0 & 1 \\ 0 & -1 \end{bmatrix} - \begin{bmatrix} l_1 & 0 \\ l_2 & 0 \end{bmatrix} \\
+&= \begin{bmatrix} -l_1 & 1 \\ -l_2 & -1 \end{bmatrix}
+\end{align*}
 
 特征方程：
 \[\det(sI - (A-LC)) = (s+l_1)(s+1) + l_2 = s^2 + (1+l_1)s + (l_1+l_2)\]
@@ -2772,8 +2793,10 @@ step(sys * 12.5);  % 阶跃响应
     \item \textbf{状态划分}：$x_a$（可测，维数 $p$）+ $x_b$（不可测，维数 $n-p$）
     \item \textbf{辅助变量}：$z = \hat{x}_b - Lx_a$（避免直接微分输出）
     \item \textbf{降维观测器方程}：
-    \[\dot{z} = (A_{bb} - LA_{ab})z + (A_{ba} - LA_{aa})x_a + (B_b - LB_a)u\]
-    \[\hat{x}_b = z + Lx_a\]
+    \begin{align*}
+    \dot{z} &= (A_{bb} - LA_{ab})z + (A_{ba} - LA_{aa})x_a + (B_b - LB_a)u \\
+    \hat{x}_b &= z + Lx_a
+    \end{align*}
     \item \textbf{优势}：计算量小（$(n-p)$ vs $n$），实时性好，适合嵌入式系统
     \item \textbf{应用场景}：部分状态可直接准确测量，计算资源受限
 \end{itemize}

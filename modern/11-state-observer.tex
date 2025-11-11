@@ -1164,45 +1164,59 @@ desired_poly = (s - mu1)*(s - mu2);  % 期望多项式
 
 \textbf{设计完成 $\neq$ 任务结束！}必须验证是否符合预期。
 
+\end{tcolorbox}
+
 \vspace{0.3cm}
 
 \textbf{✅ 验证清单：}
 
-\begin{enumerate}
-    \item \textbf{极点检查}
-    \begin{lstlisting}[style=Matlab-editor]
+\vspace{0.2cm}
+
+\noindent\textbf{1️⃣ 极点检查}
+
+\begin{lstlisting}[style=Matlab-editor]
 designed_poles = eig(A - L*C);
-fprintf('期望极点: '); disp(poles');
-fprintf('实际极点: '); disp(designed_poles);
-% 允许小误差（数值误差），但位置应接近
-    \end{lstlisting}
-    
-    \item \textbf{误差收敛仿真}
-    \begin{lstlisting}[style=Matlab-editor]
-% 设定大初始误差
-e0 = [5; -3; 2];  % 例如
-% 模拟误差动态: de/dt = (A-LC)e
+fprintf('desired poles: '); disp(poles');
+fprintf('actual poles: '); disp(designed_poles);
+% Allow small numerical errors, position should be close
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\noindent\textbf{2️⃣ 误差收敛仿真}
+
+\begin{lstlisting}[style=Matlab-editor]
+% Set large initial error
+e0 = [5; -3; 2];
+% Simulate error dynamics: de/dt = (A-LC)*e
 [t, e] = ode45(@(t,e) (A-L*C)*e, [0 5], e0);
-plot(t, e); xlabel('时间 (s)'); ylabel('误差 e(t)');
-title('观测器误差收敛曲线');
-% 检查：是否在预期时间内收敛到 0？
-    \end{lstlisting}
-    
-    \item \textbf{噪声敏感性测试}
-    \begin{lstlisting}[style=Matlab-editor]
-% 在输出 y 上加入噪声
-y_noisy = y + 0.01*randn(size(y));  % 1% 噪声
-% 运行观测器，观察 x_hat 的抖动
-% 如果 x_hat 抖动剧烈 -> L 过大，需重新选择极点
-    \end{lstlisting}
-    
-    \item \textbf{鲁棒性测试（可选）}
-    \begin{lstlisting}[style=Matlab-editor]
-% 故意引入模型误差
-A_actual = A * 1.1;  % 假设 A 有 10% 误差
-% 用原始 L 运行观测器，检查是否仍能收敛
-    \end{lstlisting}
-\end{enumerate}
+plot(t, e); xlabel('time (s)'); ylabel('error e(t)');
+title('Observer error convergence');
+% Check: convergence to 0 within expected time?
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\noindent\textbf{3️⃣ 噪声敏感性测试}
+
+\begin{lstlisting}[style=Matlab-editor]
+% Add noise to output y
+y_noisy = y + 0.01*randn(size(y));  % 1% noise
+% Run observer, observe chattering in x_hat
+% If x_hat chatters severely -> L too large, reselect poles
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\noindent\textbf{4️⃣ 鲁棒性测试（可选）}
+
+\begin{lstlisting}[style=Matlab-editor]
+% Introduce model errors intentionally
+A_actual = A * 1.1;  % Assume 10% error in A
+% Run observer with original L, check if still converges
+\end{lstlisting}
+
+\vspace{0.3cm}
 
 \textbf{⚠️ 常见问题诊断：}
 
@@ -1228,8 +1242,6 @@ $\hat{x}$ 剧烈抖动 & • 增益 $L$ 过大，噪声放大 \\
 \bottomrule
 \end{tabular}
 \end{center}
-
-\end{tcolorbox}
 
 \subsubsection{观测器极点选择准则}
 
